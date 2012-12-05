@@ -1,0 +1,29 @@
+<%
+function startsWith(stringA, stringB){
+    return (new RegExp('^' + stringB)).test(stringA);
+}
+%>
+<% if(startsWith(qp.direction, 'upupup')){ %>
+    You ascend, striving towards the library's unattainable circumference.
+<% } else if(startsWith(qp.direction, 'upup')){ %>
+    Vigorously you press onwards.
+<% } else if(startsWith(qp.direction, 'up')){ %>
+    You ascend, striving towards the library's unattainable circumference.
+<% } else if(startsWith(qp.direction, 'downdowndowndowndowndowndowndowndowndowndowndown')){ %>
+    Somewhere in this tangled infinity you believe it is there, and that only you can find it:
+    The God book, whose continuous spine completely surrounds the circular walls of its chamber.
+    You feel compelled by some force to press on no matter how long the url becomes.
+    Is it gravity that pulls you or something more?
+<% } else if(startsWith(qp.direction, 'down')){ %>
+    You descend into the unfathomable bowels of the library.
+<% } else { %>
+    You stand before the indefatigable stairs.
+<% } %>
+<hr />
+<a href="#stairs.html?direction=up<%- qp.direction||'' %>">Climb upward.</a><br />
+<a href="#stairs.html?direction=down<%- qp.direction||'' %>">Descend downward.</a><br />
+<% if(qp.direction){ %>
+    <a href="#entrance.html">Exit the stairs.</a>
+<% } else { %>
+    <a href="#<%- last.page %>">Return from whence you came.</a><br />
+<% } %>

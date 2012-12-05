@@ -1,0 +1,30 @@
+<%
+if(!window.Inventory) {
+    /* Inventory is made global by attaching it to the window. */
+    window.Inventory = new Backbone.Collection();
+}
+
+/* Add local storage */
+if(qp.$add){
+    window.Inventory.add({test:"test"});
+}
+
+window.Inventory.each(function(item){
+    print(JSON.stringify(item.toJSON()));
+});
+%>
+
+<% 
+var inventory = Log.getAttr('inventory');
+if(inventory) { 
+%>
+    <ul>
+    <% _.each(inventory, function(item) { %>
+        <li><%- item %></li>
+    <% }); %>
+    </ul>
+<% 
+} else {
+%>
+<p>Your inventory is empty.</p>
+<% } %>

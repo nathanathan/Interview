@@ -1,0 +1,45 @@
+<% if(qp.pageNum > 410 || qp.pageNum < 1){ %>
+    The book has no remaining pages.
+    <hr />
+    <a href="#<%- last.url %>">Go back.</a>
+<% } else { %>
+    <p>
+    <%
+    var parsedPageNum, content;
+    if(!("pageNum" in qp)){
+        parsedPageNum = 1;
+        window.pages = [];
+    } else {
+        parsedPageNum = parseInt(qp.pageNum, 10);
+    }
+    if(!window.pages[parsedPageNum]){
+        /* Print a page from a book in the library of babel */
+        content = '';
+        for(var i = 0; i < 40; i++) {
+            for(var j = 0; j < 83; j++) {
+                /* TODO: Find a more mysterious way to generate numbers */
+                var char = String.fromCharCode(97 + Math.floor(Math.random() * 25));
+                if(char === 'q'){
+                    char = '&nbsp;';
+                }
+                if(char === 'x'){
+                    char = ',';
+                }
+                if(char === 'w'){
+                    char = '.';
+                }
+                content += char;
+            }
+            content += '<br />';
+        }
+        window.pages[parsedPageNum] = content;
+    }
+
+    print(window.pages[parsedPageNum]);
+    %>
+    </p>
+    <hr />
+    <a href="#readBook.html?pageNum=<%- (parsedPageNum + 1) %>">Read the next page.</a><br />
+    <a href="#readBook.html?pageNum=<%- (parsedPageNum - 1) %>">Read the previous page.</a><br />
+    <a href="#bookshelves.html">Stop reading.</a>
+<% } %>
