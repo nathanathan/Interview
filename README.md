@@ -1,5 +1,5 @@
 Feels Like PHP
-______________
+==============
 
 FLP is a project for creating simple websites entirely from underscore templates.
 Templates can link to eachother by name, just make sure you prefix all your links with a #
@@ -41,7 +41,7 @@ window.visited++;
 <p>This template has been visited <% print(window.visited) %> time(s).</p>
 ```
 
-Unlike PHP, FLP is all client-side, so you can serve it as static content off github,
+Unlike PHP, FLP is all client-side, so you can serve it as static content off github pages,
 or make it into offline mobile apps with [phonegap build](https://build.phonegap.com/docs/start).
 
 If you want to do something really complicated you probably shouldn't be using this project.

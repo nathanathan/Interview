@@ -1,9 +1,14 @@
 <% if(qp.pageNum > 410 || qp.pageNum < 1){ %>
     The book has no remaining pages.
-    <hr />
-    <a href="#<%- last.url %>">Go back.</a>
+    <div class="nav">
+        <ul class="navlist">
+            <li>
+                <a href="#<%- last.url %>">Go back.</a>
+            </li>
+        </ul>
+    </div>
 <% } else { %>
-    <p>
+    <p style="max-width:500px;font-size:12px">
     <%
     var parsedPageNum, content;
     if(!("pageNum" in qp)){
@@ -38,8 +43,15 @@
     print(window.pages[parsedPageNum]);
     %>
     </p>
-    <hr />
-    <a href="#readBook.html?pageNum=<%- (parsedPageNum + 1) %>">Read the next page.</a><br />
-    <a href="#readBook.html?pageNum=<%- (parsedPageNum - 1) %>">Read the previous page.</a><br />
-    <a href="#bookshelves.html">Stop reading.</a>
+    <div class="nav">
+        <ul class="navlist">
+            <li><a href="#readBook.html?pageNum=<%- (parsedPageNum + 1) %>">
+            Read the next page.
+            </a></li>
+            <li><a href="#readBook.html?pageNum=<%- (parsedPageNum - 1) %>">
+            Read the previous page.
+            </a></li>
+            <li><a href="#bookshelves.html?justRead=true">Stop reading.</a></li>
+        </ul>
+    </div>
 <% } %>
