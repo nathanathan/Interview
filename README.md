@@ -14,4 +14,5 @@ Technologies
 ------------
 
 The app is currently being designed to run on mobile devices using Cordova.
+It uses the Cordova Media object to capture audio.
 The website for data exploration will probably be a couchapp.

@@ -4,14 +4,14 @@
     id        = "com.phonegap.example"
     version   = "1.0.1">
 
-    <name>FLP App</name>
+    <name>Interview</name>
 
     <description>
-        An example FLP app.
+        App for guiding and recording interviews.
     </description>
 
     <author>
-        nathanathan
+        Nathan Breit
     </author>
 
 </widget>
