@@ -3,8 +3,19 @@
 <head>
     <title>FLP App</title>
 	<script data-main="FLP/main" src="FLP/require-jquery.js"></script>
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="default.css" rel="stylesheet">
 </head>
-<body id="container" data-start="entrance.html">
+<body>
+<div class="controls">
+    <a class="btn" id="start"><i class="icon-circle-arrow-right"></i> Start Recording</a>
+    <a class="btn btn-danger disabled" id="stop"><i class="icon-stop"></i> Stop</a>
+    <span class="input-prepend">
+      <span class="add-on">time:</span>
+      <span class="uneditable-input" id="time"></span>
+    </span>
+</div>
+<hr />
+<div id="container" data-start="start.html"></div>
 </body>	
 </html>

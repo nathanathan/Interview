@@ -6,7 +6,7 @@ function($, Backbone, _, mainView){
     //TODO: Implement include function for templates.
     // it will return a stub, and then asyc get the template.
     // and fill in the stub when it loads.
-    
+    var recordingName = "myrecording.amr";
     function GUID() {
         var S4 = function () {
             return Math.floor(
@@ -94,10 +94,89 @@ function($, Backbone, _, mainView){
 		},
 		routes: {
             '': 'start',
+            'interviewEnd':'interviewEnd',
 			':page': 'setPage'
 		},
         start: function(){
-            this.navigate($container.data('start'), {trigger: true, replace: true});
+            var that = this;
+            var $start = $('#start');
+            var $stop = $('#stop');
+            var $time = $('#time')
+            var recStartTime;
+            function setAudioPosition(time){
+                $time.text((new Date() - recStartTime) / 1000);
+            };
+            $start.click(function(){
+                recStartTime = new Date();
+                $start.addClass('disabled');
+                $stop.removeClass('disabled');
+                //If Media is not available, mediarec has dummy functions that do nothing.
+                var mediaRec = {
+                    startRecord: function(){},
+                    stopRecord: function(){},
+                    release: function(){}
+                };
+                if('Media' in window) {
+                    mediaRec = new Media(recordingName, function onSuccess(){
+                        
+                    }, function onError(){
+                        
+                    });
+                } else {
+                    //TODO: How do dismiss?
+                    //TODO: Use template.
+                    $('body').prepend('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Warning!</h4> Audio is not being recorded.</div>');
+                }
+                mediaRec.startRecord();
+                var recInterval = setInterval(function() {
+                    setAudioPosition();
+                }, 1000);
+                $stop.click(function(){
+                    $stop.addClass('disabled');
+                    $start.removeClass('disabled');
+                    mediaRec.stopRecord();
+                    mediaRec.release();
+                    clearInterval(recInterval);
+                    that.navigate('interviewEnd', {trigger: true, replace: true});
+                });
+                that.navigate($container.data('start'), {trigger: true, replace: true});
+            });
+
+        },
+        interviewEnd: function(){
+            function uploadAudio(imageURI) {
+                /*
+                var options = new FileUploadOptions();
+                options.fileKey="file";
+                options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
+                options.mimeType="image/jpeg";
+    
+                var params = {};
+                params.value1 = "test";
+                params.value2 = "param";
+
+                options.params = params;
+                */
+                var ft = new FileTransfer();
+                ft.upload(recordingName, encodeURI("https://nathanathan.cloudant.com/test/"), function success(d){
+                    console.log(d);
+                    alert("Success");
+                }, function fail(d){
+                    console.log(d);
+                    alert("Fail");
+                });
+            }
+            var $submit = $('<a class="btn btn-primary"><i class="icon-upload"></i> Upload Recording+Log</a>');
+            $submit.click(function(){
+                if('FileTransfer' in window) {
+                    uploadAudio();
+                } else {
+                    alert("FileTransfer not available");
+                }
+            });
+            $container.empty();
+            $container.append('<h3>Interview ended.</h3>');
+            $container.append($submit);
         },
 		setPage: function(page, params){
             var that = this;
