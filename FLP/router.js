@@ -144,7 +144,8 @@ function($, Backbone, _, mainView){
 
         },
         interviewEnd: function(){
-            function uploadAudio(fileURI) {
+            function uploadAudio(fileName) {
+                var fileURI = 'mnt/sdcard/' + fileName
                 var input_db = "test";
                 var input_id = "test";
                 // src: https://gist.github.com/4074427
@@ -155,7 +156,7 @@ function($, Backbone, _, mainView){
                     success: function(couchDoc) {
                         var options = new FileUploadOptions();
                         options.fileKey="file";
-                        options.fileName=fileURI;
+                        options.fileName=fileName;
                         options.mimeType="audio/*";
             
                         var params = {};
