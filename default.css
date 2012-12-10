@@ -1,24 +1,25 @@
 .controls {
-    margin: 5px;
-    margin-top:0;
     border-bottom: 4px dashed lightgray;
+    margin-bottom: 5px;
 }
 .control {
     margin-top: 5px;
     margin-left: 0; 
-    width:40%;
     display: inline-block;
 }
 #start {
     margin-right: 4px;
 }
 #time {
-    width: 245px;
+    width: 180px;
+    display: inline-block;
+}
+#time-container {
+    margin-top: 5px;
 }
 /* Hacks below here: */
 .alert {
     margin-bottom:0;
 }
 #container {
-    margin-left: 5px;
 }

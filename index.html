@@ -4,18 +4,20 @@
     <title>FLP App</title>
     <script type="text/javascript" charset="utf-8" src="cordova-2.2.0.js"></script>
 	<script data-main="FLP/main" src="FLP/require-jquery.js"></script>
+    <script src="jquery.couch.js"></script>
     <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
     <link href="default.css" rel="stylesheet">
 </head>
 <body>
-<div class="controls">
-    <div class="row">
-        <div class="span4">
+<div class="container-fluid controls">
+    <div class="row-fluid">
+        <div class="span8">
             <a class="control btn" id="start"><i class="icon-circle-arrow-right"></i> Start Recording</a>
             <a class="control btn btn-danger disabled" id="stop"><i class="icon-stop"></i> Stop</a>
         </div>
-        <div class="span4">
-            <div class="control input-prepend" id="time-container">
+        <div class="span3">
+            <div class="input-prepend" id="time-container">
                 <span class="add-on">time:</span>
                 <span class="uneditable-input" id="time"></span>
             </div>

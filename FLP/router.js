@@ -144,32 +144,93 @@ function($, Backbone, _, mainView){
 
         },
         interviewEnd: function(){
-            function uploadAudio(imageURI) {
-                /*
-                var options = new FileUploadOptions();
-                options.fileKey="file";
-                options.fileName=imageURI.substr(imageURI.lastIndexOf('/')+1);
-                options.mimeType="image/jpeg";
-    
-                var params = {};
-                params.value1 = "test";
-                params.value2 = "param";
+            function uploadAudio(fileURI) {
+                var input_db = "test";
+                var input_id = "test";
+                // src: https://gist.github.com/4074427
+                // with many modifications made by me, nathan.
+                // Start by trying to open a Couch Doc at the _id and _db specified
+                $.couch.db(input_db).openDoc(input_id, {
+                    // If found, then set the revision in the form and save
+                    success: function(couchDoc) {
+                        var options = new FileUploadOptions();
+                        options.fileKey="file";
+                        options.fileName=fileURI;
+                        options.mimeType="audio/*";
+            
+                        var params = {};
+                        // Defining a revision on saving over a Couch Doc that exists is required.
+                        params._rev = couchDoc._rev;
+                        params._id = couchDoc._id;
+                        options.params = params;
+                        
+                        var ft = new FileTransfer();
+                        ft.upload(fileURI, encodeURI("https://nathanathan.cloudant.com/" + input_db + '/' + input_id), function success(d){
+                            console.log(d);
+                            alert("Success");
+                        }, function fail(d){
+                            console.log(d);
+                            alert("Fail");
+                        }, options);
+                        /*
+                        // Submit the form with the attachment
+                        $('form.documentForm').ajaxSubmit({
+                            url: "/" + input_db + "/" + input_id,
+                            success: function(response) {
+                                alert("Your attachment was submitted.")
+                            }
+                        })
+                        */
+                    }, // End success, we have a Doc
 
-                options.params = params;
-                */
-                var ft = new FileTransfer();
-                ft.upload(recordingName, encodeURI("https://nathanathan.cloudant.com/test/"), function success(d){
-                    console.log(d);
-                    alert("Success");
-                }, function fail(d){
-                    console.log(d);
-                    alert("Fail");
-                });
+                    // If there is no CouchDB document with that ID then we'll need to create it before we can attach a file to it.
+                    error: function(status) {
+                        $.couch.db(input_db).saveDoc({
+                            "_id": input_id
+                        }, {
+                            success: function(couchDoc) {
+                                var options = new FileUploadOptions();
+                                options.fileKey="file";
+                                options.fileName=fileURI;
+                                options.mimeType="audio/*";
+                    
+                                var params = {};
+                                // Defining a revision on saving over a Couch Doc that exists is required.
+                                params._rev = couchDoc._rev;
+                                params._id = couchDoc._id;
+                                options.params = params;
+                                
+                                var ft = new FileTransfer();
+                                ft.upload(fileURI, encodeURI("https://nathanathan.cloudant.com/" + input_db + '/' + input_id), function success(d){
+                                    console.log(d);
+                                    alert("SuccessN");
+                                }, function fail(d){
+                                    console.log(d);
+                                    alert("FailN");
+                                }, options);
+                                /*
+                                // Now that the Couch Doc exists, we can submit the attachment,
+                                // but before submitting we have to define the revision of the Couch
+                                // Doc so that it gets passed along in the form submit.
+                                $('.documentForm input#_rev').val(couchDoc.rev);
+                                $('form.documentForm').ajaxSubmit({
+                                    // Submit the form with the attachment
+                                    url: "/" + input_db + "/" + input_id,
+                                    success: function(response) {
+                                        alert("Your attachment was submitted.")
+                                    }
+                                })
+                                */
+                            }
+                        })
+                    } // End error, no Doc
+                
+                }); // End openDoc()
             }
             var $submit = $('<a class="btn btn-primary"><i class="icon-upload"></i> Upload Recording+Log</a>');
             $submit.click(function(){
                 if('FileTransfer' in window) {
-                    uploadAudio();
+                    uploadAudio(recordingName);
                 } else {
                     alert("FileTransfer not available");
                 }
