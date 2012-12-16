@@ -3,6 +3,14 @@
 define(['router'], function(router){
 	var init = function(){
 		this.router = new router();
+        
+    
+        remoteStorage.claimAccess('myfavoritedrinks', 'rw').
+        then(function() {
+            remoteStorage.displayWidget('remotestorage-connect');
+        });
+
+        
 	};
 	return { init: init };
 });
