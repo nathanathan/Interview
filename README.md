@@ -16,3 +16,16 @@ Technologies
 The app is currently being designed to run on mobile devices using Cordova.
 It uses the Cordova Media object to capture audio.
 The website for data exploration will probably be a couchapp.
+
+Problems
+--------
+
+* I can't figure out how to upload a file from my Cordova app to my couchdb instance.
+I think this is a CORS issue on couch's end.
+
+For this reason I think I'll need to either make this a couchapp entirely,
+or use Cordova storage and include the audio data explorer within the app.
+
+Going the couchapp route, I could run the couchapp on the phone, and maybe use replication to get it onto a server. However, I don't think I would be able to use Phonegap build.
+
+The Cordova storage route has the advantage of allowing everything to be done offline. However, I think a desktop would be preferable for the data exploration phase. The data would be safer online. This should be easier to implement, except when it comes to designing the marked-up audio tracker.
