@@ -79,7 +79,6 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
     
     var Log = new LogItems();
     window.Log = Log;
-    var $container =  $('#container');
     //indexRelPathPrefix computed so the location of the boilerplate directory can change
     //only requiring modification of index.html
     //I haven't tested it though.
@@ -144,8 +143,14 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
             });
         },
         interviewEnd: function(){
+            Log.add({
+                page: "interviewEnd",
+                lastPage: this.currentContext.page
+            });
             $('body').html(_.template(interviewEndTemplate)());
             $('a').click(function(){
+                //TODO: Find a way to save recordings into the interview folder
+                //And try to make it possible to hear them entirely via HTML Audio.
                 alert("Implement storage");
             });
         },
