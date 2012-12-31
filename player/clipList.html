@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>List</title>
+    <script type="text/javascript" charset="utf-8" src="cordova-2.2.0.js"></script>
+    <script src="http://popcornjs.org/code/dist/popcorn-complete.min.js"></script>
+    <link href="player/libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+    body {
+        padding-top: 60px;
+    }
+    </style>
+    <link href="player/libs/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <script data-main="player/explorerMain" src="player/require-jquery.js"></script>
+    <script src="player/libs/bootstrap/js/bootstrap.min.js"></script>
+    <link href="player.css" rel="stylesheet">
+</head>
+<body>
+<!-- Problem: When do I want a list of log items vs. a list of interviews? -->
+<!-- Do I need a plain old list of interview recordings? -->
+<!-- Yes, and organized by time. -->
+<!-- Try having first screen be three links (Start new interview/Explore data/Previous interviews) -->
+<!-- This will be explore data. -->
+<!-- Explore data has inline players, previous interviews opens the single interview player view. -->
+<!-- Use url params to set filters -->
+<!-- Maybe include the following in the results template. -->
+<!-- This will make it easier to fill in the search params and edit. -->
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <ul class="nav">
+            <li class="active">
+<form class="navbar-form" action="#">
+    <input name="page" type="text" class="search-query" placeholder="Page" >
+    <!-- <input name="param" type="text" class="search-query" placeholder="Parameter" >
+    <input name="value" type="text" class="search-query" placeholder="Value" > -->
+    <button type="submit" class="btn">
+        Filter
+    </button>
+</form>
+            </li>
+        </ul>
+    </div>
+</div>
+<div id="results" class="container-fluid"></div>
+</body>	
+</html>

@@ -1,0 +1,29 @@
+#controls {
+    padding: 5px;
+    border: 1px dotted lightgray;
+    text-align: center;
+}
+#play {
+    height: 40px;
+    width: 100px;
+    color: green;
+    font-size: 2em;
+}
+#pause {
+    height: 40px;
+    width: 100px;
+    color: red;
+    font-size: 2em;
+}
+#seeker {
+    margin-top: 5px;
+    width: 100%;
+    background-color: lightgray;
+}
+#progressBar {
+    height: 40px;
+    background-color: blue;
+}
+#progressBar.halted {
+    background-color: red;
+}

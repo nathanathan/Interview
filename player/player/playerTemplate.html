@@ -1,0 +1,20 @@
+<div id="controls">
+    <button
+    id="play"
+        <% if(playing) { %>
+            disabled="disabled"
+        <% } %>
+    >play</button>
+    <button
+    id="pause"
+        <% if(!playing) { %>
+            disabled="disabled"
+        <% } %>
+    >pause</button>
+</div>
+<div id="seeker">
+    <div id="progressBar" style="width:<%- progress %>%;"></div>
+    <% _.each([], function(logItem) { %>
+        <div style="width:<%- logItem.getDuration() * 100 / duration %>%;"></div>
+    <% }); %>
+</div>
