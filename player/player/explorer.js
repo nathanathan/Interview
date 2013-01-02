@@ -44,57 +44,38 @@ function( _,            Backbone,   player,   ClipList) {
     });
 
     var Router = Backbone.Router.extend({
-        currentContext: {
-            page: '',
-            qp: {},
-            last: {},
-            url: ''
-        },
-        initialize: function(){
+        initialize: function(options){
+            this.logItems = options.logItems;
 			Backbone.history.start();
             //TODO: Loading message?
 		},
 		routes: {
-            '': 'main'
+            '': 'main',
+            'filter': 'filter'
 		},
         main: function(){
-            var logItems = new LogItems();
-            //TODO: Params as nested objects?
-            var debugStartTime = Math.random()*2000000000000;
-            var debugLogItems = [
-                {
-                    _recordingStart: new Date(debugStartTime),
-                    _timestamp: new Date(debugStartTime + Math.random()*20000),
-                    _sessionId: "A23-B34",
-                    page: "communityActivities.html"
-                },
-                {
-                    _recordingStart: new Date(debugStartTime),
-                    _timestamp: new Date(debugStartTime + Math.random()*20000),
-                    _sessionId: "A23-B34",
-                    page: "communityActivityFollowUp.html"
-                },
-                {
-                    _recordingStart: new Date(debugStartTime),
-                    _timestamp: new Date(debugStartTime + Math.random()*20000),
-                    _sessionId: "A23-B34",
-                    page: "interviewEnd",
-                }
-            ];
-            
-            logItems.reset(debugLogItems);
-            
-            /*
-            logItems.fetch();
-            logItems.filter(function(logItem) {
-        
-            });
-            */
-            //For ajax:
-            //logItems.fetch({data: {param: 3}})
-        
             var clipList = new ClipList({
-                collection: logItems,
+                collection: this.logItems,
+                el: document.getElementById('results')
+            });
+            clipList.render();
+        },
+        filter: function(qp){
+            var collection, matcher;
+            if(qp && qp.page) {
+                //The page parameter should be more though out.
+                //Right now it is treated as a regex,
+                //but this leads to a bunch of escaping issues,
+                //And having the "" mean exact match is a better known convention than ^$
+                matcher = new RegExp(qp.page);
+                collection = new LogItems(this.logItems.filter(function(logItem){
+                    return matcher.test(logItem.get("page"));
+                }));
+            } else {
+                collection = this.logItems;
+            }
+            var clipList = new ClipList({
+                collection: collection,
                 el: document.getElementById('results')
             });
             clipList.render();
@@ -102,7 +83,37 @@ function( _,            Backbone,   player,   ClipList) {
 	});
 
     var init = function(){
-		this.router = new Router();
+        var logItems = new LogItems();
+        //TODO: Params as nested objects?
+        var debugStartTime = Math.random()*2000000000000;
+        var debugLogItems = [
+            {
+                _recordingStart: new Date(debugStartTime),
+                _timestamp: new Date(debugStartTime + Math.random()*20000),
+                _sessionId: "A23-B34",
+                page: "communityActivities.html"
+            },
+            {
+                _recordingStart: new Date(debugStartTime),
+                _timestamp: new Date(debugStartTime + Math.random()*20000),
+                _sessionId: "A23-B34",
+                page: "communityActivityFollowUp.html"
+            },
+            {
+                _recordingStart: new Date(debugStartTime),
+                _timestamp: new Date(debugStartTime + Math.random()*20000),
+                _sessionId: "A23-B34",
+                page: "interviewEnd",
+            }
+        ];
+        
+        logItems.reset(debugLogItems);
+        
+        //For ajax:
+        //logItems.fetch({data: {param: 3}})
+		this.router = new Router({
+            logItems: logItems
+		});
 	};
 	return { init: init };
 });

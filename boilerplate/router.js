@@ -6,11 +6,13 @@ define([
     'text!body.html',
     'text!interviewEnd.html'], 
 function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
+    var compiledOpeningTemplate = _.template(openingTemplate);
+    var compiledBodyTemplate = _.template(bodyTemplate);
+    var compiledInterviewEndTemplate = _.template(interviewEndTemplate);
     //TODO: Implement include function for templates.
     // it will return a stub, and then asyc get the template.
     // and fill in the stub when it loads.
     // Maybe it could be a require.js plugin?
-    
     function GUID() {
         var S4 = function () {
             return Math.floor(
@@ -26,14 +28,13 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
                 S4() + S4() + S4()
             );
     }
-    var sessionId = GUID();
-    var recordingName = sessionId + ".amr";
+    var session = null;
     var LogItem = Backbone.Model.extend({
     
         defaults: function() {
             return {
                 _timestamp : new Date(),
-                _sessionId : sessionId
+                _sessionId : session.id
             };
         },
     
@@ -66,7 +67,7 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
          * If the attribute is not found returns defaultValue.
          */
         getAttr: function(attrName, defaultValue) {
-            var foundItem = Log.rfind(function(logItem){
+            var foundItem = session.Log.rfind(function(logItem){
                 return logItem.has(attrName);
             });
             if(foundItem){
@@ -77,8 +78,6 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
     
     });
     
-    var Log = new LogItems();
-    window.Log = Log;
     //indexRelPathPrefix computed so the location of the boilerplate directory can change
     //only requiring modification of index.html
     //I haven't tested it though.
@@ -96,75 +95,91 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
 		},
 		routes: {
             '': 'opening',
+            'interviewStart': 'interviewStart',
             'interviewEnd':'interviewEnd',
-			':page': 'setPage'
+            //order is important here:
+            ':page': 'setPage'
 		},
         opening: function(){
+            $('body').html(compiledOpeningTemplate({title: "Interview"}));
+        },
+        interviewStart: function start(){
             var that = this;
-            $('body').html(_.template(openingTemplate)({title: "Interview"}));
-            $('#start').click(function start(){
-                $('body').html(_.template(bodyTemplate)());
-                var $stop = $('#stop');
-                var $time = $('#time');
-                var recStartTime = new Date();
-                function setAudioPosition(time){
-                    $time.text((new Date() - recStartTime) / 1000);
-                }
-                //If Media is not available, mediarec has dummy functions that do nothing.
-                var mediaRec = {
-                    startRecord: function(){},
-                    stopRecord: function(){},
-                    release: function(){}
-                };
-                if('Media' in window) {
-                    //TODO: Should probably be using these callbacks.
-                    mediaRec = new Media(recordingName, function onSuccess(){
-                        
-                    }, function onError(){
-                        
-                    });
-                } else {
-                    //TODO: How do dismiss?
-                    //TODO: Use template.
-                    $('body').prepend('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Warning!</h4> Audio is not being recorded.</div>');
-                }
-                mediaRec.startRecord();
-                var recInterval = setInterval(function() {
-                    setAudioPosition();
-                }, 1000);
-                $stop.click(function(){
-                    $stop.addClass('disabled');
-                    mediaRec.stopRecord();
-                    mediaRec.release();
-                    clearInterval(recInterval);
-                    that.navigate('interviewEnd', {trigger: true});
+            session = {
+                id: GUID(),
+                Log: new LogItems(),
+            };
+            var recordingName = session.id + ".amr";
+            $('body').html(compiledBodyTemplate());
+            var $stop = $('#stop');
+            var $time = $('#time');
+            var recStartTime = new Date();
+            function setAudioPosition(time){
+                $time.text((new Date() - recStartTime) / 1000);
+            }
+            //If Media is not available, mediarec has dummy functions that do nothing.
+            var mediaRec = {
+                startRecord: function(){},
+                stopRecord: function(){},
+                release: function(){}
+            };
+            if('Media' in window) {
+                //TODO: Should probably be using these callbacks.
+                mediaRec = new Media(recordingName, function onSuccess(){
+                    
+                }, function onError(){
+                    
                 });
-                that.navigate('start.html', {trigger: true, replace: true});
+            } else {
+                //TODO: How do dismiss?
+                //TODO: Use template.
+                $('#alert-area').html('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Warning!</h4> Audio is not being recorded.</div>');
+            }
+            mediaRec.startRecord();
+            var recInterval = setInterval(function() {
+                setAudioPosition();
+            }, 1000);
+            $stop.click(function(){
+                $stop.addClass('disabled');
+                mediaRec.stopRecord();
+                mediaRec.release();
+                clearInterval(recInterval);
+                that.navigate('interviewEnd', {trigger: true});
             });
+            that.navigate('start.html', {trigger: true, replace: true});
         },
         interviewEnd: function(){
-            Log.add({
+            var that = this;
+            session.Log.add({
                 page: "interviewEnd",
                 lastPage: this.currentContext.page
             });
-            $('body').html(_.template(interviewEndTemplate)());
-            $('a').click(function(){
+            $('body').html(compiledInterviewEndTemplate());
+            $('#save').click(function(){
                 //TODO: Find a way to save recordings into the interview folder
                 //And try to make it possible to hear them entirely via HTML Audio.
                 alert("Implement storage");
+                session = null;
+                that.navigate('', {trigger: true, replace: true});
+            });
+            $('#discard').click(function(){
+                session = null;
+                that.navigate('', {trigger: true, replace: true});
             });
         },
-		setPage: function(page, params){
+        setPage: function(page, params){
             var that = this;
             console.log('params:');
             console.log(params);
             if(!params){
                 params = {};
             }
-            Log.add(_.extend({}, params, {
-                page: page,
-                lastPage: that.currentContext.page
-            }));
+            if(session){
+                session.Log.add(_.extend({}, params, {
+                    page: page,
+                    lastPage: that.currentContext.page
+                }));
+            }
             require(['text!' + indexRelPathPrefix + page], function(template){
                 var compiledTemplate, renderedHtml;
                 that.currentContext = {
@@ -190,7 +205,7 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
                 console.error(error);
                 alert("Could not load page: " + error.requireModules[0].substring(5));
             });
-		}
+        }
 	});
 	return Router;
 });

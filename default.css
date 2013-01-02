@@ -11,7 +11,7 @@
     margin-right: 4px;
 }
 #time {
-    width: 180px;
+    width: 100px;
     display: inline-block;
 }
 #time-container {
@@ -21,5 +21,15 @@
 .alert {
     margin-bottom:0;
 }
+#alert-area {
+
+}
 #container {
+}
+.btn-block {
+    padding-left: 5px;
+    padding-right: 5px;
+}
+.hero-unit {
+    margin-top: 10px;
 }

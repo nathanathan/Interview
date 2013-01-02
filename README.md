@@ -29,3 +29,12 @@ or use Cordova storage and include the audio data explorer within the app.
 Going the couchapp route, I could run the couchapp on the phone, and maybe use replication to get it onto a server. However, I don't think I would be able to use Phonegap build.
 
 The Cordova storage route has the advantage of allowing everything to be done offline. However, I think a desktop would be preferable for the data exploration phase. The data would be safer online. This should be easier to implement, except when it comes to designing the marked-up audio tracker.
+
+TODO:
+-----
+
+Maybe organize everything in to one folder containing:
+
+* all the shims
+* the shared libs
+* a folder for each app with its own shim
