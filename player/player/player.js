@@ -1,16 +1,12 @@
-define(['backbone', 'underscore', 'text!playerTemplate.html'], function(Backbone, _, playerTemplate){
+define(['backbone', 'underscore', 'text!playerTemplate.html', 'text!logItemTemplate.html'],
+function(Backbone,   _,            playerTemplate,             logItemTemplate){
+    var compiledPlayerTemplate = _.template(playerTemplate);
+    var compiledLogItemTemplate  = _.template(logItemTemplate);
     var PlayerModel = Backbone.Model.extend({
-        defaults: {
-            //Progress as a percentage:
-            "progress": 0,
-            //Time in seconds (note that this lags behind the actual media object's time)
-            "time": 0,
-            "duration": 0,
-            "playing": false
-        },
         validate: function(attrs) {
             if (attrs.time >= this.get("duration") || attrs.time < 0) {
                 console.error("Time out of bounds");
+                console.error(attrs.time);
                 return "Time out of bounds";
             }
         },
@@ -33,11 +29,14 @@ define(['backbone', 'underscore', 'text!playerTemplate.html'], function(Backbone
     });
     
     var PlayerView = Backbone.View.extend({
-        updater: null,//Used to keep track of the setInterval id
-        template: _.template(playerTemplate),
+        //updater tracks the setInterval() id.
+        updater: null,
+        template: compiledPlayerTemplate,
         render: function() {
             console.log('render');
-            this.$el.html(this.template(this.model.toJSON()));
+            var context = this.model.toJSON();
+            context.logItems = this.options.logItems;
+            this.$el.html(this.template(context));
             return this;
         },
         events: {
@@ -114,34 +113,62 @@ define(['backbone', 'underscore', 'text!playerTemplate.html'], function(Backbone
             console.log("Could not get media duration, be sure it is loaded before passing it to player.create()");
         }
         var player = new PlayerModel({
+            //Progress as a percentage:
+            progress: 0,
+            //Time in seconds
+            //(note that this lags behind the actual media object's time)
+            time: 0,
             //Note, duration must be static.
-            duration: context.media.getDuration()
+            duration: context.media.getDuration(),
+            playing: false
         });
+        
+        //Setting the start time is a bit inelegant right now.
         player.setTime(context.start);
-        //This is a bit inelegant
         context.media.seekTo(context.start);
         
-        var view = new PlayerView({
+        var $playerControls = $('<div>');
+        var $markers = $('<div id="logItemContainer">');
+        var $info = $('<div id="logItemInfo">');
+        $(context.containerEl).append($playerControls).append($markers).append($info);
+
+        var updateMarkers = function(){
+            var deselectPrevious = function(){};
+            $markers.empty();
+            //Track current log item in url for navigation?
+            context.logItems.each(function(logItem){
+                var logItemProgress = (logItem.getOffset() / player.get("duration"));
+                var $marker = $('<div class="logItemMarker">');
+                $marker.css("left", logItemProgress * 100 + '%');
+                $markers.append($marker);
+                $marker.click(function(e){
+                    var $selectedMarker = $marker;
+                    console.log(e);
+                    deselectPrevious();
+                    deselectPrevious = function(){
+                        $selectedMarker.removeClass("selected");
+                    };
+                    $selectedMarker.addClass("selected");
+                    $info.html(compiledLogItemTemplate(logItem.toJSON()));
+                });
+            });
+
+        };
+        
+        var playerView = new PlayerView({
             model: player,
-            media: context.media
+            media: context.media,
+            logItems: context.logItems
         });
-        player.on("change", view.render, view);
-        player.on("error", view.pause, view);
+        player.on("change", playerView.render, playerView);
+        //player.on("change", updateMarkers);
+        updateMarkers();
+        player.on("error", playerView.pause, playerView);
         
-        view.setElement(context.containerEl);
-        
-        view.render();
-        //$('body').append(view.render().el);
-        /*
-        Dont think I need this bc the player view only reflects the media state.
-        But maybe I want to indicate that the media is loading?
-        myAudio.on('pause', function(evt) {
-            view.pause(evt);
-            if(myAudio.readyState() > 2) {
-                //view.pause(evt);
-            }
-        });
-        */
+        playerView.setElement($playerControls.get(0));
+        playerView.render();
 	};
+    
 	return { create: create };
+    
 });

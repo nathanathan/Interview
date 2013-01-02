@@ -1,11 +1,13 @@
 <div id="controls">
     <button
+    class="control"
     id="play"
         <% if(playing) { %>
             disabled="disabled"
         <% } %>
     >play</button>
     <button
+    class="control"
     id="pause"
         <% if(!playing) { %>
             disabled="disabled"
@@ -14,7 +16,4 @@
 </div>
 <div id="seeker">
     <div id="progressBar" style="width:<%- progress %>%;"></div>
-    <% _.each([], function(logItem) { %>
-        <div style="width:<%- logItem.getDuration() * 100 / duration %>%;"></div>
-    <% }); %>
 </div>

@@ -3,17 +3,16 @@
     border: 1px dotted lightgray;
     text-align: center;
 }
-#play {
+.control {
     height: 40px;
     width: 100px;
-    color: green;
     font-size: 2em;
 }
+#play {
+    color: green;
+}
 #pause {
-    height: 40px;
-    width: 100px;
     color: red;
-    font-size: 2em;
 }
 #seeker {
     margin-top: 5px;
@@ -26,4 +25,35 @@
 }
 #progressBar.halted {
     background-color: red;
+}
+#logItemContainer {
+    position: relative;
+}
+
+/*
+I discovered this triangle creation technique from
+http://apps.eky.hk/css-triangle-generator/
+*/
+.logItemMarker {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    border-style: solid;
+    border-color: transparent transparent transparent inherit;
+    border-width: 40px 0 0 80px;
+}
+.logItemMarker:hover {
+    border-color: transparent transparent transparent #007bff;
+}
+.logItemMarker.selected {
+    border-color: transparent transparent transparent #007bff;
+    z-index: 10;
+}
+#logItemInfo {
+    padding: 5px;
+    margin-top: 40px;
+    border-top: 2px solid #007bff;
+}
+.logItemBtn {
+    height: 40px;
 }
