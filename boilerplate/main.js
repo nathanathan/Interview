@@ -3,7 +3,8 @@ require.config({
     'paths': { 
 		"underscore": "libs/underscore-min", 
 		"backbone": "libs/backbone-min",
-        "backboneqp": "libs/backbone.queryparams"
+        "backboneqp": "libs/backbone.queryparams",
+        "backbonels": "libs/backbone-localstorage"
 	},
 	'shim': 
 	{
@@ -14,7 +15,8 @@ require.config({
 			'deps': ['jquery', 'underscore'],
 			'exports': 'Backbone'
 		},
-        backboneqp: ['backbone', 'underscore']
+        backboneqp: ['backbone', 'underscore'],
+        backbonels: ['backbone', 'underscore']
 	}	
 }); 
 
@@ -22,7 +24,8 @@ require([
 	'underscore',
 	'backbone',
     'app',
-    'backboneqp'
+    'backboneqp',
+    'backbonels'
 	], 
 	function(_, Backbone, app){
 		app.init();

@@ -1,0 +1,33 @@
+<div class="navbar navbar-static-top">
+    <div class="navbar-inner">
+        <ul class="nav">
+          <li>
+            <a href="#">Home</a>
+          </li>
+        </ul>
+    </div>
+</div>
+<div class="container">
+        <table class="table table-bordered">
+            <tbody id="result-list">
+<% _.forEach(sessions, function(session) { %>
+    <tr><td>
+        <dl class="dl-horizontal">
+            <dt>id:</dt>
+            <dd>
+                <%= session.id %>
+            </dd>
+            <dt>start time:</dt>
+            <dd>
+                <%= session.startTime %>
+            </dd>
+            <dt>end time:</dt>
+            <dd>
+                <%= session.endTime || "" %>
+            </dd>
+        </dl>
+    </td></tr>
+<% }); %>
+            </tbody>
+        </table>
+</div>

@@ -1,34 +1,48 @@
+//TODO: Move collections + models into separate files
+//TODO: Perhap I should lazy load some of the templates.
+
 define([
 	'jquery', 
 	'backbone', 
 	'underscore',
     'text!opening.html',
     'text!body.html',
-    'text!interviewEnd.html'], 
-function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
+    'text!interviewEnd.html',
+    'text!sessions.html'], 
+function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate){
     var compiledOpeningTemplate = _.template(openingTemplate);
     var compiledBodyTemplate = _.template(bodyTemplate);
     var compiledInterviewEndTemplate = _.template(interviewEndTemplate);
+    var compiledSessionsTemplate = _.template(sessionsTemplate);
     //TODO: Implement include function for templates.
     // it will return a stub, and then asyc get the template.
     // and fill in the stub when it loads.
     // Maybe it could be a require.js plugin?
-    function GUID() {
-        var S4 = function () {
-            return Math.floor(
-                    Math.random() * 0x10000 /* 65536 */
-                ).toString(16);
-        };
     
-        return (
-                S4() + S4() + "-" +
-                S4() + "-" +
-                S4() + "-" +
-                S4() + "-" +
-                S4() + S4() + S4()
-            );
-    }
-    var session = null;
+    // From backbone-localstorage:
+    // Generate four random hex digits.
+    function S4() {
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    };
+    // Generate a pseudo-GUID by concatenating random hexadecimal.
+    function GUID() {
+       return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+    };
+    
+    //Session made global for easy debugging.
+    window.session = null;
+    //var session = null;
+    
+    var interviewTitle = $('title').text();
+    
+    var Sessions = Backbone.Collection.extend({
+        
+        localStorage: new Backbone.LocalStorage("interview-sessions")
+        
+    });
+    
+    var mySessions = new Sessions();
+    
     var LogItem = Backbone.Model.extend({
     
         defaults: function() {
@@ -49,6 +63,31 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
     var LogItems = Backbone.Collection.extend({
     
         model: LogItem,
+        
+        //Might need to use interview title?
+        //And be careful not to fetch in a interview
+        //hopefully save doesn't overwrite
+        localStorage: new Backbone.LocalStorage("interview-logItems"),
+
+        save: function(context) {
+            var defaultContext = {
+                success: function(){},
+                error: function(){}
+            };
+            if(context) {
+                context = _.extend(defaultContext, context);
+            } else {
+                context = defaultContext;
+            }
+            var itemContext = {
+                success: _.after(this.length, context.success),
+                error: _.once(context.error)
+            };
+            this.forEach(function(logItem) {
+                console.log('test');
+                logItem.save(null, itemContext);
+            });
+        },
 
         comparator: function(todo) {
             return todo.get('_timestamp');
@@ -95,21 +134,32 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
 		},
 		routes: {
             '': 'opening',
+            'sessions': 'showSessions',
             'interviewStart': 'interviewStart',
             'interviewEnd':'interviewEnd',
             //order is important here:
             ':page': 'setPage'
 		},
         opening: function(){
-            $('body').html(compiledOpeningTemplate({title: "Interview"}));
+            $('body').html(compiledOpeningTemplate({title: interviewTitle}));
+        },
+        showSessions: function(){
+            mySessions.fetch({success: function(){
+                $('body').html(compiledSessionsTemplate({sessions: mySessions.toJSON()}));
+            }});
+            
         },
         interviewStart: function start(){
             var that = this;
-            session = {
-                id: GUID(),
-                Log: new LogItems(),
-            };
-            var recordingName = session.id + ".amr";
+            var sessionId = GUID();
+            //TODO: Slugify interview title
+            var recordingName = 'interviews/' + interviewTitle + '/' + sessionId + ".amr";
+            session = mySessions.create({
+                id: sessionId,
+                startTime: new Date()
+            });
+            session.Log = new LogItems();
+            
             $('body').html(compiledBodyTemplate());
             var $stop = $('#stop');
             var $time = $('#time');
@@ -124,6 +174,7 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
                 release: function(){}
             };
             if('Media' in window) {
+                //TODO: Check that directory exists, and create it if not.
                 //TODO: Should probably be using these callbacks.
                 mediaRec = new Media(recordingName, function onSuccess(){
                     
@@ -150,17 +201,28 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate){
         },
         interviewEnd: function(){
             var that = this;
+            /*
             session.Log.add({
                 page: "interviewEnd",
                 lastPage: this.currentContext.page
             });
+            */
+            session.set("endTime", new Date()).save();
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){
                 //TODO: Find a way to save recordings into the interview folder
                 //And try to make it possible to hear them entirely via HTML Audio.
-                alert("Implement storage");
-                session = null;
-                that.navigate('', {trigger: true, replace: true});
+                //alert("Implement storage");
+                var success = function(){
+                    session = null;
+                    that.navigate('', {trigger: true, replace: true});
+                };
+                session.Log.save({
+                    success: success,
+                    error: function(err) {
+                        $('#alert-area').html('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Error!</h4> Could not save.</div>');
+                    }
+                });
             });
             $('#discard').click(function(){
                 session = null;

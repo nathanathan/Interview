@@ -33,8 +33,20 @@ The Cordova storage route has the advantage of allowing everything to be done of
 TODO:
 -----
 
-Maybe organize everything in to one folder containing:
+1. Create a directory to save recordings in.
+2. Reorganize everything into boilerplate dir like so:
 
-* all the shims
-* the shared libs
-* a folder for each app with its own shim
+* libs dir
+* interviewer dir
+* player dir
+* explorer dir
+* logItems.js
+* require.js shims for interviews/player/explorer
+* player.html
+* explorer.html
+
+3. Get the backbone local storage working in player.
+(see http://documentcloud.github.com/backbone/docs/todos.html)
+4. Create full example interview.
+5. Fix filter/sort in explorer
+6. Refactor explorer.html
