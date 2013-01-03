@@ -2,7 +2,9 @@
 require.config({ 
     'paths': { 
     	"underscore": "libs/underscore-min", 
-		"backbone": "libs/backbone-min"
+		"backbone": "libs/backbone-min",
+        "backboneqp": "libs/backbone.queryparams",
+        "Popcorn": "libs/popcorn-complete.min"
 	},
 	'shim': 
 	{
@@ -19,7 +21,8 @@ require.config({
 require([
 	'underscore',
 	'backbone',
-    'player'
+    'player',
+    'Popcorn'
 	], 
 	function(_, Backbone, player){
         

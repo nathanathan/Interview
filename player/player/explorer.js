@@ -65,8 +65,9 @@ function( _,            Backbone,   player,   ClipList) {
             if(qp && qp.page) {
                 //The page parameter should be more though out.
                 //Right now it is treated as a regex,
-                //but this leads to a bunch of escaping issues,
-                //And having the "" mean exact match is a better known convention than ^$
+                //but this leads to a bunch of escaping issues.
+                //(e.g. a "." will be treated as a wildcard,
+                //but that will usually work out ok)
                 matcher = new RegExp(qp.page);
                 collection = new LogItems(this.logItems.filter(function(logItem){
                     return matcher.test(logItem.get("page"));
@@ -109,8 +110,10 @@ function( _,            Backbone,   player,   ClipList) {
         
         logItems.reset(debugLogItems);
         
-        //For ajax:
-        //logItems.fetch({data: {param: 3}})
+        //logItems.fetch();
+        
+        //Will eventually need to limit the log items pulled down with ajax.
+        //logItems.fetch({data: {param: 3}});
 		this.router = new Router({
             logItems: logItems
 		});

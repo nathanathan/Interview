@@ -1,3 +1,9 @@
+//TODO: It would be nice to have a way to pass in media files with different offsets.
+//(i.e. pass in a shortened clip from an interview)
+//Also, it would be nice to have a way to use media files with pauses in them.
+//Handling pauses would be really tricky, so I probably won't bother.
+//The popcorn.js movie maker has an interesting way of handling skips that might
+//be applicable.
 define(['backbone', 'underscore', 'text!playerTemplate.html', 'text!logItemTemplate.html'],
 function(Backbone,   _,            playerTemplate,             logItemTemplate){
     var compiledPlayerTemplate = _.template(playerTemplate);
@@ -141,18 +147,21 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
                 var $marker = $('<div class="logItemMarker">');
                 $marker.css("left", logItemProgress * 100 + '%');
                 $markers.append($marker);
-                $marker.click(function(e){
+                $marker.click(function(evt){
                     var $selectedMarker = $marker;
-                    console.log(e);
+                    console.log(evt);
                     deselectPrevious();
                     deselectPrevious = function(){
                         $selectedMarker.removeClass("selected");
                     };
                     $selectedMarker.addClass("selected");
                     $info.html(compiledLogItemTemplate(logItem.toJSON()));
+                    $info.find('.playhere').click(function(evt){
+                        player.setTime(logItem.getOffset());
+                        context.media.seekTo(logItem.getOffset());
+                    });
                 });
             });
-
         };
         
         var playerView = new PlayerView({
