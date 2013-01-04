@@ -33,7 +33,6 @@ The Cordova storage route has the advantage of allowing everything to be done of
 TODO:
 -----
 
-1. Create a directory to save recordings in.
 2. Reorganize everything into boilerplate dir like so:
 
 * libs dir

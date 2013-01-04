@@ -23,11 +23,11 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
     // Generate four random hex digits.
     function S4() {
        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-    };
+    }
     // Generate a pseudo-GUID by concatenating random hexadecimal.
     function GUID() {
        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-    };
+    }
     
     //Session made global for easy debugging.
     window.session = null;
@@ -116,6 +116,32 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
         }
     
     });
+    /**
+     * Check that directory exists, and create it if not.
+     **/
+    function getDirectory(dirPath, success, fail){
+        //No need to worry about timing. From cordova docs:
+        //This event behaves differently from others in that any event handler
+        //registered after the event has been fired will have its callback
+        //function called immediately.
+        document.addEventListener("deviceready", function onDeviceReady() {
+            window.requestFileSystem(window.LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
+                console.log(fileSystem.name);
+                console.log(fileSystem.root.name);
+                fileSystem.root.getDirectory(dirPath, {
+                    create: true,
+                    exclusive: false
+                },
+                success,
+                function(error) {
+                    fail("Unable to create new directory: " + error.code);
+                });
+            }, function failFS(evt) {
+                console.log(evt);
+                fail("File System Error: " + evt.target.error.code);
+            });
+        });
+    }
     
     //indexRelPathPrefix computed so the location of the boilerplate directory can change
     //only requiring modification of index.html
@@ -153,7 +179,8 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
             var that = this;
             var sessionId = GUID();
             //TODO: Slugify interview title
-            var recordingName = 'interviews/' + interviewTitle + '/' + sessionId + ".amr";
+            var recordingDir = 'interviews/' + interviewTitle + '/' ;
+            var recordingName = sessionId + ".amr";
             session = mySessions.create({
                 id: sessionId,
                 startTime: new Date()
@@ -167,37 +194,34 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
             function setAudioPosition(time){
                 $time.text((new Date() - recStartTime) / 1000);
             }
-            //If Media is not available, mediarec has dummy functions that do nothing.
-            var mediaRec = {
-                startRecord: function(){},
-                stopRecord: function(){},
-                release: function(){}
-            };
             if('Media' in window) {
                 //TODO: Check that directory exists, and create it if not.
                 //TODO: Should probably be using these callbacks.
-                mediaRec = new Media(recordingName, function onSuccess(){
-                    
-                }, function onError(){
-                    
+                getDirectory(recordingDir, function(){
+                    new Media(recordingDir + recordingName, function beginRecording(mediaRec){
+                        mediaRec.startRecord();
+                        var recInterval = setInterval(function() {
+                            setAudioPosition();
+                        }, 1000);
+                        $stop.click(function(){
+                            $stop.addClass('disabled');
+                            mediaRec.stopRecord();
+                            mediaRec.release();
+                            clearInterval(recInterval);
+                        });
+                        that.navigate('start.html', {trigger: true, replace: true});
+                    }, function onError(){
+                        alert("Media error.");
+                    });
+                }, function(err){
+                    alert(err);
                 });
             } else {
                 //TODO: How do dismiss?
                 //TODO: Use template.
                 $('#alert-area').html('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Warning!</h4> Audio is not being recorded.</div>');
+                that.navigate('start.html', {trigger: true, replace: true});
             }
-            mediaRec.startRecord();
-            var recInterval = setInterval(function() {
-                setAudioPosition();
-            }, 1000);
-            $stop.click(function(){
-                $stop.addClass('disabled');
-                mediaRec.stopRecord();
-                mediaRec.release();
-                clearInterval(recInterval);
-                that.navigate('interviewEnd', {trigger: true});
-            });
-            that.navigate('start.html', {trigger: true, replace: true});
         },
         interviewEnd: function(){
             var that = this;
