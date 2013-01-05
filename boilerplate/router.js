@@ -1,6 +1,6 @@
 //TODO: Move collections + models into separate files
 //TODO: Perhap I should lazy load some of the templates.
-
+console.log("In router.js");
 define([
 	'jquery', 
 	'backbone', 
@@ -10,6 +10,7 @@ define([
     'text!interviewEnd.html',
     'text!sessions.html'], 
 function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate){
+    console.log("Defining router");
     var compiledOpeningTemplate = _.template(openingTemplate);
     var compiledBodyTemplate = _.template(bodyTemplate);
     var compiledInterviewEndTemplate = _.template(interviewEndTemplate);

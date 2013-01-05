@@ -108,6 +108,7 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
     });
     
     var create = function(context){
+        console.log("Creating player");
         var defaultContext = {
             containerEl: document.getElementById("player-container"),
             media: null,//new Media(),
