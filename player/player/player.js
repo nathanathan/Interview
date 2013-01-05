@@ -51,19 +51,19 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
             'click #pause' : 'pause',
             'click #stop' : 'stop'
         },
-        seek: function(e){
+        seek: function(evt){
             console.log('seek');
-            console.log(e);
-            var $seeker = $(e.currentTarget);
+            if(window.chrome) console.log(evt);
+            var $seeker = $(evt.currentTarget);
             //Problem: firefox doesn't have offsetX
-            var progressPercentage = (e.offsetX * 100 / $seeker.width());
+            var progressPercentage = (evt.offsetX * 100 / $seeker.width());
             this.model.setProgress(progressPercentage);
             this.options.media.seekTo(this.model.get('time'));
             return this;
         },
-        play: function(e){
+        play: function(evt){
             console.log('play');
-            console.log(e);
+            if(window.chrome) console.log(evt);
             var that = this;
             var playerModel = this.model;
             if(playerModel.get('playing')){
@@ -82,9 +82,9 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
             }, 1000);
             return this;
         },
-        pause: function(e){
+        pause: function(evt){
             console.log('pause');
-            console.log(e);
+            if(window.chrome) console.log(evt);
             if(!this.model.get('playing')){
                 return;
             }
@@ -93,9 +93,9 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
             this.options.media.pause();
             return this;
         },
-        stop: function(e){
+        stop: function(evt){
             console.log('stop');
-            console.log(e);
+            if(window.chrome) console.log(evt);
             if(!this.model.get('playing')){
                 return;
             }
@@ -149,7 +149,7 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
                 $markers.append($marker);
                 $marker.click(function(evt){
                     var $selectedMarker = $marker;
-                    console.log(evt);
+                    if(window.chrome) console.log(evt);
                     deselectPrevious();
                     deselectPrevious = function(){
                         $selectedMarker.removeClass("selected");

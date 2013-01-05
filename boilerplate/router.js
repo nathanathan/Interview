@@ -210,8 +210,9 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
             if('Media' in window) {
                 //TODO: Check that directory exists, and create it if not.
                 //TODO: Should probably be using these callbacks.
-                getDirectory(recordingDir, function(){
-                    new Media(recordingDir + recordingName, function beginRecording(mediaRec){
+                getDirectory(recordingDir, function(dirEntry){
+                    var mediaRec = new Media(dirEntry.toURL() + recordingName, function beginRecording(){
+                        console.log("media ready: " + dirEntry.toURL() + recordingName);
                         mediaRec.startRecord();
                         var recInterval = setInterval(function() {
                             setAudioPosition();

@@ -14,9 +14,8 @@ function(Backbone,   _,            player,   clipTemplate, resultsTemplate){
                 }));
                 resultsList.append($logItemDom);
                 $logItemDom.find('.play-btn').click(function(e){
+                    if(window.chrome) console.log(e);
                     console.log('playClip');
-                    console.log(String(e));
-                    console.log('test logging e');
                     console.log(logItem);
                     var $clipPlayArea = $(e.target).closest('.play-area');
                     var $mediaContainer = $('<div id="media-container">');
@@ -28,9 +27,7 @@ function(Backbone,   _,            player,   clipTemplate, resultsTemplate){
                     $clipPlayArea.append($playerContainer);
                     //Need to fetch clip.
                     //Perhaps get start time as well.
-                    console.log('prepopcorn');
                     var myAudio = Popcorn.youtube($mediaContainer.get(0), 'http://www.youtube.com/watch?v=HgzGwKwLmgM&width=0&height=0');
-                    console.log('postpopcorn');
                     myAudio.on("loadedmetadata", function(evt) {
                         console.log('loadedmetadata');
                         myAudio.off("loadedmetadata");
