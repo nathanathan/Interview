@@ -133,7 +133,8 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
                 var dirArray = dirPath.split('/');
                 var curDir = '';
                 var getDirectoryHelper = function(dirEntry){
-                    curDir += '/' + dirArray.shift();
+                    curDir += dirArray.shift() + '/';
+                    console.log(curDir);
                     if(dirArray.length > 0){
                         fileSystem.root.getDirectory(curDir, {
                             create: true,
@@ -147,6 +148,7 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
                         success(dirEntry);
                     }
                 };
+                getDirectoryHelper()
             }, function failFS(evt) {
                 console.log(evt);
                 fail("File System Error: " + evt.target.error.code);

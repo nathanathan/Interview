@@ -15,7 +15,9 @@ function(Backbone,   _,            player,   clipTemplate, resultsTemplate){
                 resultsList.append($logItemDom);
                 $logItemDom.find('.play-btn').click(function(e){
                     console.log('playClip');
+                    console.log('test logging two things in a row');
                     console.log(e);
+                    console.log('test logging e');
                     console.log(logItem);
                     var $clipPlayArea = $(e.target).closest('.play-area');
                     var $mediaContainer = $('<div id="media-container">');
@@ -27,8 +29,11 @@ function(Backbone,   _,            player,   clipTemplate, resultsTemplate){
                     $clipPlayArea.append($playerContainer);
                     //Need to fetch clip.
                     //Perhaps get start time as well.
+                    console.log('prepopcorn');
                     var myAudio = Popcorn.youtube($mediaContainer.get(0), 'http://www.youtube.com/watch?v=HgzGwKwLmgM&width=0&height=0');
-                    myAudio.on("loadedmetadata", function() {
+                    console.log('postpopcorn');
+                    myAudio.on("loadedmetadata", function(evt) {
+                        console.log('loadedmetadata');
                         myAudio.off("loadedmetadata");
                         //We need to load metadata first so duration related computations work.
                         var phonegapMediaShim = {
