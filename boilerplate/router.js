@@ -14,6 +14,8 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
     var compiledBodyTemplate = _.template(bodyTemplate);
     var compiledInterviewEndTemplate = _.template(interviewEndTemplate);
     var compiledSessionsTemplate = _.template(sessionsTemplate);
+    console.log("Templates compiled");
+    
     //TODO: Implement include function for templates.
     // it will return a stub, and then asyc get the template.
     // and fill in the stub when it loads.
@@ -148,7 +150,7 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
                         success(dirEntry);
                     }
                 };
-                getDirectoryHelper()
+                getDirectoryHelper();
             }, function failFS(evt) {
                 console.log(evt);
                 fail("File System Error: " + evt.target.error.code);
@@ -192,7 +194,7 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
             var that = this;
             var sessionId = GUID();
             //TODO: Slugify interview title
-            var recordingDir = 'interviews/' + interviewTitle + '/' ;
+            var recordingDir = 'interviews/' + interviewTitle + '/';
             var recordingName = sessionId + ".amr";
             session = mySessions.create({
                 id: sessionId,

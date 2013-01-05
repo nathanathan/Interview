@@ -25,8 +25,21 @@ function(Backbone,   _,            player,   clipTemplate, resultsTemplate){
                     $clipPlayArea.empty();
                     $clipPlayArea.append($mediaContainer);
                     $clipPlayArea.append($playerContainer);
-                    //Need to fetch clip.
-                    //Perhaps get start time as well.
+                    //Get recordings directory.
+                    //How do I figure out the folder name?
+                    //Make sessions global and include it there?
+                    //var myAudio = new Media(logItem.sessionId +".amr");
+                    player.create({
+                        containerEl: $playerContainer.get(0),
+                        media: new Media("http://audio.ibeat.org/content/p1rj1s/p1rj1s_-_rockGuitar.mp3"),
+                        //TODO: Do a fetch here?
+                        //This is just for playing the clip though.
+                        //Maybe not needed.
+                        logItems: new Backbone.Collection(),
+                        //Where to store the recording's start time?
+                        start: (logItem.get('_timestamp') - logItem.get('_recordingStart')) / 1000
+                    });
+                    /*
                     var myAudio = Popcorn.youtube($mediaContainer.get(0), 'http://www.youtube.com/watch?v=HgzGwKwLmgM&width=0&height=0');
                     myAudio.on("loadedmetadata", function(evt) {
                         console.log('loadedmetadata');
@@ -66,6 +79,7 @@ function(Backbone,   _,            player,   clipTemplate, resultsTemplate){
                             start: (logItem.get('_timestamp') - logItem.get('_recordingStart')) / 1000
                         });
                     });
+                    */
                 });
             });
         },

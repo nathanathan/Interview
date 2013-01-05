@@ -1,5 +1,6 @@
 $('#debug').click(function(){
-        alert("test");
+    $('body').html("Reloading...");
+    window.location.reload();
 });
 // This set's up the module paths for underscore and backbone
 require.config({ 
@@ -22,14 +23,15 @@ require.config({
         backbonels: ['backbone', 'underscore']
 	}	
 }); 
-
+document.addEventListener("deviceready", function onDeviceReady() {
 require([
-	'underscore',
-	'backbone',
+    'underscore',
+    'backbone',
     'app',
     'backboneqp',
     'backbonels'
-	], 
-	function(_, Backbone, app){
-		app.init();
+], 
+function(_, Backbone, app){
+	app.init();
+});
 });
