@@ -1,3 +1,6 @@
+$('#debug').click(function(){
+        alert("test");
+});
 // This set's up the module paths for underscore and backbone
 require.config({ 
     'paths': { 
@@ -28,8 +31,5 @@ require([
     'backbonels'
 	], 
 	function(_, Backbone, app){
-        $('#debug').click(function(){
-            alert("test");
-        });
 		app.init();
 });

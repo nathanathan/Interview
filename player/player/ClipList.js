@@ -15,8 +15,7 @@ function(Backbone,   _,            player,   clipTemplate, resultsTemplate){
                 resultsList.append($logItemDom);
                 $logItemDom.find('.play-btn').click(function(e){
                     console.log('playClip');
-                    console.log('test logging two things in a row');
-                    console.log(e);
+                    console.log(String(e));
                     console.log('test logging e');
                     console.log(logItem);
                     var $clipPlayArea = $(e.target).closest('.play-area');
