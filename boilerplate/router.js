@@ -133,9 +133,9 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
                 var dirArray = dirPath.split('/');
                 var curDir = '';
                 var getDirectoryHelper = function(dirEntry){
-                    curDir += dirArray.shift() + '/';
                     console.log(curDir);
                     if(dirArray.length > 0){
+                        curDir += dirArray.shift() + '/';
                         fileSystem.root.getDirectory(curDir, {
                             create: true,
                             exclusive: false

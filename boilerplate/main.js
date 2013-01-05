@@ -28,5 +28,8 @@ require([
     'backbonels'
 	], 
 	function(_, Backbone, app){
+        $('#debug').click(function(){
+            alert("test");
+        });
 		app.init();
 });
