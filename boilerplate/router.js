@@ -117,7 +117,9 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
     
     });
     /**
-     * Check that directory exists, and create it if not.
+     * Check that the directory path exists, and creates it if not.
+     * Returns the cordova dirEntry object to the success function,
+     * and an error string to the fail function.
      **/
     function getDirectory(dirPath, success, fail){
         //No need to worry about timing. From cordova docs:
@@ -128,14 +130,23 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
             window.requestFileSystem(window.LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
                 console.log(fileSystem.name);
                 console.log(fileSystem.root.name);
-                fileSystem.root.getDirectory(dirPath, {
-                    create: true,
-                    exclusive: false
-                },
-                success,
-                function(error) {
-                    fail("Unable to create new directory: " + error.code);
-                });
+                var dirArray = dirPath.split('/');
+                var curDir = '';
+                var getDirectoryHelper = function(dirEntry){
+                    curDir += '/' + dirArray.shift();
+                    if(dirArray.length > 0){
+                        fileSystem.root.getDirectory(curDir, {
+                            create: true,
+                            exclusive: false
+                        },
+                        getDirectoryHelper,
+                        function(error) {
+                            fail("Unable to create new directory: " + error.code);
+                        });
+                    } else {
+                        success(dirEntry);
+                    }
+                };
             }, function failFS(evt) {
                 console.log(evt);
                 fail("File System Error: " + evt.target.error.code);
