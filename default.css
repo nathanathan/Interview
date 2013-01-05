@@ -31,5 +31,10 @@
     padding-right: 5px;
 }
 .hero-unit {
-    margin-top: 10px;
+    margin-top: 1em;
+}
+@media screen and (min-width: 799px) {
+    .hero-unit {
+        margin-top: 3em;
+    }
 }

@@ -8,7 +8,8 @@ define([
     'text!opening.html',
     'text!body.html',
     'text!interviewEnd.html',
-    'text!sessions.html'], 
+    'text!sessions.html',
+    'backbonels'], 
 function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate){
     console.log("Defining router");
     var compiledOpeningTemplate = _.template(openingTemplate);
@@ -163,6 +164,7 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
     //only requiring modification of index.html
     //I haven't tested it though.
     var indexRelPathPrefix = _.map(require.toUrl('').split('/'), function(){return '';}).join('../');
+    var timerUpdater;
 	var Router = Backbone.Router.extend({
         currentContext: {
             page: '',
@@ -206,30 +208,22 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
             $('body').html(compiledBodyTemplate());
             var $stop = $('#stop');
             var $time = $('#time');
-            var recStartTime = new Date();
-            function setAudioPosition(time){
-                $time.text((new Date() - recStartTime) / 1000);
-            }
+            timerUpdater = window.setInterval(function() {
+                $time.text(Math.round((new Date() - session.get('startTime')) / 1000));
+            }, 1000);
             if('Media' in window) {
                 //TODO: Check that directory exists, and create it if not.
                 //TODO: Should probably be using these callbacks.
                 getDirectory(recordingDir, function(dirEntry){
-                    var mediaRec = new Media(dirEntry.toURL() + recordingName, function beginRecording(){
-                        console.log("media ready: " + dirEntry.toURL() + recordingName);
-                        mediaRec.startRecord();
-                        var recInterval = setInterval(function() {
-                            setAudioPosition();
-                        }, 1000);
-                        $stop.click(function(){
-                            $stop.addClass('disabled');
-                            mediaRec.stopRecord();
-                            mediaRec.release();
-                            clearInterval(recInterval);
-                        });
-                        that.navigate('start.html', {trigger: true, replace: true});
-                    }, function onError(){
-                        alert("Media error.");
+                    var mediaRec = new Media(dirEntry.toURL() + recordingName);
+                    console.log("media ready: " + dirEntry.toURL() + recordingName);
+                    mediaRec.startRecord();
+                    $stop.click(function(){
+                        $stop.addClass('disabled');
+                        mediaRec.stopRecord();
+                        mediaRec.release();
                     });
+                    that.navigate('start.html', {trigger: true, replace: true});
                 }, function(err){
                     alert(err);
                 });
@@ -248,6 +242,7 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
                 lastPage: this.currentContext.page
             });
             */
+            window.clearInterval(timerUpdater);
             session.set("endTime", new Date()).save();
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){

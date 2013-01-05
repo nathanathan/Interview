@@ -23,8 +23,7 @@ require.config({
         backbonels: ['backbone', 'underscore']
 	}	
 });
-console.log("config ready.");
-document.addEventListener("deviceready", function onDeviceReady() {
+
 require([
     'underscore',
     'backbone',
@@ -34,5 +33,4 @@ require([
 ], 
 function(_, Backbone, app){
 	app.init();
-});
 });
