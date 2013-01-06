@@ -4,6 +4,7 @@ require.config({
     	"underscore": "libs/underscore-min", 
 		"backbone": "libs/backbone-min",
         "backboneqp": "libs/backbone.queryparams",
+        "backbonels": "libs/backbone-localstorage",
         "Popcorn": "libs/popcorn-complete.min"
 	},
 	'shim': 
@@ -22,9 +23,10 @@ require([
 	'underscore',
 	'backbone',
     'player',
+    'LogItems',
     'Popcorn'
 	], 
-	function(_, Backbone, player){
+	function(_, Backbone, player, LogItems){
         
         //I'm thinking the form/guide selection should be part of the entry page.
         //But the screen for choosing an instance should be part of the form page.
@@ -64,22 +66,6 @@ require([
                 myAudio.currentTime(timeSeconds);
             }
         };
-        var LogItems = Backbone.Collection.extend({
-            model: Backbone.Model.extend({
-                //TODO: Add this to the model instead?
-                getOffset: function(){
-                    return (this.get("_timestamp") - new Date(debugStartTime))/1000;
-                }
-            }),
-            addDurations: function(){
-                //Assumes sorted order
-                var previuosTimeStamp = new Date(debugStartTime);
-                myLogItems.forEach(function(logItem){
-                    logItem.set("_duration", (logItem.get("_timestamp") - previuosTimeStamp));
-                    previuosTimeStamp = logItem.get("_timestamp");
-                });
-            }
-        });
         var debugStartTime = Math.random()*2000000000000;
         var debugLogItems = [
             {

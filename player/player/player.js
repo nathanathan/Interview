@@ -41,7 +41,6 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
         render: function() {
             console.log('render');
             var context = this.model.toJSON();
-            context.logItems = this.options.logItems;
             this.$el.html(this.template(context));
             return this;
         },
@@ -130,6 +129,18 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
             playing: false
         });
         
+        /*
+        var startTimestamp = new Date();
+        //Assuming that the first logItem's timestamp matches the start of the
+        //recording.
+        context.logItems.forEach(function(logItem){
+            var timestamp = logItem.get('_timestamp');
+            if(timestamp < startTimestamp) {
+                startTimestamp = timestamp;
+            }
+        });
+        */
+        
         //Setting the start time is a bit inelegant right now.
         player.setTime(context.start);
         context.media.seekTo(context.start);
@@ -144,7 +155,9 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
             $markers.empty();
             //Track current log item in url for navigation?
             context.logItems.each(function(logItem){
-                var logItemProgress = (logItem.getOffset() / player.get("duration"));
+                //var secondsOffset = (logItem.get('_timestamp') - startTimestamp) / 1000;
+                var secondsOffset = logItem.getTimeOffset() / 1000;
+                var logItemProgress = secondsOffset / player.get("duration");
                 var $marker = $('<div class="logItemMarker">');
                 $marker.css("left", logItemProgress * 100 + '%');
                 $markers.append($marker);
@@ -158,8 +171,8 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
                     $selectedMarker.addClass("selected");
                     $info.html(compiledLogItemTemplate(logItem.toJSON()));
                     $info.find('.playhere').click(function(evt){
-                        player.setTime(logItem.getOffset());
-                        context.media.seekTo(logItem.getOffset());
+                        player.setTime(secondsOffset);
+                        context.media.seekTo(secondsOffset);
                     });
                 });
             });
@@ -167,8 +180,7 @@ function(Backbone,   _,            playerTemplate,             logItemTemplate){
         
         var playerView = new PlayerView({
             model: player,
-            media: context.media,
-            logItems: context.logItems
+            media: context.media
         });
         player.on("change", playerView.render, playerView);
         //player.on("change", updateMarkers);

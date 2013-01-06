@@ -1,5 +1,5 @@
 define(['backbone', 'underscore', 'player', 'text!clipTemplate.html', 'text!resultsTemplate.html'],
-function(Backbone,   _,            player,   clipTemplate, resultsTemplate){
+function(Backbone,   _,            player,   clipTemplate,             resultsTemplate){
     var ListView = Backbone.View.extend({
         orderVar: 1,
         render: function() {

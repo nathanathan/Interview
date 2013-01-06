@@ -197,7 +197,9 @@ function($, Backbone, _, LogItems, Sessions,
                 session.Log.add(_.extend({}, params, {
                     page: page,
                     lastPage: that.currentContext.page,
-                    _sessionId: session.get('id')
+                    _sessionId: session.get('id'),
+                    //This is duplicate information but it is convenient to have available on the model.
+                    _recordingStart: session.get('startTime')
                 }));
             }
             require(['text!' + indexRelPathPrefix + page], function(template){

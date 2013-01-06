@@ -18,9 +18,7 @@ require.config({
 		backbone: {
 			'deps': ['jquery', 'underscore'],
 			'exports': 'Backbone'
-		},
-        backboneqp: ['backbone', 'underscore'],
-        backbonels: ['backbone', 'underscore']
+		}
 	}	
 });
 

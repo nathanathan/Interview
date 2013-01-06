@@ -1,43 +1,5 @@
-define([ 'underscore', 'backbone', 'player', 'ClipList'],
-function( _,            Backbone,   player,   ClipList) {
-
-    var LogItem = Backbone.Model.extend({
-
-        validate: function(attrs) {
-            if (!attrs.page) {
-                return "page missing";
-            }
-        }
-
-    });
-
-    var LogItems = Backbone.Collection.extend({
-
-        model: LogItem,
-
-        rfind: function(iterator) {
-            for (var i = (this.length - 1); i >= 0; i--) {
-                if (iterator(this.models[i])) {
-                    return this.models[i];
-                }
-            }
-        },
-
-        /**
-         * Returns the most recently logged value of the given attribute.
-         * If the attribute is not found returns defaultValue.
-         */
-        getAttr: function(attrName, defaultValue) {
-            var foundItem = Log.rfind(function(logItem) {
-                return logItem.has(attrName);
-            });
-            if (foundItem) {
-                return foundItem.get(attrName);
-            }
-            return defaultValue;
-        }
-
-    });
+define([ 'underscore', 'backbone', 'player', 'ClipList', 'LogItems'],
+function( _,            Backbone,   player,   ClipList,   LogItems) {
 
     var Router = Backbone.Router.extend({
         initialize: function(options){
@@ -82,23 +44,23 @@ function( _,            Backbone,   player,   ClipList) {
     var init = function(){
         var logItems = new LogItems();
         //TODO: Params as nested objects?
-        var debugStartTime = Math.random()*2000000000000;
+        var debugStartTime = Math.random() * 2000000000000;
         var debugLogItems = [
             {
                 _recordingStart: new Date(debugStartTime),
-                _timestamp: new Date(debugStartTime + Math.random()*20000),
+                _timestamp: new Date(debugStartTime + Math.random() * 20000),
                 _sessionId: "A23-B34",
                 page: "communityActivities.html"
             },
             {
                 _recordingStart: new Date(debugStartTime),
-                _timestamp: new Date(debugStartTime + Math.random()*20000),
+                _timestamp: new Date(debugStartTime + Math.random() * 20000),
                 _sessionId: "A23-B34",
                 page: "communityActivityFollowUp.html"
             },
             {
                 _recordingStart: new Date(debugStartTime),
-                _timestamp: new Date(debugStartTime + Math.random()*20000),
+                _timestamp: new Date(debugStartTime + Math.random() * 20000),
                 _sessionId: "A23-B34",
                 page: "interviewEnd",
             }

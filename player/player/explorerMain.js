@@ -4,6 +4,7 @@ require.config({
         "underscore": "libs/underscore-min", 
 		"backbone": "libs/backbone-min",
         "backboneqp": "libs/backbone.queryparams",
+        "backbonels": "libs/backbone-localstorage",
         "Popcorn": "libs/popcorn-complete.min"
 	},
     'shim': {
@@ -13,8 +14,7 @@ require.config({
         backbone: {
             'deps': ['jquery', 'underscore'],
             'exports': 'Backbone'
-        },
-        backboneqp: ['backbone', 'underscore']
+        }
     }
 });
 
