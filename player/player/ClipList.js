@@ -70,7 +70,7 @@ function(Backbone,   _,            player,   clipTemplate,             resultsTe
                             });
                         });
                     }
-                    function getMedia(callback) {
+                    function getMediaAudioEl(callback) {
                         var myAudio = new Audio();
                         myAudio.src = 'http://www.html5rocks.com/en/tutorials/audio/quick/test.ogg';
                         myAudio.addEventListener("loadedmetadata", function(evt) {
@@ -99,7 +99,14 @@ function(Backbone,   _,            player,   clipTemplate,             resultsTe
                             });
                         });
                     }
+                    var getMedia;
+                    if ('cordova' in window) {
+                        getMedia = getMediaCordova;
+                    } else {
+                        getMedia = getMediaAudioEl;
+                    }
                     getMedia(function(media){
+                        console.log("Got media.");
                         player.create({
                             containerEl: $playerContainer.get(0),
                             media: media,

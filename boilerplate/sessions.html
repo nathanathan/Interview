@@ -8,10 +8,11 @@
     </div>
 </div>
 <div class="container">
-        <table class="table table-bordered">
+        <table class="table table-bordered table-hover">
             <tbody id="result-list">
 <% _.forEach(sessions, function(session) { %>
-    <tr><td>
+    <tr>
+    <td><a href="player/player.html">
         <dl class="dl-horizontal">
             <dt>id:</dt>
             <dd>
@@ -26,7 +27,8 @@
                 <%= session.endTime || "" %>
             </dd>
         </dl>
-    </td></tr>
+    </a></td>
+    </tr>
 <% }); %>
             </tbody>
         </table>
