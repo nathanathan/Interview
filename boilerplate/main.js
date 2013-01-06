@@ -27,9 +27,7 @@ require.config({
 require([
     'underscore',
     'backbone',
-    'app',
-    'backboneqp',
-    'backbonels'
+    'app'
 ], 
 function(_, Backbone, app){
 	app.init();

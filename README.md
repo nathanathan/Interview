@@ -33,6 +33,7 @@ The Cordova storage route has the advantage of allowing everything to be done of
 TODO:
 -----
 
+1. Make sure player works on mobile devices.
 2. Reorganize everything into boilerplate dir like so:
 
 * libs dir
@@ -49,3 +50,4 @@ TODO:
 4. Create full example interview.
 5. Fix filter/sort in explorer
 6. Refactor explorer.html
+7. Make page links open a menu?

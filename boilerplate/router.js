@@ -1,17 +1,17 @@
-//TODO: Move collections + models into separate files
-//TODO: Perhap I should lazy load some of the templates.
-console.log("In router.js");
 define([
 	'jquery', 
 	'backbone', 
 	'underscore',
+    'LogItems',
+    'Sessions',
     'text!opening.html',
     'text!body.html',
     'text!interviewEnd.html',
     'text!sessions.html',
-    'backbonels'], 
-function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate){
-    console.log("Defining router");
+    'backboneqp'],
+function($, Backbone, _, LogItems, Sessions,
+         openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate){
+    console.log("Compiling templates...");
     var compiledOpeningTemplate = _.template(openingTemplate);
     var compiledBodyTemplate = _.template(bodyTemplate);
     var compiledInterviewEndTemplate = _.template(interviewEndTemplate);
@@ -23,103 +23,18 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
     // and fill in the stub when it loads.
     // Maybe it could be a require.js plugin?
     
-    // From backbone-localstorage:
-    // Generate four random hex digits.
-    function S4() {
-       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-    }
-    // Generate a pseudo-GUID by concatenating random hexadecimal.
+    /**
+     * From backbone-localstorage:
+     * Generate a pseudo-GUID by concatenating random hexadecimal.
+     **/
     function GUID() {
+        // Generate four random hex digits.
+        function S4() {
+           return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+        }
        return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
     }
     
-    //Session made global for easy debugging.
-    window.session = null;
-    //var session = null;
-    
-    var interviewTitle = $('title').text();
-    
-    var Sessions = Backbone.Collection.extend({
-        
-        localStorage: new Backbone.LocalStorage("interview-sessions")
-        
-    });
-    
-    var mySessions = new Sessions();
-    
-    var LogItem = Backbone.Model.extend({
-    
-        defaults: function() {
-            return {
-                _timestamp : new Date(),
-                _sessionId : session.id
-            };
-        },
-    
-        validate: function(attrs) {
-            if (!attrs.page) {
-                return "page missing";
-            }
-        }
-
-    });
-    
-    var LogItems = Backbone.Collection.extend({
-    
-        model: LogItem,
-        
-        //Might need to use interview title?
-        //And be careful not to fetch in a interview
-        //hopefully save doesn't overwrite
-        localStorage: new Backbone.LocalStorage("interview-logItems"),
-
-        save: function(context) {
-            var defaultContext = {
-                success: function(){},
-                error: function(){}
-            };
-            if(context) {
-                context = _.extend(defaultContext, context);
-            } else {
-                context = defaultContext;
-            }
-            var itemContext = {
-                success: _.after(this.length, context.success),
-                error: _.once(context.error)
-            };
-            this.forEach(function(logItem) {
-                console.log('test');
-                logItem.save(null, itemContext);
-            });
-        },
-
-        comparator: function(todo) {
-            return todo.get('_timestamp');
-        },
-                
-        rfind: function(iterator) {
-            for(var i=(this.length - 1); i >= 0; i--){
-                if(iterator(this.models[i])) {
-                    return this.models[i];
-                }
-            }
-        },
-        
-        /**
-         * Returns the most recently logged value of the given attribute.
-         * If the attribute is not found returns defaultValue.
-         */
-        getAttr: function(attrName, defaultValue) {
-            var foundItem = session.Log.rfind(function(logItem){
-                return logItem.has(attrName);
-            });
-            if(foundItem){
-                return foundItem.get(attrName);
-            }
-            return defaultValue;
-        }
-    
-    });
     /**
      * Check that the directory path exists, and creates it if not.
      * Returns the cordova dirEntry object to the success function,
@@ -138,8 +53,9 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
                 var curDir = '';
                 var getDirectoryHelper = function(dirEntry){
                     console.log(curDir);
-                    if(dirArray.length > 0){
-                        curDir += dirArray.shift() + '/';
+                    var pathSegment = dirArray.shift();
+                    if(pathSegment){
+                        curDir += pathSegment + '/';
                         fileSystem.root.getDirectory(curDir, {
                             create: true,
                             exclusive: false
@@ -148,6 +64,8 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
                         function(error) {
                             fail("Unable to create new directory: " + error.code);
                         });
+                    } else if(dirArray.length !== 0) {
+                        fail("Error creating path: " + dirPath);
                     } else {
                         success(dirEntry);
                     }
@@ -160,11 +78,17 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
         });
     }
     
+    var mySessions = new Sessions();
+    var interviewTitle = $('title').text();
+    var timerUpdater;
     //indexRelPathPrefix computed so the location of the boilerplate directory can change
     //only requiring modification of index.html
     //I haven't tested it though.
     var indexRelPathPrefix = _.map(require.toUrl('').split('/'), function(){return '';}).join('../');
-    var timerUpdater;
+    //Session made global for easy debugging.
+    window.session = null;
+    //var session = null;
+
 	var Router = Backbone.Router.extend({
         currentContext: {
             page: '',
@@ -191,37 +115,41 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
             mySessions.fetch({success: function(){
                 $('body').html(compiledSessionsTemplate({sessions: mySessions.toJSON()}));
             }});
-            
         },
         interviewStart: function start(){
             var that = this;
+            var $time;
             var sessionId = GUID();
             //TODO: Slugify interview title
             var recordingDir = 'interviews/' + interviewTitle + '/';
             var recordingName = sessionId + ".amr";
             session = mySessions.create({
                 id: sessionId,
-                startTime: new Date()
+                startTime: new Date(),
+                interviewTitle: interviewTitle
             });
             session.Log = new LogItems();
             
             $('body').html(compiledBodyTemplate());
-            var $stop = $('#stop');
-            var $time = $('#time');
+            $time = $('#time');
+            
             timerUpdater = window.setInterval(function() {
                 $time.text(Math.round((new Date() - session.get('startTime')) / 1000));
             }, 1000);
             if('Media' in window) {
-                //TODO: Check that directory exists, and create it if not.
-                //TODO: Should probably be using these callbacks.
                 getDirectory(recordingDir, function(dirEntry){
-                    var mediaRec = new Media(dirEntry.toURL() + recordingName);
-                    console.log("media ready: " + dirEntry.toURL() + recordingName);
+                    var recording = true;
+                    var mediaRec = new Media(recordingDir + '/' + recordingName);
+                    console.log("media created: " + recordingDir + recordingName);
                     mediaRec.startRecord();
-                    $stop.click(function(){
-                        $stop.addClass('disabled');
-                        mediaRec.stopRecord();
-                        mediaRec.release();
+                    that.interviewEnd = _.wrap(that.interviewEnd, function(interviewEnd){
+                        if(recording) {
+                            recording = false;
+                            mediaRec.stopRecord();
+                            mediaRec.release();
+                        } else {
+                            throw "This shouldn't be called after recording is stopped.";
+                        }
                     });
                     that.navigate('start.html', {trigger: true, replace: true});
                 }, function(err){
@@ -236,19 +164,10 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
         },
         interviewEnd: function(){
             var that = this;
-            /*
-            session.Log.add({
-                page: "interviewEnd",
-                lastPage: this.currentContext.page
-            });
-            */
             window.clearInterval(timerUpdater);
             session.set("endTime", new Date()).save();
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){
-                //TODO: Find a way to save recordings into the interview folder
-                //And try to make it possible to hear them entirely via HTML Audio.
-                //alert("Implement storage");
                 var success = function(){
                     session = null;
                     that.navigate('', {trigger: true, replace: true});
@@ -261,10 +180,12 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
                 });
             });
             $('#discard').click(function(){
+                //TODO: Delete recording?
                 session = null;
                 that.navigate('', {trigger: true, replace: true});
             });
         },
+        //TODO: Adds support for links to a JSON interview definition
         setPage: function(page, params){
             var that = this;
             console.log('params:');
@@ -275,7 +196,8 @@ function($, Backbone, _, openingTemplate, bodyTemplate, interviewEndTemplate, se
             if(session){
                 session.Log.add(_.extend({}, params, {
                     page: page,
-                    lastPage: that.currentContext.page
+                    lastPage: that.currentContext.page,
+                    _sessionId: session.get('id')
                 }));
             }
             require(['text!' + indexRelPathPrefix + page], function(template){

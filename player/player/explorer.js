@@ -15,10 +15,6 @@ function( _,            Backbone,   player,   ClipList) {
 
         model: LogItem,
 
-        comparator: function(todo) {
-            return todo.get('_timestamp');
-        },
-
         rfind: function(iterator) {
             for (var i = (this.length - 1); i >= 0; i--) {
                 if (iterator(this.models[i])) {

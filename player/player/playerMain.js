@@ -105,6 +105,7 @@ require([
         myLogItems.addDurations();
 
         myAudio.on("loadedmetadata", function() {
+            $('#test-audio').hide();
             myAudio.off("loadedmetadata");
             player.create({
                 containerEl: document.getElementById("player-container"),
