@@ -30,6 +30,14 @@ Going the couchapp route, I could run the couchapp on the phone, and maybe use r
 
 The Cordova storage route has the advantage of allowing everything to be done offline. However, I think a desktop would be preferable for the data exploration phase. The data would be safer online. This should be easier to implement, except when it comes to designing the marked-up audio tracker.
 
+* I'm confused about how to handle audio across all platforms.
+
+Cordova has a Media object that does everything I need, however it is not present in browsers.
+
+http://chromium.googlecode.com/svn/trunk/samples/audio/index.html
+
+https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/webrtc-integration.html
+
 TODO:
 -----
 
