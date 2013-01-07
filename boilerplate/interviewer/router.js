@@ -116,7 +116,7 @@ function($, Backbone, _, LogItems, Sessions,
             'interviewStart': 'interviewStart',
             'interviewEnd': 'interviewEnd',
             //order is important here:
-            ':page': 'setPage'
+            '*page': 'setPage'
 		},
         opening: function(){
             $('body').html(compiledOpeningTemplate({title: interviewTitle}));
@@ -129,6 +129,7 @@ function($, Backbone, _, LogItems, Sessions,
         interviewStart: function start(){
             var that = this;
             var $time;
+            var startUrl = $('body').data('start');
             var sessionId = GUID();
             //TODO: Slugify interview title
             var recordingDir = 'interviews/' + interviewTitle + '/';
@@ -158,7 +159,7 @@ function($, Backbone, _, LogItems, Sessions,
                         that.interviewEndBody = interviewEndBody;
                         that.interviewEndBody();
                     });
-                    that.navigate('start.html', {trigger: true, replace: true});
+                    that.navigate(startUrl, {trigger: true, replace: true});
                 }, function(err){
                     alert(err);
                 });
@@ -166,7 +167,7 @@ function($, Backbone, _, LogItems, Sessions,
                 //TODO: How do dismiss?
                 //TODO: Use template.
                 $('#alert-area').html('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Warning!</h4> Audio is not being recorded.</div>');
-                that.navigate('start.html', {trigger: true, replace: true});
+                that.navigate(startUrl, {trigger: true, replace: true});
             }
         },
         interviewEndBody: function(){

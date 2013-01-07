@@ -67,7 +67,6 @@ function($,        Backbone,   _) {
                 error: _.once(context.error)
             };
             this.forEach(function(logItem) {
-                console.log('test');
                 logItem.save(null, itemContext);
             });
         },
