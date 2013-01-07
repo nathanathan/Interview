@@ -104,7 +104,7 @@ function($, Backbone, _, LogItems, Sessions,
             '': 'opening',
             'sessions': 'showSessions',
             'interviewStart': 'interviewStart',
-            'interviewEnd':'interviewEnd',
+            'interviewEnd': 'interviewEnd',
             //order is important here:
             ':page': 'setPage'
 		},
@@ -138,18 +138,15 @@ function($, Backbone, _, LogItems, Sessions,
             }, 1000);
             if('Media' in window) {
                 getDirectory(recordingDir, function(dirEntry){
-                    var recording = true;
                     var mediaRec = new Media(recordingDir + '/' + recordingName);
-                    console.log("media created: " + recordingDir + recordingName);
+                    console.log("media created: " + recordingDir + '/' + recordingName);
                     mediaRec.startRecord();
-                    that.interviewEnd = _.wrap(that.interviewEnd, function(interviewEnd){
-                        if(recording) {
-                            recording = false;
-                            mediaRec.stopRecord();
-                            mediaRec.release();
-                        } else {
-                            throw "This shouldn't be called after recording is stopped.";
-                        }
+                    that.interviewEndBody = _.wrap(that.interviewEndBody, function(interviewEndBody){
+                        mediaRec.stopRecord();
+                        mediaRec.release();
+                        console.log("Recording stopped.");
+                        that.interviewEndBody = interviewEndBody;
+                        interviewEndBody();
                     });
                     that.navigate('start.html', {trigger: true, replace: true});
                 }, function(err){
@@ -162,7 +159,7 @@ function($, Backbone, _, LogItems, Sessions,
                 that.navigate('start.html', {trigger: true, replace: true});
             }
         },
-        interviewEnd: function(){
+        interviewEndBody: function(){
             var that = this;
             window.clearInterval(timerUpdater);
             session.set("endTime", new Date()).save();
@@ -184,6 +181,9 @@ function($, Backbone, _, LogItems, Sessions,
                 session = null;
                 that.navigate('', {trigger: true, replace: true});
             });
+        },
+        interviewEnd: function(){
+            this.interviewEndBody();
         },
         //TODO: Adds support for links to a JSON interview definition
         setPage: function(page, params){

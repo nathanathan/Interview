@@ -86,6 +86,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             console.log('pause');
             if(window.chrome) console.log(evt);
             if(!this.model.get('playing')){
+                console.log("not playing");
                 return;
             }
             clearInterval(this.updater);
