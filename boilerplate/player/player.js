@@ -25,7 +25,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             return this;
         },
         setTime: function(timeSeconds) {
-            console.log(timeSeconds / this.get("duration"));
+            //console.log(timeSeconds / this.get("duration"));
             //Need to update underscore/backbone to resolve the "has" error.
             this.set({
                 "progress": (timeSeconds / this.get("duration")) * 100,
@@ -113,7 +113,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         var defaultContext = {
             containerEl: document.getElementById("player-container"),
             media: null,//new Media(),
-            logItems: new Backbone.Collection(),
+            logItems: new Backbone.Collection(),//Problem
             start: 0
         };
         context = _.extend(defaultContext, context);
@@ -145,7 +145,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             }
         });
         */
-        
+        console.log("Start time: " + context.start);
         //Setting the start time is a bit inelegant right now.
         player.setTime(context.start);
         context.media.seekTo(context.start);
