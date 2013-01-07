@@ -23,7 +23,7 @@ require([
     'explorer/explorer',
     'backboneqp',
     'Popcorn'
-	], 
+], 
 function(_, Backbone, explorer){
 	explorer.init();
 });

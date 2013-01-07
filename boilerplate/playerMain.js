@@ -107,7 +107,8 @@ require([
                         player.create({
                             containerEl: document.getElementById("player-container"),
                             media: media,
-                            logItems: myLogItems
+                            logItems: myLogItems,
+                            session: session
                         });
                     });
                     

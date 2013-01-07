@@ -1,5 +1,5 @@
-define([ 'underscore', 'backbone', 'player/player', 'explorer/ClipList', 'LogItems'],
-function( _,            Backbone,   player,          ClipList,            LogItems) {
+define([ 'underscore', 'backbone', 'explorer/ClipList', 'LogItems'],
+function( _,            Backbone,   ClipList,            LogItems) {
 
     var Router = Backbone.Router.extend({
         

@@ -124,6 +124,9 @@ function($,        Backbone,   _) {
         },
 
         addDurations: function(endTime){
+            if(!endTime) {
+                console.error("addDurations: No endTime");
+            }
             var nextItemTimeStamp = endTime;
             //I'm hoping cloning prevents sortTime from causing any mutation.
             this.clone().sortTime(-1).forEach(function(logItem){

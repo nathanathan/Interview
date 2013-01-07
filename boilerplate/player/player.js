@@ -25,8 +25,6 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             return this;
         },
         setTime: function(timeSeconds) {
-            //console.log(timeSeconds / this.get("duration"));
-            //Need to update underscore/backbone to resolve the "has" error.
             this.set({
                 "progress": (timeSeconds / this.get("duration")) * 100,
                 "time": timeSeconds
@@ -58,7 +56,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             //Problem: firefox doesn't have offsetX
             var progressPercentage = (evt.offsetX * 100 / $seeker.width());
             this.model.setProgress(progressPercentage);
-            this.options.media.seekTo(this.model.get('time'));
+            this.options.media.seekTo(this.model.get('time') * 1000);
             return this;
         },
         play: function(evt){
@@ -114,9 +112,16 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             containerEl: document.getElementById("player-container"),
             media: null,//new Media(),
             logItems: new Backbone.Collection(),//Problem
+            session: new Backbone.Model(),
+            //Start time in millis
             start: 0
         };
         context = _.extend(defaultContext, context);
+        
+        //TODO: Use session duration?
+        console.log("session duration:" +
+            (context.session.get('endTime') - context.session.get('startTime')));
+        
         if(!(context.media.getDuration() > 0)){
             alert("Could not get media duration, be sure it is loaded before passing it to player.create()");
         }
@@ -147,7 +152,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         */
         console.log("Start time: " + context.start);
         //Setting the start time is a bit inelegant right now.
-        player.setTime(context.start);
+        player.setTime(context.start / 1000);
         context.media.seekTo(context.start);
         
         var $playerControls = $('<div>');
@@ -160,7 +165,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             .append($info);
 
         console.log(context.logItems);
-        context.logItems.addDurations();
+        context.logItems.addDurations(context.session.get('endTime'));
         var updateMarkers = function(){
             console.log("updateMarkers");
             var deselectPrevious = function(){};
@@ -168,8 +173,8 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             //Track current log item in url for navigation?
             context.logItems.each(function(logItem){
                 //var secondsOffset = (logItem.get('_timestamp') - startTimestamp) / 1000;
-                var secondsOffset = logItem.getTimeOffset() / 1000;
-                var logItemProgress = secondsOffset / player.get("duration");
+                var millisOffset = logItem.getTimeOffset() / 1000;
+                var logItemProgress = (millisOffset / 1000) / player.get("duration");
                 var $marker = $('<div class="logItemMarker">');
                 $marker.css("left", logItemProgress * 100 + '%');
                 $markers.append($marker);
@@ -189,8 +194,8 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
                         return;
                     }
                     $info.find('.playhere').click(function(evt){
-                        player.setTime(secondsOffset);
-                        context.media.seekTo(secondsOffset);
+                        player.setTime(millisOffset / 1000);
+                        context.media.seekTo(millisOffset);
                     });
                 });
             });

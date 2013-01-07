@@ -157,7 +157,8 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                             //Maybe not needed.
                             logItems: new Backbone.Collection(),
                             //Where to store the recording's start time?
-                            start: (timestamp - recordingStart) / 1000
+                            start: (timestamp - recordingStart),
+                            session: session
                         });
                     });
                 });
