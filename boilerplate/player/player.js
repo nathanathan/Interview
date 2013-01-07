@@ -159,6 +159,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             .append($markers)
             .append($info);
 
+        console.log(context.logItems);
         context.logItems.addDurations();
         var updateMarkers = function(){
             console.log("updateMarkers");

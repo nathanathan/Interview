@@ -17,6 +17,17 @@ function($,        Backbone,   _) {
         
         getTimeOffset: function(){
             return (this.get('_timestamp') - this.get('_recordingStart'));
+        },
+
+        parse: function(context) {
+            //Parse dates strings into js objects
+            if(context._timestamp) {
+                context._timestamp = new Date(context._timestamp);
+            }
+            if(context._recordingStart) {
+                context._recordingStart = new Date(context._recordingStart);
+            }
+            return context;
         }
 
     });
