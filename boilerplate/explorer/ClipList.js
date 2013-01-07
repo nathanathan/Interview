@@ -142,6 +142,13 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     }
                     getMedia(function(media){
                         console.log("Got media.");
+                        var timestamp = logItem.get('_timestamp');
+                        var recordingStart = logItem.get('_recordingStart');
+                        if(!_.isDate(timestamp)) {
+                            console.error("String dates in model");
+                            timestamp = new Date(timestamp);
+                            recordingStart = new Date(recordingStart);
+                        }
                         player.create({
                             containerEl: $playerContainer.get(0),
                             media: media,
@@ -150,7 +157,7 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                             //Maybe not needed.
                             logItems: new Backbone.Collection(),
                             //Where to store the recording's start time?
-                            start: (logItem.get('_timestamp') - logItem.get('_recordingStart')) / 1000
+                            start: (timestamp - recordingStart) / 1000
                         });
                     });
                 });

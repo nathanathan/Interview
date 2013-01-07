@@ -159,7 +159,9 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             .append($markers)
             .append($info);
 
+        context.logItems.addDurations();
         var updateMarkers = function(){
+            console.log("updateMarkers");
             var deselectPrevious = function(){};
             $markers.empty();
             //Track current log item in url for navigation?
@@ -178,7 +180,13 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
                         $selectedMarker.removeClass("selected");
                     };
                     $selectedMarker.addClass("selected");
-                    $info.html(compiledLogItemTemplate(logItem.toJSON()));
+                    try{
+                        $info.html(compiledLogItemTemplate(logItem.toJSON()));
+                    } catch(e) {
+                        alert("Could not render template.");
+                        console.error(e);
+                        return;
+                    }
                     $info.find('.playhere').click(function(evt){
                         player.setTime(secondsOffset);
                         context.media.seekTo(secondsOffset);

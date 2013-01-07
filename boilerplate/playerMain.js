@@ -100,7 +100,6 @@ require([
                     var myLogItems = new LogItems();
                     myLogItems.fetch();
                     myLogItems = new LogItems(myLogItems.where({"_sessionId": qp.id}));
-                    window.debugLogItems = myLogItems;
                     console.log("myLogItems.length: " + myLogItems.length);
                     
                     getMedia(recordingPath, function(media){
@@ -167,7 +166,6 @@ require([
                     }
                 ];
                 var myLogItems = new LogItems(debugLogItems);
-                myLogItems.addDurations();
         
                 myAudio.on("loadedmetadata", function() {
                     myAudio.off("loadedmetadata");
