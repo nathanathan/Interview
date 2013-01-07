@@ -43,15 +43,17 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     var recordingPath = 'interviews/' +
                         session.get('interviewTitle') + '/'+
                         logItem.get('_sessionId') +".amr";
-                    console.log("recordingPath:" + recordingPath);
+                    console.log("recordingPath: " + recordingPath);
                     
                     function getMediaCordova(callback){
-                        callback(new Media(recordingPath,
+                        var media = new Media(recordingPath,
                         function(){},
                         function(err){
                             alert("error");
                             console.log(err);
-                        }));
+                        });
+                        media.seekTo(0);
+                        callback(media);
                     }
                     function getMediaPopcorn(callback) {
                         var $mediaContainer = $('<div id="media-container">');

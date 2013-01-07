@@ -146,7 +146,7 @@ function($, Backbone, _, LogItems, Sessions,
                         mediaRec.release();
                         console.log("Recording stopped.");
                         that.interviewEndBody = interviewEndBody;
-                        interviewEndBody();
+                        that.interviewEndBody();
                     });
                     that.navigate('start.html', {trigger: true, replace: true});
                 }, function(err){

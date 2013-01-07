@@ -36,6 +36,7 @@ require([
                 alert("error");
                 console.log(err);
             });
+            media.seekTo(0);
             var attempts = 10;
             function waitForDuration(){
                 if(attempts === 0) {
