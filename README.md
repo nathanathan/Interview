@@ -41,21 +41,14 @@ https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/webrtc-integration.html
 TODO:
 -----
 
-1. Make sure player works on mobile devices.
-2. Reorganize everything into boilerplate dir like so:
-
-* libs dir
-* interviewer dir
-* player dir
-* explorer dir
-* logItems.js
-* require.js shims for interviews/player/explorer
-* player.html
-* explorer.html
-
 3. Get the backbone local storage working in player.
 (see http://documentcloud.github.com/backbone/docs/todos.html)
 4. Create full example interview.
 5. Fix filter/sort in explorer
 6. Refactor explorer.html
 7. Make page links open a menu?
+
+Notes on organization:
+----------------------
+
+Currently the app is designed to be built with a single interview definition.
