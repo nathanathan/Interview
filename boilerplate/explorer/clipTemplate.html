@@ -1,0 +1,22 @@
+<tr><td>
+    <div class="play-area">
+        <% /* Player gets inserted here. */ %>
+        <a class="btn btn-success play-btn">Play Clip</a>
+        <a class="btn btn-success play-btn">Play Full Interview</a>
+    </div>
+    <% /* TODO: perserve other filter params? */ %>
+    <dl class="dl-horizontal">
+        <dt>page:</dt>
+        <dd>
+            <a href="#filter?page=<%= logItem.page %>"><%= logItem.page %></a>
+        </dd>
+        <dt>session:</dt>
+        <dd>
+            <%= logItem._sessionId %>
+        </dd>
+        <dt>duration:</dt>
+        <dd>
+            <%= duration %>
+        </dd>
+    </dl>
+</td></tr>
