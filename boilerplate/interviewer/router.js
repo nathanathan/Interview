@@ -41,40 +41,35 @@ function($, Backbone, _, LogItems, Sessions,
      * and an error string to the fail function.
      **/
     function getDirectory(dirPath, success, fail){
-        //No need to worry about timing. From cordova docs:
-        //This event behaves differently from others in that any event handler
-        //registered after the event has been fired will have its callback
-        //function called immediately.
-        document.addEventListener("deviceready", function onDeviceReady() {
-            window.requestFileSystem(window.LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
-                console.log(fileSystem.name);
-                console.log(fileSystem.root.name);
-                var dirArray = dirPath.split('/');
-                var curDir = '';
-                var getDirectoryHelper = function(dirEntry){
-                    console.log(curDir);
-                    var pathSegment = dirArray.shift();
-                    if(pathSegment){
-                        curDir += pathSegment + '/';
-                        fileSystem.root.getDirectory(curDir, {
-                            create: true,
-                            exclusive: false
-                        },
-                        getDirectoryHelper,
-                        function(error) {
-                            fail("Unable to create new directory: " + error.code);
-                        });
-                    } else if(dirArray.length !== 0) {
-                        fail("Error creating path: " + dirPath);
-                    } else {
-                        success(dirEntry);
-                    }
-                };
-                getDirectoryHelper();
-            }, function failFS(evt) {
-                console.log(evt);
-                fail("File System Error: " + evt.target.error.code);
-            });
+
+        window.requestFileSystem(window.LocalFileSystem.PERSISTENT, 0, function(fileSystem) {
+            console.log(fileSystem.name);
+            console.log(fileSystem.root.name);
+            var dirArray = dirPath.split('/');
+            var curDir = '';
+            var getDirectoryHelper = function(dirEntry){
+                console.log(curDir);
+                var pathSegment = dirArray.shift();
+                if(pathSegment){
+                    curDir += pathSegment + '/';
+                    fileSystem.root.getDirectory(curDir, {
+                        create: true,
+                        exclusive: false
+                    },
+                    getDirectoryHelper,
+                    function(error) {
+                        fail("Unable to create new directory: " + error.code);
+                    });
+                } else if(dirArray.length !== 0) {
+                    fail("Error creating path: " + dirPath);
+                } else {
+                    success(dirEntry);
+                }
+            };
+            getDirectoryHelper();
+        }, function failFS(evt) {
+            console.log(evt);
+            fail("File System Error: " + evt.target.error.code);
         });
     }
     
@@ -96,9 +91,24 @@ function($, Backbone, _, LogItems, Sessions,
             last: {},
             url: ''
         },
-		initialize: function(){
-			Backbone.history.start();
-            //TODO: Loading message?
+        initialize: function(){
+            var onReady = function() {
+                $(function(){
+                    var started = Backbone.history.start();
+                    if(!started){
+                        alert("Routes may be improperly set up.");
+                    }
+                });
+            }
+            if ('cordova' in window) {
+                //No need to worry about timing. From cordova docs:
+                //This event behaves differently from others in that any event handler
+                //registered after the event has been fired will have its callback
+                //function called immediately.
+                document.addEventListener("deviceready", onReady);
+            } else {
+                onReady();
+            }
 		},
 		routes: {
             '': 'opening',

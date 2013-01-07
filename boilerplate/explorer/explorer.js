@@ -3,9 +3,24 @@ function( _,            Backbone,   player,          ClipList,            LogIte
 
     var Router = Backbone.Router.extend({
         
-        initialize: function(options){
-			Backbone.history.start();
-            //TODO: Loading message?
+    	initialize: function(){
+            var onReady = function() {
+                $(function(){
+                    var started = Backbone.history.start();
+                    if(!started){
+                        alert("Routes may be improperly set up.");
+                    }
+                });
+            }
+            if ('cordova' in window) {
+                //No need to worry about timing. From cordova docs:
+                //This event behaves differently from others in that any event handler
+                //registered after the event has been fired will have its callback
+                //function called immediately.
+                document.addEventListener("deviceready", onReady);
+            } else {
+                onReady();
+            }
 		},
         
 		routes: {

@@ -46,14 +46,30 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     console.log("recordingPath: " + recordingPath);
                     
                     function getMediaCordova(callback){
-                        var media = new Media(recordingPath,
-                        function(){},
-                        function(err){
-                            alert("error");
-                            console.log(err);
-                        });
-                        media.seekTo(0);
-                        callback(media);
+                        var getMedia = function(path, callback) {
+                            var media = new Media(path,
+                            function(){},
+                            function(err){
+                                alert("error");
+                                console.log(err);
+                            });
+                            media.seekTo(0);
+                            var attempts = 10;
+                            function waitForDuration(){
+                                if(attempts === 0) {
+                                    alert("Could not get media duration");
+                                    return;
+                                }
+                                attempts--;
+                                if(media.getDuration() > 0) {
+                                    callback(media);
+                                } else {
+                                    window.setTimeout(waitForDuration, 100);
+                                }
+                            }
+                            waitForDuration();
+                        }
+                        getMedia(recordingPath, callback);
                     }
                     function getMediaPopcorn(callback) {
                         var $mediaContainer = $('<div id="media-container">');

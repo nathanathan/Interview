@@ -1,7 +1,3 @@
-$('#debug').click(function(){
-    $('body').append("Reloading...");
-    window.location.reload();
-});
 require.config({ 
     'paths': { 
 		"underscore": "libs/underscore-min", 
