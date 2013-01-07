@@ -153,7 +153,11 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         var $playerControls = $('<div>');
         var $markers = $('<div id="logItemContainer">');
         var $info = $('<div id="logItemInfo">');
-        $(context.containerEl).append($playerControls).append($markers).append($info);
+        $(context.containerEl)
+            .empty()
+            .append($playerControls)
+            .append($markers)
+            .append($info);
 
         var updateMarkers = function(){
             var deselectPrevious = function(){};
