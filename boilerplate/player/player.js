@@ -56,6 +56,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             //Problem: firefox doesn't have offsetX
             var progressPercentage = (evt.offsetX * 100 / $seeker.width());
             this.model.setProgress(progressPercentage);
+            console.log('seeking media to: ' + this.model.get('time') * 1000);
             this.options.media.seekTo(this.model.get('time') * 1000);
             return this;
         },

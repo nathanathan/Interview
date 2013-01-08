@@ -41,12 +41,11 @@ https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/webrtc-integration.html
 TODO:
 -----
 
-3. Get the backbone local storage working in player.
-(see http://documentcloud.github.com/backbone/docs/todos.html)
-4. Create full example interview.
-5. Fix filter/sort in explorer
-6. Refactor explorer.html
-7. Make page links open a menu?
+0. Fix playback finish error
+1. Make page links work in explorer
+2. Fix filter/sort in explorer
+3. Refactor explorer.html
+4. Make page links open a menu?
 
 Notes on organization:
 ----------------------

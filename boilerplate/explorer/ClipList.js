@@ -53,8 +53,8 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                             var media = new Media(path,
                             function(){},
                             function(err){
-                                alert("error");
-                                console.log(err);
+                                console.error("Media error:");
+                                console.error(err);
                             });
                             media.seekTo(0);
                             var attempts = 10;

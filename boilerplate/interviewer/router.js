@@ -152,6 +152,9 @@ function($, Backbone, _, LogItems, Sessions,
                     var mediaRec = new Media(recordingDir + '/' + recordingName);
                     console.log("media created: " + recordingDir + '/' + recordingName);
                     mediaRec.startRecord();
+                    //set startTime again to try to get as close as possible
+                    //to the recording start time.
+                    session.set('startTime', new Date());
                     that.interviewEndBody = _.wrap(that.interviewEndBody, function(interviewEndBody){
                         mediaRec.stopRecord();
                         mediaRec.release();
