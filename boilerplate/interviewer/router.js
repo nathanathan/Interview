@@ -205,6 +205,11 @@ function($, Backbone, _, LogItems, Sessions,
                 params = {};
             }
             if(session){
+                if(session.Log.length > 0) {
+                    //Set previous item's duration
+                    session.Log.at(session.Log.length - 1).set('_duration',
+                        (new Date()) - session.get('startTime'));
+                }
                 session.Log.add(_.extend({}, params, {
                     page: page,
                     lastPage: that.currentContext.page,

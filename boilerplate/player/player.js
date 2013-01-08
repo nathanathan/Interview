@@ -38,7 +38,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         updater: null,
         template: compiledPlayerTemplate,
         render: function() {
-            console.log('render');
+            console.log('PlayerView:render');
             var context = this.model.toJSON();
             this.$el.html(this.template(context));
             return this;
@@ -165,15 +165,14 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             .append($info);
 
         console.log(context.logItems);
-        context.logItems.addDurations(context.session.get('endTime'));
+
         var updateMarkers = function(){
             console.log("updateMarkers");
             var deselectPrevious = function(){};
             $markers.empty();
             //Track current log item in url for navigation?
             context.logItems.each(function(logItem){
-                //var secondsOffset = (logItem.get('_timestamp') - startTimestamp) / 1000;
-                var millisOffset = logItem.getTimeOffset() / 1000;
+                var millisOffset = logItem.get('_timestamp') - context.session.get('startTime');
                 var logItemProgress = (millisOffset / 1000) / player.get("duration");
                 var $marker = $('<div class="logItemMarker">');
                 $marker.css("left", logItemProgress * 100 + '%');
@@ -212,8 +211,11 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         
         playerView.setElement($playerControls.get(0));
         playerView.render();
+        return this;
 	};
     
-	return { create: create };
+	return {
+        create: create
+    };
     
 });

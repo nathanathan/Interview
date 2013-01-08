@@ -28,6 +28,8 @@ require([
     'backboneqp'
 	], 
 	function(_, Backbone, player, LogItems, Sessions){
+        //TODO: I might need to think about how to release media on hash changes.
+        
         
         var getMedia = function(path, callback) {
             var media = new Media(path,

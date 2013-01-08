@@ -16,6 +16,7 @@ function($,        Backbone,   _) {
         },
         
         getTimeOffset: function(){
+            console.error("LogItem.getTimeOffset:Deprecated");
             return (this.get('_timestamp') - this.get('_recordingStart'));
         },
         
@@ -33,15 +34,15 @@ function($,        Backbone,   _) {
             return attrs;
         },
 
-        parse: function(context) {
+        parse: function(attrs) {
             //Parse dates strings into js objects
-            if(context._timestamp) {
-                context._timestamp = new Date(context._timestamp);
+            if(attrs._timestamp) {
+                attrs._timestamp = new Date(attrs._timestamp);
             }
-            if(context._recordingStart) {
-                context._recordingStart = new Date(context._recordingStart);
+            if(attrs._recordingStart) {
+                attrs._recordingStart = new Date(attrs._recordingStart);
             }
-            return context;
+            return attrs;
         }
 
     });
@@ -123,6 +124,7 @@ function($,        Backbone,   _) {
         },
 
         addDurations: function(endTime){
+            console.error("LogItems.addDurations:Deprecated");
             if(!endTime) {
                 console.error("addDurations: No endTime");
             }
