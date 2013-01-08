@@ -71,6 +71,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             playerModel.set('playing', true);
             this.options.media.play();
             this.updater = setInterval(function(){
+                //TODO: Add failure function that pauses and goes to start/end
                 that.options.media.getCurrentPosition(function(positionSeconds){
                     if(playerModel.get('time') === positionSeconds){
                         that.$('#progressBar').addClass('halted');

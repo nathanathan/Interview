@@ -182,8 +182,10 @@ function($, Backbone, _, LogItems, Sessions,
             window.clearInterval(timerUpdater);
             if(session.Log.length > 0) {
                 //Set previous item's duration
-                session.Log.at(session.Log.length - 1).set('_duration',
-                    (new Date()) - session.get('startTime'));
+                (function(previousItem){
+                    previousItem.set('_duration',
+                    (new Date()) - previousItem.get('_timestamp'));
+                })(session.Log.at(session.Log.length - 1));
             }
             session.set("endTime", new Date()).save();
             $('body').html(compiledInterviewEndTemplate());
@@ -219,8 +221,10 @@ function($, Backbone, _, LogItems, Sessions,
             if(session){
                 if(session.Log.length > 0) {
                     //Set previous item's duration
-                    session.Log.at(session.Log.length - 1).set('_duration',
-                        (new Date()) - session.get('startTime'));
+                    (function(previousItem){
+                        previousItem.set('_duration',
+                        (new Date()) - previousItem.get('_timestamp'));
+                    })(session.Log.at(session.Log.length - 1));
                 }
                 session.Log.add(_.extend({}, params, {
                     page: page,

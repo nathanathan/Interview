@@ -41,7 +41,7 @@ https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/webrtc-integration.html
 TODO:
 -----
 
-0. Fix playback finish error
+0. Older adroid device does not seem to be seeking correctly.
 1. Make page links work in explorer
 2. Fix filter/sort in explorer
 3. Refactor explorer.html
