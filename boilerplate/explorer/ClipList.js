@@ -7,6 +7,7 @@ define([
     'text!explorer/resultsTemplate.html'
 ],
 function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
+    var compiledClipTemplate = _.template(clipTemplate);
     var ListView = Backbone.View.extend({
         orderVar: 1,
         render: function() {
@@ -18,10 +19,12 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
             this.$el.html(resultsTemplate);
             var resultsList = this.$('#result-list');
             this.collection.each(function(logItem){
-                var $logItemDom = $(_.template(clipTemplate)({
-                    logItem : logItem.toJSON(),
-                    duration : 10 //Set this in the log stage?
-                }));
+                var $logItemDom;
+                try {
+                    $logItemDom = $(compiledClipTemplate(logItem.toJSON()));
+                } catch(e) {
+                    alert("clipTemplate error");
+                }
                 resultsList.append($logItemDom);
                 $logItemDom.find('.play-btn').click(function(e){
                     if(window.chrome) console.log(e);
@@ -68,7 +71,7 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                                 }
                             }
                             waitForDuration();
-                        }
+                        };
                         getMedia(recordingPath, callback);
                     }
                     function getMediaPopcorn(callback) {

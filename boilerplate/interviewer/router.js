@@ -99,7 +99,7 @@ function($, Backbone, _, LogItems, Sessions,
                         alert("Routes may be improperly set up.");
                     }
                 });
-            }
+            };
             if ('cordova' in window) {
                 //No need to worry about timing. From cordova docs:
                 //This event behaves differently from others in that any event handler
@@ -171,8 +171,17 @@ function($, Backbone, _, LogItems, Sessions,
             }
         },
         interviewEndBody: function(){
+            if(!session){
+                alert("Interview ended");
+                return;
+            }
             var that = this;
             window.clearInterval(timerUpdater);
+            if(session.Log.length > 0) {
+                //Set previous item's duration
+                session.Log.at(session.Log.length - 1).set('_duration',
+                    (new Date()) - session.get('startTime'));
+            }
             session.set("endTime", new Date()).save();
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){
