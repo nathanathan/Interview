@@ -2,7 +2,7 @@
 <widget xmlns = "http://www.w3.org/ns/widgets"
     xmlns:gap = "http://phonegap.com/ns/1.0"
     id        = "com.phonegap.example"
-    version   = "0.3.6">
+    version   = "0.3.7">
 
     <name>Interview</name>
 
@@ -14,5 +14,5 @@
         Nathan Breit
     </author>
 
-    <icon src="boilerplate/play.png" />
+    <icon src="boilerplate/cassette.png" />
 </widget>

@@ -46,6 +46,12 @@ TODO:
 2. Fix filter/sort in explorer
 3. Refactor explorer.html
 4. Make page links open a menu?
+5. Put times in minutes/seconds
+6. Introduce another type of marker beside log items for marking themes.*
+7. Add way to generate guides without using html. Maybe something like xlsform?
+(Also generate sidenav that shows where you are in the interview.*)
+
+*Thanks to Beth K for these ideas.
 
 Notes on organization:
 ----------------------
