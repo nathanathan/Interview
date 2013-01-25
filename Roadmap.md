@@ -26,6 +26,13 @@ XLSForms could make it easier to design simple interviews.
 
 Webpages might be the best for designing interview with structured input. The data in `<form>` submissions could be attached to the page's log item, or maybe the Session model.
 
+Interview Design flow:
+Key informants -> focus groups -> pilot
+
+The ability to add new themes to choose from as the study progresses may be useful.
+
+Adding questions might cause methodological problems.
+
 Add annotation types:
 -----------------
 One challenge is to determine the right amount of annotation during the interview such that it does not become a distraction, but still does a lot to reduce the amount of review required afterwards.
@@ -41,11 +48,4 @@ Body Language:
 Themes:
 
  * May be added after the interview ends.
-
-Interview Design flow
------------
-Key informants -> focus groups -> pilot
-
-The ability to add themes as the study progresses may be useful. Adding questions might cause methodological problems.
-
 
