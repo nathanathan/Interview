@@ -70,6 +70,8 @@ TODO:
 6. Introduce another type of marker beside log items for marking themes.*
 7. Add way to generate guides without using html. Maybe something like xlsform?
 (Also generate sidenav that shows where you are in the interview.*)
+8. Add recording notice at start?
+9. Fix multiple timeline marker select bug
 
 *Thanks to Beth K for these ideas.
 
@@ -77,3 +79,30 @@ Notes on organization:
 ----------------------
 
 Currently the app is designed to be built with a single interview definition.
+
+Other tools
+------------
+
+[Atlas.TI](http://www.atlasti.com/)
+
+ * [Does everything](http://www.atlasti.com/features.html)
+ * But no interview guide tool and does not appear to have cloud functionality. (This is useful because there will probably be multiple reviewers).
+ * Expensive (500 euros and above, free version limits amount of data)
+
+[Max QDA](http://www.maxqda.com)
+
+ * [Mobile app but no apparent integration with interview guide](http://www.maxqda.com/products/maxqda11/mobile-app/maxapp-features)
+ * About as expensive as Atlas
+
+I think it would be a good idea to look into integrating with Atlas/Max for complex use cases, but to try to keep the core interviewing app simple enough for people to just pick up and use without having to spend time learning how it works.
+
+ODK Collect with audio inputs
+
+ * Each question must be recorded individually.
+ 
+SmartPen
+
+ * Pen may have some limitations in data exploration area.
+ * It may also have benefits (full text search)
+ * It has a greater cost if you already have a device.
+ * The interaction seems very different. I think some amount of study would be necessairy for full comparison.
