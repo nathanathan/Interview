@@ -17,18 +17,38 @@ The app is currently being designed to run on mobile devices using Cordova.
 It uses the Cordova Media object to capture audio.
 The website for data exploration will probably be a couchapp.
 
-Problems
---------
 
-* I can't figure out how to upload a file from my Cordova app to my couchdb instance.
-I think this is a CORS issue on couch's end.
+Storage
+-------
 
-For this reason I think I'll need to either make this a couchapp entirely,
-or use Cordova storage and include the audio data explorer within the app.
+My initial plan was to use CouchDB however I ran into CORS issues when trying to do remote submission, and if I were to try to make a couchapp for use with [Mobile Futon](https://github.com/daleharvey/Android-MobileFuton) I wouldn't be able to easily access the Cordova Media object from it.
 
-Going the couchapp route, I could run the couchapp on the phone, and maybe use replication to get it onto a server. However, I don't think I would be able to use Phonegap build.
+Now I'm planning to use Dropbox, but there are a few different approaches:
 
-The Cordova storage route has the advantage of allowing everything to be done offline. However, I think a desktop would be preferable for the data exploration phase. The data would be safer online. This should be easier to implement, except when it comes to designing the marked-up audio tracker.
+A. Save everything to a folder that gets synced via [Dropsync](https://play.google.com/store/apps/details?id=com.ttxapps.dropsync&hl=en)
+B. Do all the syncing through JavaScript code included in the application.
+
+I'm leaning towards B because:
+-Only one app needs to be installed, and operated, so it should be easier for the user.
+-Syncing media files might be slightly harder, but I might find it useful to have more control over them.
+
+I'm thinking it will work something like this:
+User clicks a Sync data on the main interview page.
+A child window is created if necessairy to log in to dropbox.
+A wait dialog is displayed.
+Sessions are saved in individual files,
+log items are saved as collections in files named by the session id (saving them individually would be a LOT of http requests).
+Then the recording is saved if it's not already on the server.
+I'm not quite sure how additional annotations should work.
+Since they may be added and removed by multiple users there could be revision control problems.
+
+There is a [Backbone Dropbox Sync Adapter](http://coffeedoc.info/github/dropbox/dropbox-js/master/classes/Dropbox/Client.html) that could helpful.
+
+[This documention for the Dropbox js client api should also help.](http://coffeedoc.info/github/dropbox/dropbox-js/master/classes/Dropbox/Client.html)
+
+
+Media Capture
+-------------
 
 * I'm confused about how to handle audio across all platforms.
 
