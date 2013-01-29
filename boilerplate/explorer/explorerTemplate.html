@@ -1,0 +1,19 @@
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <ul class="nav">
+            <li>
+                <a href="../index.html">Home</a>
+            </li>
+            <li>
+            <!-- The form params are inserted before the hash and thus don't work with backboneqp. -->
+            <form class="navbar-form" action="#filter" method="get">
+                <!-- TODO: Filters for annotations? -->
+                <input name="page" type="text" class="search-query" placeholder="Page" value="<%= data.page || '' %>" >
+                <button type="submit" class="btn">
+                    Filter
+                </button>
+            </form>
+            </li>
+        </ul>
+    </div>
+</div>

@@ -8,15 +8,15 @@
     <dl class="dl-horizontal">
         <dt>page:</dt>
         <dd>
-            <a href="#filter?page=<%= page %>"><%= page %></a>
+            <a href="#?page=<%= data.page %>"><%= data.page %></a>
         </dd>
         <dt>session:</dt>
         <dd>
-            <a href="boilerplate/player.html#session?id=<%= _sessionId %>"><%= _sessionId %></a>
+            <a href="player.html#session?id=<%= data._sessionId %>"><%= data._sessionId %></a>
         </dd>
         <dt>duration:</dt>
         <dd>
-            <%= _duration %>
+            <%= _.formatTime(data._duration || 0) %>
         </dd>
     </dl>
 </td></tr>

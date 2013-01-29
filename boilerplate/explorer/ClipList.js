@@ -21,7 +21,7 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
             this.collection.each(function(logItem){
                 var $logItemDom;
                 try {
-                    $logItemDom = $(compiledClipTemplate(logItem.toJSON()));
+                    $logItemDom = $(compiledClipTemplate({data: logItem.toJSON()}));
                 } catch(e) {
                     alert("clipTemplate error");
                 }

@@ -1,6 +1,7 @@
-define([ 'underscore', 'backbone', 'explorer/ClipList', 'LogItems'],
-function( _,            Backbone,   ClipList,            LogItems) {
-
+define([ 'underscore', 'backbone', 'explorer/ClipList', 'LogItems', 'text!explorer/explorerTemplate.html'],
+function( _,            Backbone,   ClipList,            LogItems,   explorerTemplate) {
+    var compiledExplorerTemplate = _.template(explorerTemplate);
+    
     var Router = Backbone.Router.extend({
         
     	initialize: function(){
@@ -24,23 +25,14 @@ function( _,            Backbone,   ClipList,            LogItems) {
 		},
         
 		routes: {
-            '': 'main',
-            'filter': 'filter'
+            '': 'main'
 		},
         
-        main: function(){
-            var logItems = new LogItems();
-            logItems.fetch();
-            var clipList = new ClipList({
-                collection: logItems,
-                el: document.getElementById('results')
-            });
-            clipList.render();
-        },
-        
-        filter: function(qp){
+        main: function(qp){
             var matcher;
             var logItems = new LogItems();
+
+            $('#explorer-nav').html(compiledExplorerTemplate({ data : (qp || {}) }));
             
             if(qp && qp.page) {
                 //The page parameter should be more though out.
@@ -53,7 +45,7 @@ function( _,            Backbone,   ClipList,            LogItems) {
                 //logItems.fetch({data: {param: 3}});
                 //This will also require waiting for results.
                 logItems.fetch();
-                logItems = new LogItems(this.logItems.filter(function(logItem){
+                logItems = new LogItems(logItems.filter(function(logItem){
                     return matcher.test(logItem.get("page"));
                 }));
             } else {
