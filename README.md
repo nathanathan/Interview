@@ -57,14 +57,12 @@ TODO:
 0. Older adroid device does not seem to be seeking correctly.
 1. Make page links work in explorer
 2. Fix filter/sort in explorer
-3. Refactor explorer.html
-4. Make page links open a menu?
-5. Put times in minutes/seconds
-6. Introduce another type of marker beside log items for marking themes.*
-7. Add way to generate guides without using html. Maybe something like xlsform?
+3. Make page links open a menu?
+4. Introduce another type of marker beside log items for marking themes.*
+5. Add way to generate guides without using html. Maybe something like xlsform?
 (Also generate sidenav that shows where you are in the interview.*)
-8. Add recording notice at start?
-9. Fix multiple timeline marker select bug
+6. Add recording notice at start?
+7. Fix multiple timeline marker select bug
 
 *Thanks to Beth K for these ideas.
 

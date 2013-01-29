@@ -145,7 +145,7 @@ function($, Backbone, _, LogItems, Sessions,
             $time = $('#time');
             
             timerUpdater = window.setInterval(function() {
-                $time.text(Math.round((new Date() - session.get('startTime')) / 1000));
+                $time.text(_.formatTime(new Date() - session.get('startTime')));
             }, 1000);
             if('Media' in window) {
                 getDirectory(recordingDir, function(dirEntry){
