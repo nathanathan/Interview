@@ -10,25 +10,38 @@ All the page transitions are logged making it possible to tell where in the reco
 The second half of this project will be a website that annotates the audio timeline with the page the interviewer is on,
 and that makes it possible to search through recordings for responces to particular questions.
 
-Technologies
-------------
 
-The app is currently being designed to run on mobile devices using Cordova.
-It uses the Cordova Media object to capture audio.
-The website for data exploration will probably be a couchapp.
+Storage
+-------
 
-Problems
---------
+My initial plan was to use CouchDB however I ran into CORS issues when trying to do remote submission, and if I were to try to make a couchapp for use with [Mobile Futon](https://github.com/daleharvey/Android-MobileFuton) I wouldn't be able to easily access the Cordova Media object from it.
 
-* I can't figure out how to upload a file from my Cordova app to my couchdb instance.
-I think this is a CORS issue on couch's end.
+Now I'm planning to use Dropbox, but there are a few different approaches:
 
-For this reason I think I'll need to either make this a couchapp entirely,
-or use Cordova storage and include the audio data explorer within the app.
+A. Save everything to a folder that gets synced via [Dropsync](https://play.google.com/store/apps/details?id=com.ttxapps.dropsync&hl=en)
+B. Do all the syncing through JavaScript code included in the application.
 
-Going the couchapp route, I could run the couchapp on the phone, and maybe use replication to get it onto a server. However, I don't think I would be able to use Phonegap build.
+I'm leaning towards B because:
+-Only one app needs to be installed, and operated, so it should be easier for the user.
+-Syncing media files might be slightly harder, but I might find it useful to have more control over them.
 
-The Cordova storage route has the advantage of allowing everything to be done offline. However, I think a desktop would be preferable for the data exploration phase. The data would be safer online. This should be easier to implement, except when it comes to designing the marked-up audio tracker.
+I'm thinking it will work something like this:
+User clicks a Sync data on the main interview page.
+A child window is created if necessairy to log in to dropbox.
+A wait dialog is displayed.
+Sessions are saved in individual files,
+log items are saved as collections in files named by the session id (saving them individually would be a LOT of http requests).
+Then the recording is saved if it's not already on the server.
+I'm not quite sure how additional annotations should work.
+Since they may be added and removed by multiple users there could be revision control problems.
+
+There is a [Backbone Dropbox Sync Adapter](http://coffeedoc.info/github/dropbox/dropbox-js/master/classes/Dropbox/Client.html) that could helpful.
+
+[This documention for the Dropbox js client api should also help.](http://coffeedoc.info/github/dropbox/dropbox-js/master/classes/Dropbox/Client.html)
+
+
+Media Capture
+-------------
 
 * I'm confused about how to handle audio across all platforms.
 
@@ -50,6 +63,8 @@ TODO:
 6. Introduce another type of marker beside log items for marking themes.*
 7. Add way to generate guides without using html. Maybe something like xlsform?
 (Also generate sidenav that shows where you are in the interview.*)
+8. Add recording notice at start?
+9. Fix multiple timeline marker select bug
 
 *Thanks to Beth K for these ideas.
 
@@ -57,3 +72,30 @@ Notes on organization:
 ----------------------
 
 Currently the app is designed to be built with a single interview definition.
+
+Other tools
+------------
+
+[Atlas.TI](http://www.atlasti.com/)
+
+ * [Does everything](http://www.atlasti.com/features.html)
+ * But no interview guide tool and does not appear to have cloud functionality. (This is useful because there will probably be multiple reviewers).
+ * Expensive (500 euros and above, free version limits amount of data)
+
+[Max QDA](http://www.maxqda.com)
+
+ * [Mobile app but no apparent integration with interview guide](http://www.maxqda.com/products/maxqda11/mobile-app/maxapp-features)
+ * About as expensive as Atlas
+
+I think it would be a good idea to look into integrating with Atlas/Max for complex use cases, but to try to keep the core interviewing app simple enough for people to just pick up and use without having to spend time learning how it works.
+
+ODK Collect with audio inputs
+
+ * Each question must be recorded individually.
+ 
+SmartPen
+
+ * Pen may have some limitations in data exploration area.
+ * It may also have benefits (full text search)
+ * It has a greater cost if you already have a device.
+ * The interaction seems very different. I think some amount of study would be necessairy for full comparison.
