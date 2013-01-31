@@ -25,8 +25,15 @@ function($,        Backbone,   _) {
                     attrs.endTime = new Date(attrs.endTime);
                 }
                 return attrs;
+            },
+            
+            dropboxSave: function(options){
+                
+            },
+            dropboxFetch: function(options){
+                
             }
-        })
+        }),
 
     });
 });

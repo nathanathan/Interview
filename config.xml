@@ -2,7 +2,7 @@
 <widget xmlns = "http://www.w3.org/ns/widgets"
     xmlns:gap = "http://phonegap.com/ns/1.0"
     id        = "com.phonegap.example"
-    version   = "0.3.7">
+    version   = "0.3.8">
 
     <name>Interview</name>
 
@@ -15,4 +15,6 @@
     </author>
 
     <icon src="boilerplate/cassette.png" />
+    
+    <gap:plugin name="ChildBrowser" />
 </widget>

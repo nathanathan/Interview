@@ -53,6 +53,11 @@ function($,        Backbone,   _) {
         
         localStorage: new Backbone.LocalStorage("interview-logItems"),
 
+        //Saving a collection is kind of an unusual thing to do
+        //because generally it is a good idea to immediately save models to avoid
+        //data loss. I did this so I could defer the decision to save an interview
+        //until after it ends but it might be better to save during the interview
+        //and delete it if it is discarded.
         save: function(context) {
             var defaultContext = {
                 success: function(){},
