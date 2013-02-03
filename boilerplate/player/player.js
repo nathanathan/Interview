@@ -112,17 +112,22 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         console.log("Creating player");
         var defaultContext = {
             containerEl: document.getElementById("player-container"),
-            media: null,//new Media(),
+            media: null,
             logItems: new Backbone.Collection(),//Problem
-            session: new Backbone.Model(),
+            session: new Backbone.Model({
+                startTime: new Date(0),
+                endTime: new Date(context.media.getDuration())
+            }),
             //Start time in millis
             start: 0
         };
         context = _.extend(defaultContext, context);
         
-        //TODO: Use session duration?
-        console.log("session duration:" +
-            (context.session.get('endTime') - context.session.get('startTime')));
+        //Note:
+        //The timeline shows the session duration rather than the recording duration.
+        //This means that we need to be careful when seeking as these might have some discrepancies...
+        var sessionDuration = context.session.get('endTime') - context.session.get('startTime');
+        console.log("session duration:" +sessionDuration);
         
         if(!(context.media.getDuration() > 0)){
             alert("Could not get media duration, be sure it is loaded before passing it to player.create()");
@@ -130,14 +135,15 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         if(context.media.getDuration() === Infinity) {
             alert("Media is infinately long?");
         }
+
+        
         var player = new PlayerModel({
             //Progress as a percentage:
             progress: 0,
             //Time in seconds
             //(note that this lags behind the actual media object's time)
             time: 0,
-            //Note, duration must be static.
-            duration: context.media.getDuration(),
+            duration: sessionDuration / 1000,
             playing: false
         });
         
@@ -160,17 +166,16 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         var $playerControls = $('<div>');
         var $markers = $('<div id="logItemContainer">');
         var $info = $('<div id="logItemInfo">');
+        
         $(context.containerEl)
             .empty()
             .append($playerControls)
             .append($markers)
             .append($info);
-
-        console.log(context.logItems);
-
+        
+        var selectedLogItem = null;
         var updateMarkers = function(){
             console.log("updateMarkers");
-            var deselectPrevious = function(){};
             $markers.empty();
             //Track current log item in url for navigation?
             context.logItems.each(function(logItem){
@@ -178,15 +183,14 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
                 var logItemProgress = (millisOffset / 1000) / player.get("duration");
                 var $marker = $('<div class="logItemMarker">');
                 $marker.css("left", logItemProgress * 100 + '%');
+                window.x = logItem.get('_timestamp'); window.y = context.session.get('startTime');
                 $markers.append($marker);
-                $marker.click(function(evt){
-                    var $selectedMarker = $marker;
-                    if(window.chrome) console.log(evt);
-                    deselectPrevious();
-                    deselectPrevious = function(){
-                        $selectedMarker.removeClass("selected");
-                    };
-                    $selectedMarker.addClass("selected");
+                $marker.click(function(){
+                    selectedLogItem = logItem;
+                    updateMarkers();
+                });
+                if(selectedLogItem === logItem){
+                    $marker.addClass("selected");
                     try{
                         $info.html(compiledLogItemTemplate(logItem.toJSON()));
                     } catch(e) {
@@ -198,7 +202,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
                         player.setTime(millisOffset / 1000);
                         context.media.seekTo(millisOffset);
                     });
-                });
+                }
             });
         };
         
@@ -207,8 +211,9 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             media: context.media
         });
         player.on("change", playerView.render, playerView);
-        //player.on("change", updateMarkers);
+        
         updateMarkers();
+        
         player.on("error", playerView.pause, playerView);
         
         playerView.setElement($playerControls.get(0));

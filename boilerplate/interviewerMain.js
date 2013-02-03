@@ -32,5 +32,5 @@ function(_, Backbone, router){
             return minutes + ':' + seconds;
         }
     });
-    var router = new router();
+    new router();
 });

@@ -140,6 +140,13 @@ function($,        Backbone,   _) {
                 logItem.set("_duration", nextItemTimeStamp - curTimestamp);
                 nextItemTimeStamp = curTimestamp;
             });
+        },
+        
+        parse: function(response) {
+            var parse = (new LogItem()).parse;
+            return _.map(response, function(attrs){
+                return parse(attrs);
+            });
         }
         
     });

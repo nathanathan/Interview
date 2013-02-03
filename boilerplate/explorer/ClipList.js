@@ -11,9 +11,6 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
     var ListView = Backbone.View.extend({
         orderVar: 1,
         render: function() {
-            //TODO: Watch out for async
-            var mySessions = new Sessions();
-            mySessions.fetch();
             console.log('render');
             var that = this;
             this.$el.html(resultsTemplate);
@@ -36,7 +33,7 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     var $playerContainer = $('<div id="player-container">');
                     $clipPlayArea.empty();
                     $clipPlayArea.append($playerContainer);
-                    var session = mySessions.get(logItem.get('_sessionId'));
+                    var session = that.options.allSessions.get(logItem.get('_sessionId'));
                     if(!session) {
                         alert("Could not get session");
                         console.error(logItem.get('_sessionId'));
