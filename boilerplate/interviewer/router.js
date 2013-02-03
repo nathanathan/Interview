@@ -209,6 +209,8 @@ function($, Backbone, _, LogItems, Sessions,
                     error: function(err) {
                         if(window.chrome) console.error(err);
                         $('#alert-area').html('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Error!</h4> Could not save.</div>');
+                        console.log(String(err));
+                        console.log(err);
                     }
                 });
             });

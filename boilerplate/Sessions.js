@@ -49,7 +49,7 @@ function($,        Backbone,   _,            LogItems) {
         
         saveToFS: function(options){
             var that = this;
-            var storageNeeded = 5*1024*1024; //5MB
+            var storageNeeded = 0;
             
             var content = JSON.stringify({
                 session: that.toJSON(),
@@ -63,7 +63,7 @@ function($,        Backbone,   _,            LogItems) {
                     return;
                 }
                 requestFileSystem(PERSISTENT, storageNeeded, function(fileSystem) {
-                    console.log("Got FileSystem");
+                    console.log("Got fileSystem");
                     fileSystem.root.getFile(filePath, {
                         create: true,
                         exclusive: false
@@ -87,6 +87,7 @@ function($,        Backbone,   _,            LogItems) {
             }
             
             if("webkitStorageInfo" in window && "requestQuota" in window.webkitStorageInfo){
+                storageNeeded = 5*1024*1024; //5MB
                 //We're using chrome probably and need to request storage space.
                 window.webkitStorageInfo.requestQuota(PERSISTENT, storageNeeded, function(grantedBytes) {
                     saveToFile(fileName, content, options.success, options.error);
@@ -107,7 +108,7 @@ function($,        Backbone,   _,            LogItems) {
         fetchFromFS: function(options){
             var that = this;
             this.reset();
-            requestFileSystem(window.PERSISTENT, 0, function(fileSystem) {
+            requestFileSystem(PERSISTENT, 0, function(fileSystem) {
                 console.log(fileSystem.name);
                 console.log(fileSystem.root.name);
                 fileSystem.root.getDirectory(options.dirPath, {
