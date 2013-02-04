@@ -118,18 +118,17 @@ function($,        Backbone,   _,            LogItems) {
                         var successCounter = _.after(entries.length, options.success);
                         _.forEach(entries, function(entry){
                             var fileReader = new FileReader();
-                            if(entry.isFile){
+                            if(entry.isFile && entry.name.slice(-5) === ".json"){
                                 
                                 entry.file(function(file){
                                     fileReader.onloadend = function(evt) {
-                                        console.log("finished reading");
+                                        console.log("finished reading: " + entry.name);
                                         var fileJSON;
                                         try{
-                                            console.log("parsing: " + evt.target.result);
                                             fileJSON = JSON.parse(evt.target.result);
                                         } catch(e) {
                                             console.error(e);
-                                            options.error("Could not parse result.")
+                                            options.error("Could not parse result.");
                                             return;
                                         }
                                         var session = new Session();
