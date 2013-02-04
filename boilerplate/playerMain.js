@@ -90,6 +90,8 @@ require([
         };
 
         var getMedia = function(path, callback) {
+            //TODO: Download media into temporairy fs if not present.
+            //TODO: Figure out how to play media from chrome.
             if('Media' in window){
                 getMediaPhonegap(path, callback);
             } else {
@@ -127,6 +129,9 @@ require([
             playSession: function(qp){
                 var dirPath = "interviews/";
                 if(qp && qp.id) {
+                    if(qp.dirPath) {
+                        dirPath = qp.dirPath;
+                    }
                     //TODO: Should make way to fetch individual sessions.
                     var allSessions = new Sessions();
                     allSessions.fetchFromFS({
