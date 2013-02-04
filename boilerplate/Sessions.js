@@ -119,10 +119,19 @@ function($,        Backbone,   _,            LogItems) {
                         _.forEach(entries, function(entry){
                             var fileReader = new FileReader();
                             if(entry.isFile){
+                                
                                 entry.file(function(file){
                                     fileReader.onloadend = function(evt) {
-                                        console.log("Read as text");
-                                        var fileJSON = JSON.parse(evt.target.result);
+                                        console.log("finished reading");
+                                        var fileJSON;
+                                        try{
+                                            console.log("parsing: " + evt.target.result);
+                                            fileJSON = JSON.parse(evt.target.result);
+                                        } catch(e) {
+                                            console.error(e);
+                                            options.error("Could not parse result.")
+                                            return;
+                                        }
                                         var session = new Session();
                                         session.set(session.parse(fileJSON.session));
                                         var logItems = new LogItems();
