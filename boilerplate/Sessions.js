@@ -1,7 +1,24 @@
 define(['jquery', 'backbone', 'underscore', 'LogItems', 'backbonels'],
 function($,        Backbone,   _,            LogItems) {
-    var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-    var PERSISTENT = ("LocalFileSystem" in window) ?  window.LocalFileSystem.PERSISTENT : window.PERSISTENT;
+    var myRequestFileSystem = function(success, error){
+        var storageNeeded = 0;
+        var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+        var PERSISTENT = ("LocalFileSystem" in window) ?  window.LocalFileSystem.PERSISTENT : window.PERSISTENT;
+        if(!requestFileSystem) {
+            error("Browser does not support filesystem API");
+            return;
+        }
+        if("webkitStorageInfo" in window && "requestQuota" in window.webkitStorageInfo){
+            storageNeeded = 5*1024*1024; //5MB
+            //We're using chrome probably and need to request storage space.
+            window.webkitStorageInfo.requestQuota(PERSISTENT, storageNeeded, function(grantedBytes) {
+                requestFileSystem(PERSISTENT, storageNeeded, success, error);
+            }, error);
+        } else {
+            requestFileSystem(PERSISTENT, storageNeeded, success, error);
+        }
+    };
+
     function joinPaths() {
         var result = arguments[0];
         for (var i = 1; i < arguments.length; i++) {
@@ -49,53 +66,34 @@ function($,        Backbone,   _,            LogItems) {
         
         saveToFS: function(options){
             var that = this;
-            var storageNeeded = 0;
-            
             var content = JSON.stringify({
                 session: that.toJSON(),
                 log: that.Log.toJSON()
             });
-            var fileName = joinPaths(options.dirPath, that.get('id') + '.json');
-            function saveToFile(filePath, content, success, fail) {
-                console.log("saving " + filePath);
-                if(!requestFileSystem) {
-                    fail("Browser does not support filesystem API");
-                    return;
-                }
-                requestFileSystem(PERSISTENT, storageNeeded, function(fileSystem) {
-                    console.log("Got fileSystem");
-                    fileSystem.root.getFile(filePath, {
-                        create: true,
-                        exclusive: false
-                    }, function gotFileEntry(fileEntry) {
-                        console.log("Got fileEntry");
-                        fileEntry.createWriter(function gotFileWriter(writer) {
-                            console.log(writer);
-                            console.log("created writer");
-                            writer.onwriteend = function(evt) {
-                                console.log("contents written!");
-                                success();
-                            };
-                            if('chrome' in window){
-                                writer.write(new Blob([content], {type: 'text/plain'}));
-                            } else {
-                                writer.write(content);
-                            }
-                        }, fail);
-                    }, fail);
-                }, fail);
-            }
-            
-            if("webkitStorageInfo" in window && "requestQuota" in window.webkitStorageInfo){
-                storageNeeded = 5*1024*1024; //5MB
-                //We're using chrome probably and need to request storage space.
-                window.webkitStorageInfo.requestQuota(PERSISTENT, storageNeeded, function(grantedBytes) {
-                    saveToFile(fileName, content, options.success, options.error);
+            var filePath = joinPaths(options.dirPath, that.get('id') + '.json');
+            console.log("saving " + filePath);
+            myRequestFileSystem(function(fileSystem) {
+                console.log("Got fileSystem");
+                fileSystem.root.getFile(filePath, {
+                    create: true,
+                    exclusive: false
+                }, function gotFileEntry(fileEntry) {
+                    console.log("Got fileEntry");
+                    fileEntry.createWriter(function gotFileWriter(writer) {
+                        console.log(writer);
+                        console.log("created writer");
+                        writer.onwriteend = function(evt) {
+                            console.log("contents written!");
+                            options.success();
+                        };
+                        if('chrome' in window){
+                            writer.write(new Blob([content], {type: 'text/plain'}));
+                        } else {
+                            writer.write(content);
+                        }
+                    }, options.error);
                 }, options.error);
-            } else {
-                saveToFile(fileName, content, options.success, options.error);
-            }
-
+            }, options.error);
         }
     });
     
@@ -108,7 +106,7 @@ function($,        Backbone,   _,            LogItems) {
         fetchFromFS: function(options){
             var that = this;
             this.reset();
-            requestFileSystem(PERSISTENT, 0, function(fileSystem) {
+            myRequestFileSystem(function(fileSystem) {
                 console.log(fileSystem.name);
                 console.log(fileSystem.root.name);
                 fileSystem.root.getDirectory(options.dirPath, {
@@ -152,9 +150,9 @@ function($,        Backbone,   _,            LogItems) {
                 }, function(error) {
                     alert("Unable to access directory: " + error.code);
                 });
-            }, function failFS(evt) {
-                console.log(evt);
-                alert("File System Error: " + evt.target.error.code);
+            }, function failFS(error) {
+                console.log(error);
+                alert("File System Error: " + String(error));
             });
             return this;
         },
