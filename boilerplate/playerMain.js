@@ -25,7 +25,8 @@ require([
     'LogItems',
     'Sessions',
     'Popcorn',
-    'backboneqp'
+    'backboneqp',
+    'mixins'
 	], 
 	function(_, Backbone, player, LogItems, Sessions){
         //TODO: I might need to think about how to release media on hash changes.

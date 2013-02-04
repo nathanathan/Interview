@@ -115,42 +115,42 @@ function($,        Backbone,   _,            LogItems) {
                     var directoryReader = dirEntry.createReader();
                     // Get a list of all the entries in the directory
                     directoryReader.readEntries(function(entries) {
-                        var successCounter = _.after(entries.length, options.success);
-                        _.forEach(entries, function(entry){
+                        var filteredEntries = _.filter(entries, function(entry){
+                            return entry.isFile && entry.name.slice(-5) === ".json";
+                        });
+                        var successCounter = _.after(filteredEntries.length, options.success);
+                        filteredEntries.forEach(function(entry){
                             var fileReader = new FileReader();
-                            if(entry.isFile && entry.name.slice(-5) === ".json"){
-                                
-                                entry.file(function(file){
-                                    fileReader.onloadend = function(evt) {
-                                        console.log("finished reading: " + entry.name);
-                                        var fileJSON;
-                                        try{
-                                            fileJSON = JSON.parse(evt.target.result);
-                                        } catch(e) {
-                                            console.error(e);
-                                            options.error("Could not parse result.");
-                                            return;
-                                        }
-                                        var session = new Session();
-                                        session.set(session.parse(fileJSON.session));
-                                        var logItems = new LogItems();
-                                        session.Log = new LogItems(logItems.parse(fileJSON.log));
-                                        that.add(session);
-                                        successCounter();
-                                    };
-                                    console.log("calling read...");
-                                    try {
-                                        fileReader.readAsText(file);
-                                        console.log("Reading...");
-                                    } catch(e){
-                                        if(window.chrome) {
-                                            console.error(e);
-                                            console.error(file);
-                                        }
-                                        options.error("Read error");
+                            entry.file(function(file){
+                                fileReader.onloadend = function(evt) {
+                                    console.log("finished reading: " + entry.name);
+                                    var fileJSON;
+                                    try{
+                                        fileJSON = JSON.parse(evt.target.result);
+                                    } catch(e) {
+                                        console.error(e);
+                                        options.error("Could not parse result.");
+                                        return;
                                     }
-                                }, options.error);
-                            }
+                                    var session = new Session();
+                                    session.set(session.parse(fileJSON.session));
+                                    var logItems = new LogItems();
+                                    session.Log = new LogItems(logItems.parse(fileJSON.log));
+                                    that.add(session);
+                                    successCounter();
+                                };
+                                console.log("calling read...");
+                                try {
+                                    fileReader.readAsText(file);
+                                    console.log("Reading...");
+                                } catch(e){
+                                    if(window.chrome) {
+                                        console.error(e);
+                                        console.error(file);
+                                    }
+                                    options.error("Read error");
+                                }
+                            }, options.error);
                         });
                     }, function(error) {
                         alert("Failed to list directory contents: " + error.code);
