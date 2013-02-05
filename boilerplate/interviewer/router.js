@@ -8,14 +8,16 @@ define([
     'text!interviewer/body.html',
     'text!interviewer/interviewEnd.html',
     'text!interviewer/sessions.html',
+    'text!interviewer/JSONQuestionTemplate.html',
     'backboneqp'],
 function($, Backbone, _, LogItems, Sessions,
-         openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate){
+         openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate, JSONQuestionTemplate){
     console.log("Compiling templates...");
     var compiledOpeningTemplate = _.template(openingTemplate);
     var compiledBodyTemplate = _.template(bodyTemplate);
     var compiledInterviewEndTemplate = _.template(interviewEndTemplate);
     var compiledSessionsTemplate = _.template(sessionsTemplate);
+    var compiledJSONQuestionTemplate = _.template(JSONQuestionTemplate);
     console.log("Templates compiled");
     
     //TODO: Implement include function for templates.
@@ -98,6 +100,7 @@ function($, Backbone, _, LogItems, Sessions,
                 $(function(){
                     getDirectory(dirPath, function(){
                         console.log("got directory");
+                        $('body').html('<div id="pagecontainer">');
                         var started = Backbone.history.start();
                         if(!started){
                             alert("Routes may be improperly set up.");
@@ -124,6 +127,7 @@ function($, Backbone, _, LogItems, Sessions,
             'interviewStart': 'interviewStart',
             'interviewEnd': 'interviewEnd',
             //order is important here:
+            'jsonDef/:question': 'setJSONQuestion',
             '*page': 'setPage'
 		},
         opening: function(){
@@ -166,13 +170,10 @@ function($, Backbone, _, LogItems, Sessions,
                 //set startTime again to try to get as close as possible
                 //to the recording start time.
                 session.set('startTime', new Date());
-                //TODO: Maybe use an interview end route event instead, this is a bit confusing...
-                that.interviewEndBody = _.wrap(that.interviewEndBody, function(interviewEndBody){
+                that.on("route:interviewEnd", function() {
                     mediaRec.stopRecord();
                     mediaRec.release();
                     console.log("Recording stopped.");
-                    that.interviewEndBody = interviewEndBody;
-                    that.interviewEndBody();
                 });
                 that.navigate(startUrl, {trigger: true, replace: true});
             } else {
@@ -182,7 +183,7 @@ function($, Backbone, _, LogItems, Sessions,
                 that.navigate(startUrl, {trigger: true, replace: true});
             }
         },
-        interviewEndBody: function(){
+        interviewEnd: function(){
             if(!session){
                 alert("Interview ended");
                 return;
@@ -220,10 +221,26 @@ function($, Backbone, _, LogItems, Sessions,
                 that.navigate('', {trigger: true, replace: true});
             });
         },
-        interviewEnd: function(){
-            this.interviewEndBody();
+        setJSONQuestion: function(question){
+            var jsonDef = [
+                {
+                    name: "test",
+                    label: "This is a test question."
+                },
+                {
+                    name: "test2",
+                    label: "This is another test question."
+                },
+            ];
+            var renderedHtml;
+            try{
+                renderedHtml = compiledJSONQuestionTemplate({questions: jsonDef, questionName: question});
+            } catch(e) {
+                console.error(e);
+                alert("Error rendering page.");
+            }
+            $('#pagecontainer').html(renderedHtml);
         },
-        //TODO: Adds support for links to a JSON interview definition
         setPage: function(page, params){
             var that = this;
             console.log('params:');
@@ -267,7 +284,7 @@ function($, Backbone, _, LogItems, Sessions,
                     console.error(e);
                     alert("Error rendering page.");
                 }
-                $('#container').html(renderedHtml);
+                $('#pagecontainer').html(renderedHtml);
             }, function(error){
                 console.error(error);
                 alert("Could not load page: " + error.requireModules[0].substring(5));

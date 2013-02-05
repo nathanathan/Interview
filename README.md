@@ -69,15 +69,13 @@ If encryption turns out to be necessairy we can encrypt audio in JS prior to sav
 TODO:
 -----
 
-0. Older adroid device does not seem to be seeking correctly.
-1. Make page links work in explorer
-2. Fix filter/sort in explorer
-3. Make page links open a menu?
-4. Introduce another type of marker beside log items for marking themes.*
-5. Add way to generate guides without using html. Maybe something like xlsform?
+1. Fix sort in explorer
+2. Make page links open a menu in explorer, with options to view the original question or filter by it?
+3. Introduce another type of marker beside log items for marking themes.*
+4. Add way to generate guides without using html. Maybe something like xlsform?
 (Also generate sidenav that shows where you are in the interview.*)
-6. Add recording notice at start?
-7. Fix multiple timeline marker select bug
+5. Add recording notice at start.
+6. Older adroid device does not seem to be seeking correctly.
 
 *Thanks to Beth K for these ideas.
 
