@@ -18,7 +18,10 @@ function($,        Backbone,   _,            LogItems) {
             requestFileSystem(PERSISTENT, storageNeeded, success, error);
         }
     };
-
+    /**
+     * Takes any number of file path strings as arguments and joins them into one.
+     * Trailing and leading slashes are added and removed as needed.
+     **/
     function joinPaths() {
         var result = arguments[0];
         for (var i = 1; i < arguments.length; i++) {

@@ -42,7 +42,7 @@ function($, Backbone, _, LogItems, Sessions,
      * Returns the cordova dirEntry object to the success function,
      * and an error string to the fail function.
      **/
-    function getDirectory(dirPath, success, fail){
+    function getDirectory(dirPath, success, fail) {
         var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
         var PERSISTENT = ("LocalFileSystem" in window) ?  window.LocalFileSystem.PERSISTENT : window.PERSISTENT;
         requestFileSystem(PERSISTENT, 0, function(fileSystem) {
@@ -127,7 +127,7 @@ function($, Backbone, _, LogItems, Sessions,
             'interviewStart': 'interviewStart',
             'interviewEnd': 'interviewEnd',
             //order is important here:
-            'jsonDef/:question': 'setJSONQuestion',
+            'json/:question': 'setJSONQuestion',
             '*page': 'setPage'
 		},
         opening: function(){
@@ -222,24 +222,31 @@ function($, Backbone, _, LogItems, Sessions,
             });
         },
         setJSONQuestion: function(question){
-            var jsonDef = [
-                {
-                    name: "test",
-                    label: "This is a test question."
-                },
-                {
-                    name: "test2",
-                    label: "This is another test question."
-                },
-            ];
-            var renderedHtml;
-            try{
-                renderedHtml = compiledJSONQuestionTemplate({questions: jsonDef, questionName: question});
-            } catch(e) {
-                console.error(e);
-                alert("Error rendering page.");
+            function renderQuestion(jsonInterviewDef){
+                var renderedHtml;
+                try{
+                    renderedHtml = compiledJSONQuestionTemplate({
+                        questions: jsonInterviewDef.questions,
+                        questionName: question || jsonInterviewDef.questions[0].name
+                    });
+                    $('#pagecontainer').html(renderedHtml);
+                } catch(e) {
+                    console.error(e);
+                    alert("Error rendering page.");
+                }
             }
-            $('#pagecontainer').html(renderedHtml);
+            //TODO: Not sure how this path should be constructed.
+            //Its tempting to replicate all the js in every interview def
+            //so it can be hard coded.
+            var that = this;
+            if(that.__jsonInterviewDef__){
+                renderQuestion(that.__jsonInterviewDef__);
+            } else {
+                $.getJSON('example/interview.json', function(jsonInterviewDef){
+                    that.__jsonInterviewDef__ = jsonInterviewDef;
+                    renderQuestion(jsonInterviewDef);
+                });
+            }
         },
         setPage: function(page, params){
             var that = this;
@@ -249,7 +256,7 @@ function($, Backbone, _, LogItems, Sessions,
                 params = {};
             }
             if(session){
-                if(session.Log.length > 0) {
+                if(session.Log.length > 0){
                     //Set previous item's duration
                     (function(previousItem){
                         previousItem.set('_duration',
@@ -277,12 +284,14 @@ function($, Backbone, _, LogItems, Sessions,
                 } catch(e) {
                     console.error(e);
                     alert("Error compiling template.");
+                    return;
                 }
                 try{
                     renderedHtml = compiledTemplate(that.currentContext);
                 } catch(e) {
                     console.error(e);
                     alert("Error rendering page.");
+                    return;
                 }
                 $('#pagecontainer').html(renderedHtml);
             }, function(error){

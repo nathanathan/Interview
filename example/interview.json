@@ -1,0 +1,12 @@
+{
+    "questions": [
+        {
+            "name": "test",
+            "label": "This is a test question."
+        },
+        {
+            "name": "test2",
+            "label": "This is another test question."
+        }
+    ]
+}
