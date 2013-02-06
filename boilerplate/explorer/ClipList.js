@@ -8,12 +8,110 @@ define([
 ],
 function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
     var compiledClipTemplate = _.template(clipTemplate);
+    
+    var getMediaPhonegap = function(path, callback) {
+        var media = new Media(path,
+        function(){},
+        function(err){
+            console.error("Media error:");
+            console.error(err);
+        });
+        media.seekTo(0);
+        var attempts = 10;
+        function waitForDuration(){
+            if(attempts === 0) {
+                alert("Could not get media duration");
+                return;
+            }
+            attempts--;
+            if(media.getDuration() > 0) {
+                callback(media);
+            } else {
+                window.setTimeout(waitForDuration, 100);
+            }
+        }
+        waitForDuration();
+    }
+    
+    var getMediaDebug = function(path, callback) {
+        var $audioContainer = $('<div>');
+        $('body').append($audioContainer);
+        var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=HgzGwKwLmgM&width=0&height=0' );
+        myAudio.on("loadedmetadata", function() {
+            myAudio.off("loadedmetadata");
+            callback({
+                play: function(){
+                    myAudio.play();
+                },
+                pause: function(){
+                    myAudio.pause();
+                },
+                stop: function(){
+                    myAudio.stop();
+                },
+                getCurrentPosition: function(mediaSuccess, mediaError){
+                    //mediaSuccess(myAudio.currentTime);
+                    mediaSuccess(myAudio.currentTime());
+                },
+                getDuration: function(){
+                    //return myAudio.duration;
+                    return myAudio.duration();
+                },
+                seekTo: function(millis){
+                    console.log("seeking to: " + millis);
+                    //myAudio.currentTime = timeSeconds;
+                    myAudio.currentTime(Math.floor(millis / 1000));
+                    //myAudio.currentTime = Math.floor(millis / 1000);
+                }
+            });
+        });
+    };
+
+    var getMedia = function(path, callback) {
+        //TODO: Download media into temporairy fs if not present? Maybe it is better to just sync everything up front for now.
+        //TODO: Figure out how to play audio from chrome.
+        if('Media' in window){
+            getMediaPhonegap(path, callback);
+        } else {
+            getMediaDebug(path, callback);
+        }
+    };
+                    
+/*
+    function getMediaAudioEl(callback) {
+        var myAudio = new Audio();
+        myAudio.src = 'http://www.html5rocks.com/en/tutorials/audio/quick/test.ogg';
+        myAudio.addEventListener("loadedmetadata", function(evt) {
+            callback({
+                play: function(){
+                    myAudio.play();
+                },
+                pause: function(){
+                    myAudio.pause();
+                },
+                stop: function(){
+                    myAudio.stop();
+                },
+                getCurrentPosition: function(mediaSuccess, mediaError){
+                    //mediaSuccess(myAudio.currentTime);
+                    mediaSuccess(myAudio.currentTime);
+                },
+                getDuration: function(){
+                    //return myAudio.duration;
+                    return myAudio.duration;
+                },
+                seekTo: function(timeSeconds){
+                    //myAudio.currentTime = timeSeconds;
+                    myAudio.currentTime = timeSeconds;
+                }
+            });
+        });
+    }
+*/
+    
     var ListView = Backbone.View.extend({
         orderVar: 1,
         render: function() {
-            //TODO: Watch out for async
-            var mySessions = new Sessions();
-            mySessions.fetch();
             console.log('render');
             var that = this;
             this.$el.html(resultsTemplate);
@@ -36,7 +134,7 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     var $playerContainer = $('<div id="player-container">');
                     $clipPlayArea.empty();
                     $clipPlayArea.append($playerContainer);
-                    var session = mySessions.get(logItem.get('_sessionId'));
+                    var session = that.options.allSessions.get(logItem.get('_sessionId'));
                     if(!session) {
                         alert("Could not get session");
                         console.error(logItem.get('_sessionId'));
@@ -44,106 +142,10 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     //Getting the session will also make it easier to get rid
                     //of the _recordingStart param.
                     var recordingPath = 'interviews/' +
-                        session.get('interviewTitle') + '/'+
                         logItem.get('_sessionId') +".amr";
                     console.log("recordingPath: " + recordingPath);
-                    
-                    function getMediaCordova(callback){
-                        var getMedia = function(path, callback) {
-                            var media = new Media(path,
-                            function(){},
-                            function(err){
-                                console.error("Media error:");
-                                console.error(err);
-                            });
-                            media.seekTo(0);
-                            var attempts = 10;
-                            function waitForDuration(){
-                                if(attempts === 0) {
-                                    alert("Could not get media duration");
-                                    return;
-                                }
-                                attempts--;
-                                if(media.getDuration() > 0) {
-                                    callback(media);
-                                } else {
-                                    window.setTimeout(waitForDuration, 100);
-                                }
-                            }
-                            waitForDuration();
-                        };
-                        getMedia(recordingPath, callback);
-                    }
-                    function getMediaPopcorn(callback) {
-                        var $mediaContainer = $('<div id="media-container">');
-                        $clipPlayArea.append($mediaContainer);
-                        var myAudio = Popcorn.youtube($mediaContainer.get(0), 'http://www.youtube.com/watch?v=HgzGwKwLmgM&width=0&height=0');
-                        console.log('loading popcorn content...');
-                        myAudio.on("loadedmetadata", function(evt) {
-                            console.log('loadedmetadata');
-                            myAudio.off("loadedmetadata");
-                            //We need to load metadata first so duration related computations work.
-                            callback({
-                                play: function(){
-                                    myAudio.play();
-                                },
-                                pause: function(){
-                                    myAudio.pause();
-                                },
-                                stop: function(){
-                                    myAudio.stop();
-                                },
-                                getCurrentPosition: function(mediaSuccess, mediaError){
-                                    //mediaSuccess(myAudio.currentTime);
-                                    mediaSuccess(myAudio.currentTime());
-                                },
-                                getDuration: function(){
-                                    //return myAudio.duration;
-                                    return myAudio.duration();
-                                },
-                                seekTo: function(timeSeconds){
-                                    //myAudio.currentTime = timeSeconds;
-                                    myAudio.currentTime(timeSeconds);
-                                }
-                            });
-                        });
-                    }
-                    function getMediaAudioEl(callback) {
-                        var myAudio = new Audio();
-                        myAudio.src = 'http://www.html5rocks.com/en/tutorials/audio/quick/test.ogg';
-                        myAudio.addEventListener("loadedmetadata", function(evt) {
-                            callback({
-                                play: function(){
-                                    myAudio.play();
-                                },
-                                pause: function(){
-                                    myAudio.pause();
-                                },
-                                stop: function(){
-                                    myAudio.stop();
-                                },
-                                getCurrentPosition: function(mediaSuccess, mediaError){
-                                    //mediaSuccess(myAudio.currentTime);
-                                    mediaSuccess(myAudio.currentTime);
-                                },
-                                getDuration: function(){
-                                    //return myAudio.duration;
-                                    return myAudio.duration;
-                                },
-                                seekTo: function(timeSeconds){
-                                    //myAudio.currentTime = timeSeconds;
-                                    myAudio.currentTime = timeSeconds;
-                                }
-                            });
-                        });
-                    }
-                    var getMedia;
-                    if ('cordova' in window) {
-                        getMedia = getMediaCordova;
-                    } else {
-                        getMedia = getMediaAudioEl;
-                    }
-                    getMedia(function(media){
+
+                    getMedia(recordingPath, function(media){
                         console.log("Got media.");
                         var timestamp = logItem.get('_timestamp');
                         var recordingStart = logItem.get('_recordingStart');

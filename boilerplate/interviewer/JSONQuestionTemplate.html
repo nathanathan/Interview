@@ -1,0 +1,21 @@
+<div class="container" style="margin-top: 1em;">
+    <div class="row">
+        <div class="span6">
+            <ul class="nav nav-tabs nav-stacked">
+            <% _.forEach(questions, function(question) { %>
+                <li <%= (question.name === questionName) ? 'class="active"' : '' %>>
+                <a href="#jsonDef/<%- question.name %>">
+                    <i class="icon-chevron-right"></i>
+                    <%- question.name %>
+                </a>
+                </li>
+            <% }); %>
+            </ul>
+        </div>
+        <div class="span6">
+            <p class="lead">
+                <%-  _.where(questions, {name: questionName})[0].label %>
+            </p>
+        </div>
+    </div>
+</div>

@@ -25,6 +25,8 @@ I'm leaning towards B because:
 -Only one app needs to be installed, and operated, so it should be easier for the user.
 -Syncing media files might be slightly harder, but I might find it useful to have more control over them.
 
+However, saving to the filesystem could make it easier to move data around.
+
 I'm thinking it will work something like this:
 User clicks a Sync data on the main interview page.
 A child window is created if necessairy to log in to dropbox.
@@ -34,6 +36,8 @@ log items are saved as collections in files named by the session id (saving them
 Then the recording is saved if it's not already on the server.
 I'm not quite sure how additional annotations should work.
 Since they may be added and removed by multiple users there could be revision control problems.
+If it is necessairy to delete items while offline, they will need to support
+a `_deleted` property.
 
 There is a [Backbone Dropbox Sync Adapter](http://coffeedoc.info/github/dropbox/dropbox-js/master/classes/Dropbox/Client.html) that could helpful.
 
@@ -51,18 +55,27 @@ http://chromium.googlecode.com/svn/trunk/samples/audio/index.html
 
 https://dvcs.w3.org/hg/audio/raw-file/tip/webaudio/webrtc-integration.html
 
+Audio playback
+--------------
+
+For playback from the cloud we'll probably need to download audio through the dropbox api
+as data. I hope datauris are supported for audio.
+
+Encryption
+----------
+
+If encryption turns out to be necessairy we can encrypt audio in JS prior to saving with [this library](http://crypto.stanford.edu/sjcl/).
+
 TODO:
 -----
 
-0. Older adroid device does not seem to be seeking correctly.
-1. Make page links work in explorer
-2. Fix filter/sort in explorer
-3. Make page links open a menu?
-4. Introduce another type of marker beside log items for marking themes.*
-5. Add way to generate guides without using html. Maybe something like xlsform?
+1. Fix sort in explorer
+2. Make page links open a menu in explorer, with options to view the original question or filter by it?
+3. Introduce another type of marker beside log items for marking themes.*
+4. Add way to generate guides without using html. Maybe something like xlsform?
 (Also generate sidenav that shows where you are in the interview.*)
-6. Add recording notice at start?
-7. Fix multiple timeline marker select bug
+5. Add recording notice at start.
+6. Older adroid device does not seem to be seeking correctly.
 
 *Thanks to Beth K for these ideas.
 

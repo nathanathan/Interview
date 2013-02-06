@@ -38,3 +38,24 @@
         margin-top: 3em;
     }
 }
+
+
+.nav .icon-chevron-right {
+    float: right;
+    margin-top: 2px;
+    margin-right: -6px;
+    opacity: .25;
+}
+/* Track session in url so this isn't permanent 
+.nav-tabs a:visited {
+    color: rgb(225, 221, 255);
+}
+*/
+.nav-tabs > .active > a {
+    color: #ffffff;
+    background-color: #0088cc;
+}
+.nav-tabs > .active > a:hover {
+    color: #ffffff;
+    background-color: #0088cc;
+}

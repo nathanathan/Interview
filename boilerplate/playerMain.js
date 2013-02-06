@@ -25,13 +25,13 @@ require([
     'LogItems',
     'Sessions',
     'Popcorn',
-    'backboneqp'
+    'backboneqp',
+    'mixins'
 	], 
 	function(_, Backbone, player, LogItems, Sessions){
         //TODO: I might need to think about how to release media on hash changes.
         
-        
-        var getMedia = function(path, callback) {
+        var getMediaPhonegap = function(path, callback) {
             var media = new Media(path,
             function(){},
             function(err){
@@ -54,6 +54,50 @@ require([
             }
             waitForDuration();
         }
+        
+        var getMediaDebug = function(path, callback) {
+            var $audioContainer = $('<div>');
+            $('body').append($audioContainer);
+            var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=HgzGwKwLmgM&width=0&height=0' );
+            myAudio.on("loadedmetadata", function() {
+                myAudio.off("loadedmetadata");
+                callback({
+                    play: function(){
+                        myAudio.play();
+                    },
+                    pause: function(){
+                        myAudio.pause();
+                    },
+                    stop: function(){
+                        myAudio.stop();
+                    },
+                    getCurrentPosition: function(mediaSuccess, mediaError){
+                        //mediaSuccess(myAudio.currentTime);
+                        mediaSuccess(myAudio.currentTime());
+                    },
+                    getDuration: function(){
+                        //return myAudio.duration;
+                        return myAudio.duration();
+                    },
+                    seekTo: function(millis){
+                        console.log("seeking to: " + millis);
+                        //myAudio.currentTime = timeSeconds;
+                        myAudio.currentTime(Math.floor(millis / 1000));
+                        //myAudio.currentTime = Math.floor(millis / 1000);
+                    }
+                });
+            });
+        };
+
+        var getMedia = function(path, callback) {
+            //TODO: Download media into temporairy fs if not present.
+            //TODO: Figure out how to play media from chrome.
+            if('Media' in window){
+                getMediaPhonegap(path, callback);
+            } else {
+                getMediaDebug(path, callback);
+            }
+        };
         
         var Router = Backbone.Router.extend({
             
@@ -78,106 +122,84 @@ require([
     		},
             
             routes: {
-                '': 'main',
+                '': 'debugMode',
                 'session': 'playSession'
             },
             
             playSession: function(qp){
+                var dirPath = "interviews/";
                 if(qp && qp.id) {
-                    //TODO: Watch out for async
-                    var mySessions = new Sessions();
-                    mySessions.fetch();
-                    var session = mySessions.get(qp.id);
-                    if(!session) {
-                        alert("Could not get session");
-                        console.error(qp.id);
+                    if(qp.dirPath) {
+                        dirPath = qp.dirPath;
                     }
-                    //Getting the session will also make it easier to get rid
-                    //of the _recordingStart param.
-                    var recordingPath = 'interviews/' +
-                        session.get('interviewTitle') + '/'+
-                        qp.id +".amr";
-                    console.log("recordingPath:" + recordingPath);
-                    
-                    var myLogItems = new LogItems();
-                    myLogItems.fetch();
-                    myLogItems = new LogItems(myLogItems.where({"_sessionId": qp.id}));
-                    console.log("myLogItems.length: " + myLogItems.length);
-                    
-                    getMedia(recordingPath, function(media){
-                        console.log("Got media.");
-                        player.create({
-                            containerEl: document.getElementById("player-container"),
-                            media: media,
-                            logItems: myLogItems,
-                            session: session
-                        });
+                    //TODO: Should make way to fetch individual sessions.
+                    var allSessions = new Sessions();
+                    allSessions.fetchFromFS({
+                        dirPath: dirPath,
+                        success: function(){
+                            var session = allSessions.get(qp.id);
+                            if(!session) {
+                                alert("Could not get session");
+                                console.error(qp.id);
+                            }
+                            
+                            var recordingPath = dirPath +
+                                qp.id +".amr";
+                            console.log("recordingPath:" + recordingPath);
+                            
+                            getMedia(recordingPath, function(media){
+                                console.log("Got media.");
+                                player.create({
+                                    containerEl: document.getElementById("player-container"),
+                                    media: media,
+                                    logItems: session.Log,
+                                    session: session
+                                });
+                            });
+                        },
+                        error: function(){
+                            alert("Could not get sessions");
+                        }
                     });
-                    
+
                 } else {
                     alert('missing session id');
                 }
             },
             
-            main: function(){
+            debugMode: function(){
                 alert("Debug mode.");
-                var $audioContainer = $('<div>');
-                $('body').append($audioContainer);
-                var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=HgzGwKwLmgM&width=0&height=0' );
-                var phonegapMediaShim = {
-                    play: function(){
-                        myAudio.play();
-                    },
-                    pause: function(){
-                        myAudio.pause();
-                    },
-                    stop: function(){
-                        myAudio.stop();
-                    },
-                    getCurrentPosition: function(mediaSuccess, mediaError){
-                        //mediaSuccess(myAudio.currentTime);
-                        mediaSuccess(myAudio.currentTime());
-                    },
-                    getDuration: function(){
-                        //return myAudio.duration;
-                        return myAudio.duration();
-                    },
-                    seekTo: function(timeSeconds){
-                        //myAudio.currentTime = timeSeconds;
-                        myAudio.currentTime(timeSeconds);
-                    }
-                };
-                var debugStartTime = Math.random()*2000000000000;
-                var debugLogItems = [
-                    {
-                        _recordingStart: new Date(debugStartTime),
-                        _timestamp: new Date(debugStartTime + Math.random()*160000),
-                        _sessionId: "A23-B34",
-                        page: "communityActivities.html"
-                    },
-                    {
-                        _recordingStart: new Date(debugStartTime),
-                        _timestamp: new Date(debugStartTime + Math.random()*160000),
-                        _sessionId: "A23-B34",
-                        page: "communityActivityFollowUp.html"
-                    },
-                    {
-                        _recordingStart: new Date(debugStartTime),
-                        _timestamp: new Date(debugStartTime + Math.random()*160000),
-                        _sessionId: "A23-B34",
-                        page: "interviewEnd"
-                    }
-                ];
-                var myLogItems = new LogItems(debugLogItems);
-        
-                myAudio.on("loadedmetadata", function() {
-                    myAudio.off("loadedmetadata");
+                getMediaDebug(null, function(phonegapMediaShim){
+                    var debugStartTime = Math.random()*2000000000000;
+                    var debugLogItems = [
+                        {
+                            _recordingStart: new Date(debugStartTime),
+                            _timestamp: new Date(debugStartTime + Math.random()*160000),
+                            _sessionId: "A23-B34",
+                            page: "communityActivities.html"
+                        },
+                        {
+                            _recordingStart: new Date(debugStartTime),
+                            _timestamp: new Date(debugStartTime + Math.random()*160000),
+                            _sessionId: "A23-B34",
+                            page: "communityActivityFollowUp.html"
+                        },
+                        {
+                            _recordingStart: new Date(debugStartTime),
+                            _timestamp: new Date(debugStartTime + Math.random()*160000),
+                            _sessionId: "A23-B34",
+                            page: "interviewEnd"
+                        }
+                    ];
+                    var myLogItems = new LogItems(debugLogItems);
+
                     player.create({
                         containerEl: document.getElementById("player-container"),
                         media: phonegapMediaShim,
                         logItems: myLogItems
                     });
                 });
+
             }
         });
         new Router();
