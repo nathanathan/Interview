@@ -167,6 +167,13 @@ function($, Backbone, _, LogItems, Sessions,
             var startUrl = $('body').data('start');
             var sessionId = GUID();
             var recordingName = sessionId + ".amr";
+            
+            if(session){
+                //i.e. If the user presses back from the first screen and lands here.
+                that.navigate("interviewEnd", {trigger: true });
+                return;
+            }
+            
             session = mySessions.create({
                 id: sessionId,
                 startTime: new Date(),
@@ -192,13 +199,12 @@ function($, Backbone, _, LogItems, Sessions,
                     mediaRec.release();
                     console.log("Recording stopped.");
                 });
-                that.navigate(startUrl, {trigger: true, replace: true});
             } else {
                 //TODO: How do dismiss?
                 //TODO: Use template.
                 $('#alert-area').html('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Warning!</h4> Audio is not being recorded.</div>');
-                that.navigate(startUrl, {trigger: true, replace: true});
             }
+            that.navigate(startUrl, {trigger: true, replace: false});
         },
         interviewEnd: function(){
             if(!session){
