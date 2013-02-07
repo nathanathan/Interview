@@ -25,6 +25,13 @@ function($, Backbone, _, LogItems, Sessions,
     // and fill in the stub when it loads.
     // Maybe it could be a require.js plugin?
     
+    //This is a patch to make it so form submission puts the params after
+    //the hash so they can be picked up by Backboneqp.
+    $(document).submit(function(e) {
+        e.preventDefault();
+        window.location = $(e.target).attr('action') + '?' + $(e.target).serialize();
+    });
+    
     /**
      * From backbone-localstorage:
      * Generate a pseudo-GUID by concatenating random hexadecimal.
@@ -115,6 +122,7 @@ function($, Backbone, _, LogItems, Sessions,
                     getDirectory(dirPath, function(){
                         console.log("got directory");
                         $('body').html('<div id="pagecontainer">');
+
                         var started = Backbone.history.start();
                         if(!started){
                             alert("Routes may be improperly set up.");
