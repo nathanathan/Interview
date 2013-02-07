@@ -17,10 +17,12 @@
             Explore Data
         </a>
     </p>
-    <p>
-        <a class="btn btn-primary btn-large btn-block" href="boilerplate/synchronize.html">
-            Synchronize with Dropbox
-        </a>
-    </p>
+    <% if("chrome" in window){ %>
+        <p>
+            <a class="btn btn-primary btn-large btn-block" href="boilerplate/synchronize.html">
+                Synchronize with Dropbox
+            </a>
+        </p>
+    <% } %>
 </div>
 </div>

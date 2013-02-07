@@ -23,7 +23,6 @@ require.config({
 
 require(['underscore', 'backbone', 'LogItems', 'Sessions', 'dropbox', 'Filer' ],
 function( _,            Backbone,   LogItems,   Sessions,   Dropbox,   Filer) {
-
     /**
      * Takes any number of file path strings as arguments and joins them into one.
      * Trailing and leading slashes are added and removed as needed.
@@ -172,7 +171,6 @@ function( _,            Backbone,   LogItems,   Sessions,   Dropbox,   Filer) {
             });
             var $statusEl = $('#status');
             $statusEl.append("<p>Authenticating...</p>");
-            console.log("authenticating");
             if ('cordova' in window) {
                 if (window.plugins.childBrowser == null) {
                     ChildBrowser.install();

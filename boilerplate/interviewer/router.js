@@ -43,9 +43,21 @@ function($, Backbone, _, LogItems, Sessions,
      * and an error string to the fail function.
      **/
     function getDirectory(dirPath, success, fail) {
-        var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-        var PERSISTENT = ("LocalFileSystem" in window) ?  window.LocalFileSystem.PERSISTENT : window.PERSISTENT;
-        requestFileSystem(PERSISTENT, 0, function(fileSystem) {
+        var requestFileSystemWrapper = function(success, error){
+            var storageNeeded;
+            var PERSISTENT = ("LocalFileSystem" in window) ?  window.LocalFileSystem.PERSISTENT : window.PERSISTENT;
+            var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+            if("webkitStorageInfo" in window && "requestQuota" in window.webkitStorageInfo){
+                storageNeeded = 5*1024*1024; //5MB
+                //We're using chrome probably and need to request storage space.
+                window.webkitStorageInfo.requestQuota(PERSISTENT, storageNeeded, function(grantedBytes) {
+                    requestFileSystem(PERSISTENT, storageNeeded, success, error);
+                }, error);
+            } else {
+                requestFileSystem(PERSISTENT, storageNeeded, success, error);
+            }
+        }
+        requestFileSystemWrapper(function(fileSystem) {
             console.log(fileSystem.name);
             console.log(fileSystem.root.name);
             var dirArray = dirPath.split('/');
@@ -61,6 +73,8 @@ function($, Backbone, _, LogItems, Sessions,
                     },
                     getDirectoryHelper,
                     function(error) {
+                        console.log(error);
+                        console.log(curDir);
                         fail("Unable to create new directory: " + error.code);
                     });
                 } else if(dirArray.length !== 0) {
