@@ -20,11 +20,6 @@ function($, Backbone, _, LogItems, Sessions,
     var compiledJSONQuestionTemplate = _.template(JSONQuestionTemplate);
     console.log("Templates compiled");
     
-    //TODO: Implement include function for templates.
-    // it will return a stub, and then asyc get the template.
-    // and fill in the stub when it loads.
-    // Maybe it could be a require.js plugin?
-    
     //This is a patch to make it so form submission puts the params after
     //the hash so they can be picked up by Backboneqp.
     $(document).submit(function(e) {
@@ -289,14 +284,14 @@ function($, Backbone, _, LogItems, Sessions,
                     alert("Error rendering page.");
                 }
             }
-            //TODO: Not sure how this path should be constructed.
-            //Its tempting to replicate all the js in every interview def
-            //so it can be hard coded.
             var that = this;
             that.recordData(question, params);
             if(that.__jsonInterviewDef__){
                 renderQuestion(that.__jsonInterviewDef__);
             } else {
+                //TODO: Eventually, I think the name of the interview should be
+                //a prefix on all the routes. We will need to use that prefix
+                //here to construct the appropriate path.
                 $.getJSON('example/interview.json', function(jsonInterviewDef){
                     that.__jsonInterviewDef__ = jsonInterviewDef;
                     renderQuestion(jsonInterviewDef);
