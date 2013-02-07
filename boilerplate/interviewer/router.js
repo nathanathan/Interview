@@ -212,13 +212,6 @@ function($, Backbone, _, LogItems, Sessions,
             }
             var that = this;
             window.clearInterval(timerUpdater);
-            if(session.Log.length > 0) {
-                //Set previous item's duration
-                (function(previousItem){
-                    previousItem.set('_duration',
-                    (new Date()) - previousItem.get('_timestamp'));
-                })(session.Log.at(session.Log.length - 1));
-            }
             session.set("endTime", new Date());
             
             $('body').html(compiledInterviewEndTemplate());
@@ -243,7 +236,46 @@ function($, Backbone, _, LogItems, Sessions,
                 that.navigate('', {trigger: true, replace: true});
             });
         },
-        setJSONQuestion: function(question){
+        recordData: function(page, params){
+            var that = this;
+            if(!session) {
+                console.log("No session to record data into.");
+                return;
+            }
+            var newLogItem = new session.Log.model(_.extend({}, params, {
+                page: page,
+                lastPage: that.currentContext.page,
+                _sessionId: session.get('id'),
+                //This is duplicate information but it is convenient to have available on the model.
+                _recordingStart: session.get('startTime')
+            }));
+            session.Log.add(newLogItem);
+            //Set up events to set the logItem's duration
+            //when the next page is reached.
+            var onNextPage = function(page, qp){
+                console.log(page);
+                console.log(newLogItem.get('_timestamp'));
+                //TODO: If the next route event is for an annotation don't do anything?
+                newLogItem.set({
+                    '_duration': (new Date()) - newLogItem.get('_timestamp'),
+                    'nextPage': page
+                });
+                //remove the event listeners.
+                that.off(null, onNextPage);
+            };
+            _.defer(function(){
+                //Route event binding is deferred because it will pick up the
+                //current route event otherwise.
+                that.on('route:setPage', onNextPage);
+                that.on('route:setJSONQuestion', onNextPage);
+                that.on('route:interviewEnd', onNextPage);
+            });
+            //Save the params that do not begin with an underscore into the session.
+            //TODO: To avoid collisions the backend session vars should begin
+            //with an underscore.
+            session.set(_.omitUnderscored(params));
+        },
+        setJSONQuestion: function(question, params){
             function renderQuestion(jsonInterviewDef){
                 var renderedHtml;
                 try{
@@ -261,6 +293,7 @@ function($, Backbone, _, LogItems, Sessions,
             //Its tempting to replicate all the js in every interview def
             //so it can be hard coded.
             var that = this;
+            that.recordData(question, params);
             if(that.__jsonInterviewDef__){
                 renderQuestion(that.__jsonInterviewDef__);
             } else {
@@ -277,22 +310,7 @@ function($, Backbone, _, LogItems, Sessions,
             if(!params){
                 params = {};
             }
-            if(session){
-                if(session.Log.length > 0){
-                    //Set previous item's duration
-                    (function(previousItem){
-                        previousItem.set('_duration',
-                        (new Date()) - previousItem.get('_timestamp'));
-                    })(session.Log.at(session.Log.length - 1));
-                }
-                session.Log.add(_.extend({}, params, {
-                    page: page,
-                    lastPage: that.currentContext.page,
-                    _sessionId: session.get('id'),
-                    //This is duplicate information but it is convenient to have available on the model.
-                    _recordingStart: session.get('startTime')
-                }));
-            }
+            that.recordData(page, params);
             require(['text!' + indexRelPathPrefix + page], function(template){
                 var compiledTemplate, renderedHtml;
                 that.currentContext = {
