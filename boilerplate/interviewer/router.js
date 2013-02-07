@@ -187,7 +187,7 @@ function($, Backbone, _, LogItems, Sessions,
                 //set startTime again to try to get as close as possible
                 //to the recording start time.
                 session.set('startTime', new Date());
-                that.on("route:interviewEnd", function() {
+                that.once("route:interviewEnd", function() {
                     mediaRec.stopRecord();
                     mediaRec.release();
                     console.log("Recording stopped.");
