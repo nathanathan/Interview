@@ -4,7 +4,7 @@
             <ul class="nav nav-tabs nav-stacked">
             <% _.forEach(questions, function(question) { %>
                 <li <%= (question.name === questionName) ? 'class="active"' : '' %>>
-                <a href="#jsonDef/<%- question.name %>">
+                <a href="#json/<%- question.name %>">
                     <i class="icon-chevron-right"></i>
                     <%- question.name %>
                 </a>

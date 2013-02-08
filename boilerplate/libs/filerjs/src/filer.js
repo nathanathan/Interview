@@ -22,7 +22,6 @@
  */
 
 'use strict';
-
 var self = this; // window or worker context.
 
 self.URL = self.URL || self.webkitURL;
@@ -808,4 +807,6 @@ var Filer = new function() {
 
   return Filer;
 };
-
+define(function(){
+    return Filer;
+});

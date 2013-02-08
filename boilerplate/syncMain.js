@@ -8,6 +8,7 @@ require.config({
         "backbone": "libs/backbone-min",
         "backbonels": "libs/backbone-localstorage",
         "dropbox": "libs/dropbox",
+        "Filer": "libs/filerjs/src/filer"
     },
     'shim': {
         underscore: {
@@ -20,24 +21,156 @@ require.config({
     }
 });
 
-require(['underscore', 'backbone', 'LogItems', 'Sessions', 'dropbox' ],
-function( _,            Backbone,   LogItems,   Sessions,   Dropbox) {
-
+require(['underscore', 'backbone', 'LogItems', 'Sessions', 'dropbox', 'Filer' ],
+function( _,            Backbone,   LogItems,   Sessions,   Dropbox,   Filer) {
+    /**
+     * Takes any number of file path strings as arguments and joins them into one.
+     * Trailing and leading slashes are added and removed as needed.
+     **/
+    function joinPaths() {
+        var result = arguments[0];
+        for (var i = 1; i < arguments.length; i++) {
+            if (result[result.length - 1] !== '/') {
+                result += '/';
+            }
+            if (arguments[i][0] === '/') {
+                result += arguments[i].substr(1);
+            } else {
+                result += arguments[i];
+            }
+        }
+        return result;
+    }
+    /*
     var logItems = new LogItems();
     var sessions = new Sessions();
+    function syncToFS(path, client, callback) {
+        client.readdir(path, function syncDir(error, entries, dirStat, entriesStat) {
+            if (error) {
+                console.error(error);
+                client.mkdir(path, function(error, dirStat){
+                    if (error) {
+                        console.error(error);
+                        return;
+                    }
+                    syncDir(error, [], dirStat, []);
+                });
+                return;
+            }
+            entriesStat.forEach(function(entryStat) {
+                var session = sessions.get(entryStat.name);
+                if (session) {
+                    session.set("__lastSynced", new Date());
+                    if (entriesStat.versionTag == session.get("versionTag")) {
+                        return;
+                    }
+                    //save session to db
+                    //save all session annotations to db
+                } else {
+                    //if "pull data" checkbox is checked
+                    //create session from entry.
+                    //session.set("__lastSynced") = new Date();
+                }
+            });
+            sessions.forEach(function(session) {
+                if (session.get("__lastSynced")) {
+                    //TODO: Add a delete local synced data button.
+                    //TODO: Also add dropbox logout button
+                    return;
+                }
+                //save session to db
+                //save all session annotations to db
+            });
+        });
+    }
+    */
+    function readEntriesWithMetadata(dirEntry, success, error){
+        var directoryReader = dirEntry.createReader();
+        directoryReader.readEntries(function(entries){
+            var successCounter = _.after(entries.length, function(){
+                success(entries);
+            });
+            _.forEach(entries, function(entry){
+                entry.getMetadata(function(metadata){
+                    entry.metadata = metadata;
+                    successCounter();
+                }, error);
+            });
+        }, error);
+    }
+    
+    function downloadToFS(path, client, callback) {
+        console.log("downloadToFS: " + path);
+        client.readdir(path, function(error, entries, dirStat, entriesStat) {
+            if (error) {
+                console.error(error);
+                return;
+            }
+            console.log("found", entriesStat);
+            //Create fs dir
+            var filer = new Filer();
+            filer.init({
+                persistent: true,
+                size: 5 * 1024 * 1024
+            }, function(fs) {
+                filer.mkdir(path, false, function success(dirEntry) {
+                    console.log("got/made dir: " + path);
+                    readEntriesWithMetadata(dirEntry, function success(localEntries){
+                        var entriesToDownload = _.filter(entriesStat, function(entryStat) {
+                            return _.every(localEntries, function(localEntry){
+                                console.log(localEntry.metadata.modificationTime)
+                                return (localEntry.name !== entryStat.name || localEntry.metadata.modificationTime < entryStat.modifiedAt);
+                            });
+                        });
+                        console.log("downloading", entriesToDownload);
+                        entriesToDownload.forEach(function(entryStat) {
+                            var entryPath = joinPaths(path, entryStat.name);
+                            if (entryStat.isDirectory) {
+                                downloadToFS(entryPath, client);
+                            } else {
+                                client.readFile(entryPath, {
+                                    arrayBuffer: true
+                                }, function(error, content){
+                                    if(error){
+                                        callback(error);
+                                    }
+                                    // Write string data.
+                                    filer.write(entryPath, {
+                                        data: content,
+                                        type: entryStat.mimeType//'text/plain'
+                                    },
+                                    function(fileEntry, fileWriter) {
+                                        callback(null, fileEntry);
+                                    },
+                                    function fail() {
+                                        callback("Could not write file: " + entryPath);
+                                    });
+                                });
+                            }
+                        });
+                    }, function fail() {
+                        callback("Could not read directory: " + path);
+                    });
+                }, function fail() {
+                    callback("Could not get directory: " + path);
+                });
+            }, function fail() {
+                callback("Could not get file system");
+            });
+        });
+    }
 
     var onReady = function() {
         $(function() {
             var authDriver;
             var that = this;
-            window.client = new Dropbox.Client({
+            var client = new Dropbox.Client({
                 //TODO: Remove secret?
                 key: "on7odfsh27wtjuy", secret: "q90htxlnnlw4kw2",
                 sandbox: true
             });
             var $statusEl = $('#status');
             $statusEl.append("<p>Authenticating...</p>");
-            console.log("authenticating");
             if ('cordova' in window) {
                 if (window.plugins.childBrowser == null) {
                     ChildBrowser.install();
@@ -99,49 +232,15 @@ function( _,            Backbone,   LogItems,   Sessions,   Dropbox) {
                     afterAuth(client);
                 }
             });
-
+            //For debugging:
+            window.client = client;
         });
     };
 
     var afterAuth = function(client) {
         var path = "/sessions/";
-        client.readdir(path, function syncDir(error, entries, dirStat, entriesStat) {
-            if (error) {
-                console.error(error);
-                client.mkdir(path, function(error, dirStat){
-                    if (error) {
-                        console.error(error);
-                        return;
-                    }
-                    syncDir(error, [], dirStat, []);
-                });
-                return;
-            }
-            entriesStat.forEach(function(entryStat) {
-                var session = sessions.get(entryStat.name);
-                if (session) {
-                    session.set("__lastSynced", new Date());
-                    if (entriesStat.versionTag == session.get("versionTag")) {
-                        return;
-                    }
-                    //save session to db
-                    //save all session annotations to db
-                }
-                else {
-                    //if "pull data" checkbox is checked
-                    //create session from entry.
-                    //session.set("__lastSynced") = new Date();
-                }
-            });
-            sessions.forEach(function(session) {
-                if (session.get("__lastSynced")) {
-                    //TODO: Add a delete local synced data button.
-                    //TODO: Also add dropbox logout button
-                    return;
-                }
-                //save session to db
-                //save all session annotations to db
-            });
+        downloadToFS(path, client, function(){
+            console.log("downloaded file.");
         });
     };
 
@@ -155,6 +254,4 @@ function( _,            Backbone,   LogItems,   Sessions,   Dropbox) {
     else {
         onReady();
     }
-    logItems.fetch();
-    sessions.fetch();
 });
