@@ -1,4 +1,5 @@
 define([
+    'config',
 	'jquery', 
 	'backbone', 
 	'underscore',
@@ -10,7 +11,7 @@ define([
     'text!interviewer/sessions.html',
     'text!interviewer/JSONQuestionTemplate.html',
     'backboneqp'],
-function($, Backbone, _, LogItems, Sessions,
+function(config, $, Backbone, _, LogItems, Sessions,
          openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate, JSONQuestionTemplate){
     console.log("Compiling templates...");
     var compiledOpeningTemplate = _.template(openingTemplate);
@@ -94,7 +95,6 @@ function($, Backbone, _, LogItems, Sessions,
     
     var mySessions = new Sessions();
     var interviewTitle = $('title').text();
-    var dirPath = 'interviews/';
     var timerUpdater;
     //indexRelPathPrefix computed so the location of the boilerplate directory can change
     //only requiring modification of index.html
@@ -114,7 +114,7 @@ function($, Backbone, _, LogItems, Sessions,
         initialize: function(){
             var onReady = function() {
                 $(function(){
-                    getDirectory(dirPath, function(){
+                    getDirectory(config.appDir, function(){
                         console.log("got directory");
                         $('body').html('<div id="pagecontainer">');
 
@@ -152,7 +152,7 @@ function($, Backbone, _, LogItems, Sessions,
         },
         showSessions: function(){
             mySessions.fetchFromFS({
-                dirPath: dirPath,
+                dirPath: config.appDir,
                 success: function(){
                     $('body').html(compiledSessionsTemplate({sessions: mySessions.toJSON()}));
                 },
@@ -188,8 +188,8 @@ function($, Backbone, _, LogItems, Sessions,
                 $time.text(_.formatTime(new Date() - session.get('startTime')));
             }, 1000);
             if('Media' in window) {
-                var mediaRec = new Media(dirPath + '/' + recordingName);
-                console.log("media created: " + dirPath + '/' + recordingName);
+                var mediaRec = new Media(config.appDir + '/' + recordingName);
+                console.log("media created: " + config.appDir + '/' + recordingName);
                 mediaRec.startRecord();
                 //set startTime again to try to get as close as possible
                 //to the recording start time.
@@ -218,7 +218,7 @@ function($, Backbone, _, LogItems, Sessions,
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){
                 session.saveToFS({
-                    dirPath: dirPath,
+                    dirPath: config.appDir,
                     success: function(){
                         session = null;
                         that.navigate('', {trigger: true, replace: true});

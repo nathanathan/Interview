@@ -116,7 +116,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             logItems: new Backbone.Collection(),//Problem
             session: new Backbone.Model({
                 startTime: new Date(0),
-                endTime: new Date(context.media.getDuration())
+                endTime: new Date(context.media.getDuration() * 1000)
             }),
             //Start time in millis
             start: 0
@@ -127,7 +127,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         //The timeline shows the session duration rather than the recording duration.
         //This means that we need to be careful when seeking as these might have some discrepancies...
         var sessionDuration = context.session.get('endTime') - context.session.get('startTime');
-        console.log("session duration:" +sessionDuration);
+        console.log("session duration:" + sessionDuration);
         
         if(!(context.media.getDuration() > 0)){
             alert("Could not get media duration, be sure it is loaded before passing it to player.create()");

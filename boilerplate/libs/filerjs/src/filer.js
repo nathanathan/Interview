@@ -785,9 +785,11 @@ var Filer = new function() {
 
         // Blob() takes ArrayBufferView, not ArrayBuffer.
         if (dataObj.data.__proto__ == ArrayBuffer.prototype) {
-          dataObj.data = new Uint8Array(dataObj.data);
+            dataObj.data = new Uint8Array(dataObj.data);
+        } else {
+            
         }
-        var blob = new Blob([dataObj.data],
+        var blob = new Blob(dataObj.data,
                             dataObj.type ? {type: dataObj.type} : {});
 
         fileWriter.write(blob);

@@ -19,6 +19,7 @@ require.config({
 }); 
 
 require([
+    'config',
 	'underscore',
 	'backbone',
     'player/player',
@@ -28,7 +29,7 @@ require([
     'backboneqp',
     'mixins'
 	], 
-	function(_, Backbone, player, LogItems, Sessions){
+	function(config, _, Backbone, player, LogItems, Sessions){
         //TODO: I might need to think about how to release media on hash changes.
         
         var getMediaPhonegap = function(path, callback) {
@@ -88,6 +89,13 @@ require([
                 });
             });
         };
+        //We have a problem here b/c we need to convert the amr files into mp3s.
+        //But this looks like it will solve it: https://github.com/jpemartins/amr.js
+        var getMediaBrowser = function(relPath, callback){
+            var path = "filesystem:https://c9.io/persistent/" + relPath;
+            var a = new Audio(path);
+            callback(a);
+        };
 
         var getMedia = function(path, callback) {
             //TODO: Download media into temporairy fs if not present.
@@ -95,7 +103,7 @@ require([
             if('Media' in window){
                 getMediaPhonegap(path, callback);
             } else {
-                getMediaDebug(path, callback);
+                getMediaBrowser(path, callback);
             }
         };
         
@@ -127,7 +135,7 @@ require([
             },
             
             playSession: function(qp){
-                var dirPath = "interviews/";
+                var dirPath = config.appDir;
                 if(qp && qp.id) {
                     if(qp.dirPath) {
                         dirPath = qp.dirPath;
@@ -199,7 +207,6 @@ require([
                         logItems: myLogItems
                     });
                 });
-
             }
         });
         new Router();

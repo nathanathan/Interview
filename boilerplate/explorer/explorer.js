@@ -1,5 +1,6 @@
-define([ 'underscore', 'backbone', 'explorer/ClipList', 'LogItems', 'Sessions', 'text!explorer/explorerTemplate.html'],
-function( _,            Backbone,   ClipList,            LogItems,   Sessions,   explorerTemplate) {
+define([ 'config', 'underscore', 'backbone', 'explorer/ClipList', 'LogItems', 'Sessions', 'text!explorer/explorerTemplate.html'],
+function( config,   _,            Backbone,   ClipList,            LogItems,   Sessions,   explorerTemplate) {
+    
     var compiledExplorerTemplate = _.template(explorerTemplate);
     var allLogItems;
     var allSessions = new Sessions();
@@ -10,7 +11,7 @@ function( _,            Backbone,   ClipList,            LogItems,   Sessions,  
             var onReady = function() {
                 $(function(){
                     allSessions.fetchFromFS({
-                        dirPath: 'interviews/',
+                        dirPath: config.appDir,
                         success: function(){
                             allLogItems = allSessions.collectLogItems();
                             var started = Backbone.history.start();

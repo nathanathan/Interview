@@ -1,4 +1,4 @@
-define(['jquery', 'backbone', 'underscore', 'LogItems', 'backbonels'],
+define(['jquery', 'backbone', 'underscore', 'LogItems'],
 function($,        Backbone,   _,            LogItems) {
     var myRequestFileSystem = function(success, error){
         var storageNeeded = 0;
@@ -38,6 +38,9 @@ function($,        Backbone,   _,            LogItems) {
     }
     
     var Session = Backbone.Model.extend({
+        
+        sync: function(){},
+        
         toJSON: function(){
             var attrs = _.clone(this.attributes);
             if(attrs.startTime) {
@@ -101,8 +104,6 @@ function($,        Backbone,   _,            LogItems) {
     });
     
     return Backbone.Collection.extend({
-
-        localStorage: new Backbone.LocalStorage("interview-sessions"),
         
         model: Session,
         
