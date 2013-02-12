@@ -11,13 +11,14 @@ define([
 	'underscore',
     'LogItems',
     'Sessions',
+    'sfsf',
     'text!interviewer/opening.html',
     'text!interviewer/body.html',
     'text!interviewer/interviewEnd.html',
     'text!interviewer/sessions.html',
     'text!interviewer/JSONQuestionTemplate.html',
     'backboneqp'],
-function(config, $, Backbone, _, LogItems, Sessions,
+function(config, $, Backbone, _, LogItems, Sessions, sfsf,
          openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate, JSONQuestionTemplate){
     console.log("Compiling templates...");
     var compiledOpeningTemplate = _.template(openingTemplate);
@@ -51,6 +52,7 @@ function(config, $, Backbone, _, LogItems, Sessions,
      * Returns the cordova dirEntry object to the success function,
      * and an error string to the fail function.
      **/
+    /*
     function getDirectory(dirPath, success, fail) {
         var requestFileSystemWrapper = function(success, error){
             var storageNeeded;
@@ -98,6 +100,7 @@ function(config, $, Backbone, _, LogItems, Sessions,
             fail("File System Error: " + evt.target.error.code);
         });
     }
+    */
     
     var mySessions = new Sessions();
     var interviewTitle = $('title').text();
@@ -120,7 +123,12 @@ function(config, $, Backbone, _, LogItems, Sessions,
         initialize: function(){
             var onReady = function() {
                 $(function(){
-                    getDirectory(config.appDir, function(){
+                    sfsf.cretrieve(config.appDir, {}, function(error, entry){
+                        if(error){
+                            if('chrome' in window) console.error(error);
+                            alert("Could not create app directory.");
+                            return;
+                        }
                         console.log("got directory");
                         $('body').html('<div id="pagecontainer">');
 
@@ -128,9 +136,6 @@ function(config, $, Backbone, _, LogItems, Sessions,
                         if(!started){
                             alert("Routes may be improperly set up.");
                         }
-                    }, function(err){
-                        if(window.chrome) console.error(err);
-                        alert("Could not create directory to save data.");
                     });
                 });
             };
