@@ -1,3 +1,9 @@
+/*
+TODO:
+Refactor interviewStart into beginSession and interviewStart.
+Begin session shows initial screens for data input and preliminary notices.
+interviewStart starts the recording.
+*/
 define([
     'config',
 	'jquery', 
@@ -181,9 +187,11 @@ function(config, $, Backbone, _, LogItems, Sessions,
             });
             session.Log = new LogItems();
             
+            //TODO: Make this a view
             $('body').html(compiledBodyTemplate());
             $time = $('#time');
             
+            //TODO: Maybe use route event approach for timerUpdater as well?
             timerUpdater = window.setInterval(function() {
                 $time.text(_.formatTime(new Date() - session.get('startTime')));
             }, 1000);
@@ -243,6 +251,9 @@ function(config, $, Backbone, _, LogItems, Sessions,
                 console.log("No session to record data into.");
                 return;
             }
+            if(!params){
+                params = {};
+            }
             var newLogItem = new session.Log.model(_.extend({}, params, {
                 page: page,
                 lastPage: that.currentContext.page,
@@ -276,13 +287,25 @@ function(config, $, Backbone, _, LogItems, Sessions,
             //with an underscore.
             session.set(_.omitUnderscored(params));
         },
-        setJSONQuestion: function(question, params){
-            function renderQuestion(jsonInterviewDef){
+        setJSONQuestion: function(questionName, params){
+            function renderQuestion(annotatedFlatInterview){
                 var renderedHtml;
+                
+                console.log(annotatedFlatInterview);
+                var foundQuestion = _.find(annotatedFlatInterview, function(question){
+                    if(question.name === questionName){
+                        return question;
+                    }
+                })
+                
+                if(!foundQuestion){
+                    alert("Could not find question: " + questionName);
+                    return;
+                }
+                
                 try{
                     renderedHtml = compiledJSONQuestionTemplate({
-                        questions: jsonInterviewDef.questions,
-                        questionName: question || jsonInterviewDef.questions[0].name
+                        currentQuestion: foundQuestion
                     });
                     $('#pagecontainer').html(renderedHtml);
                 } catch(e) {
@@ -291,16 +314,49 @@ function(config, $, Backbone, _, LogItems, Sessions,
                 }
             }
             var that = this;
-            that.recordData(question, params);
+            that.recordData(questionName, params);
             if(that.__jsonInterviewDef__){
-                renderQuestion(that.__jsonInterviewDef__);
+                renderQuestion(that.__annotatedFlatInterview__);
             } else {
                 //TODO: Eventually, I think the name of the interview should be
                 //a prefix on all the routes. We will need to use that prefix
                 //here to construct the appropriate path.
                 $.getJSON('example/interview.json', function(jsonInterviewDef){
                     that.__jsonInterviewDef__ = jsonInterviewDef;
-                    renderQuestion(jsonInterviewDef);
+                    //Here we create a flat array with all the questions, and where each 
+                    //question has annotations indicating the next questions and branches.
+                    that.__annotatedFlatInterview__ = [];
+                    var annotateAndFlatten = function(nextQuestions){
+                        var currentQuestion, followingQuestions;
+                        if(nextQuestions.length > 0) {
+                            currentQuestion = nextQuestions[0];
+                            if("__nextQuestions" in currentQuestion){
+                                //We've already handled this question
+                                return;
+                            }
+                            followingQuestions = nextQuestions.slice(1);
+                            currentQuestion.__branches = [];
+                            while(followingQuestions.length > 0 &&
+                                    "type" in followingQuestions[0] &&
+                                    followingQuestions[0].type === "branch"){
+                                currentQuestion.__branches.push(followingQuestions[0]);
+                                followingQuestions = followingQuestions.slice(1);
+                            }
+                            _.each(currentQuestion.__branches, function(branch){
+                                if("children" in branch && branch.children.length > 0) {
+                                    annotateAndFlatten(branch.children.concat(followingQuestions));
+                                    branch.__nextQuestions = branch.children.concat(followingQuestions);
+                                } else {
+                                    branch.__nextQuestions = followingQuestions;
+                                }
+                            });
+                            annotateAndFlatten(followingQuestions);
+                            currentQuestion.__nextQuestions = followingQuestions;
+                            that.__annotatedFlatInterview__.push(currentQuestion);
+                        }
+                    };
+                    annotateAndFlatten(jsonInterviewDef.interview);
+                    renderQuestion(that.__annotatedFlatInterview__);
                 });
             }
         },
@@ -316,7 +372,7 @@ function(config, $, Backbone, _, LogItems, Sessions,
                 var compiledTemplate, renderedHtml;
                 that.currentContext = {
                     page: page,
-                    qp: params,
+                    qp: params,//TODO: Remove? Add session instead?
                     last: that.currentContext,
                     url: that.toFragment(page, params)
                 };

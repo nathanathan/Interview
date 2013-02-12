@@ -89,9 +89,11 @@ require([
                 });
             });
         };
+        
         //We have a problem here b/c we need to convert the amr files into mp3s.
-        //But this looks like it will solve it: https://github.com/jpemartins/amr.js
-        var getMediaBrowser = function(relPath, callback){
+        //see:
+        //http://stackoverflow.com/questions/14795118/playing-back-3gp-audio-recorded-in-android-cordova-elsewhere
+        var getMediaBrowser = function(relPath, callback) {
             var path = "filesystem:https://c9.io/persistent/" + relPath;
             var a = new Audio(path);
             callback(a);
