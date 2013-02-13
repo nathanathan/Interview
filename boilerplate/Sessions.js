@@ -117,8 +117,11 @@ function($,        Backbone,   _,            LogItems,   sfsf) {
                                     try{
                                         fileJSON = JSON.parse(evt.target.result);
                                     } catch(e) {
-                                        console.error(e);
-                                        options.error("Could not parse result.");
+                                        alert("File could not be parsed: " + entry.name);
+                                        console.log(e);
+                                        //If the file could not be parsed we notify the user and continue.
+                                        //This is most likely due to errors when writing
+                                        successCounter();
                                         return;
                                     }
                                     var session = new Session();

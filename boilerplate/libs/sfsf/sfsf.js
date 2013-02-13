@@ -113,12 +113,11 @@ define(['underscore'], function(_){
                         
                         fileWriter.onerror = callback;
                         
-                        // Blob() takes ArrayBufferView, not ArrayBuffer.
-                        if (options.data.__proto__ == ArrayBuffer.prototype) {
-                            options.data = new Uint8Array(options.data);
-                        }
-                        
                         if('chrome' in window){
+                            // Blob() takes ArrayBufferView, not ArrayBuffer.
+                            if (options.data.__proto__ == ArrayBuffer.prototype) {
+                                options.data = new Uint8Array(options.data);
+                            }
                             fileWriter.write([options.data], {type: options.type || 'text/plain'});
                         } else {
                             fileWriter.write(options.data);
