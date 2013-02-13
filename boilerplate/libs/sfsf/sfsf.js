@@ -118,11 +118,11 @@ define(['underscore'], function(_){
                             options.data = new Uint8Array(options.data);
                         }
                         
-                        var blob = new Blob([options.data], {type: options.type});
-                        
-                        //TODO: This might be broken in chromium.
-                        fileWriter.write(blob);
-                        
+                        if('chrome' in window){
+                            fileWriter.write([options.data], {type: options.type || 'text/plain'});
+                        } else {
+                            fileWriter.write(options.data);
+                        }
                     }, callback);
                 
                 }, callback);
