@@ -125,7 +125,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 $(function(){
                     sfsf.cretrieve(config.appDir, {}, function(error, entry){
                         if(error){
-                            if('chrome' in window) console.error(error);
+                            console.log(error);
                             alert("Could not create app directory.");
                             return;
                         }

@@ -1,5 +1,5 @@
 /*
-Nathan's File System Functions:
+Simple File System Functions:
 Notes:
 Everything uses errbacks.
 */
@@ -7,18 +7,25 @@ define(['underscore'], function(_){
     var sfsf = {
     /**
      * Takes any number of file path strings as arguments and joins them into one.
-     * Trailing and leading slashes are added and removed as needed.
+     * Tries to copy python's os.path.join
      **/
     joinPaths : function() {
         var result = arguments[0];
         for (var i = 1; i < arguments.length; i++) {
-            if (result[result.length - 1] !== '/') {
-                result += '/';
-            }
-            if (arguments[i][0] === '/') {
-                result += arguments[i].substr(1);
-            } else {
+            if(result === '') {
                 result += arguments[i];
+            } else if(result[result.length - 1] === '/'){
+                if (arguments[i][0] === '/') {
+                    result += arguments[i].substr(1);
+                } else {
+                    result += arguments[i];
+                }
+            } else {
+                if (arguments[i][0] === '/') {
+                    result += arguments[i];
+                } else {
+                    result += '/' + arguments[i];
+                }
             }
         }
         return result;
@@ -52,7 +59,7 @@ define(['underscore'], function(_){
         function onReady(){
             var defaultOptions = {
                 storageNeeded: 5*1024*1024, //5MB
-                persistent: true
+                persistent: true //TODO
             };
             options = _.extend(defaultOptions, options || {});
             var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
@@ -120,15 +127,15 @@ define(['underscore'], function(_){
                 
                 }, callback);
             }
-            console.log(fileSystem.name);
-            console.log(fileSystem.root.name);
+            console.log("FileSystemName:", fileSystem.name)
+            //console.log(fileSystem.root.name);
             var dirArray = path.split('/');
             var curPath = '';
             var getDirectoryHelper = function(dirEntry) {
-                console.log(curPath);
                 var pathSegment = dirArray.shift();
-                if(_.isString(pathSegment)) {
+                if(_.isString(pathSegment) && pathSegment !== '') {
                     curPath = sfsf.joinPaths(curPath, pathSegment);
+                    console.log("curPath:", curPath);
                     if(dirArray.length === 0){
                         //This is the final segment
                         if(options.data){
@@ -139,7 +146,7 @@ define(['underscore'], function(_){
                         }
                     }
                     fileSystem.root.getDirectory(curPath, {
-                        create: (curPath.length > 1), //avoid creating the root dir.
+                        create: (curPath !== '/' && curPath !== ''), //avoid creating the root dir.
                         exclusive: false
                     },
                     getDirectoryHelper,
@@ -153,7 +160,6 @@ define(['underscore'], function(_){
             getDirectoryHelper();
         });
     }
-    //Add function readFilteredEntries(path, filter, callback)
     };
     return sfsf;
 });
