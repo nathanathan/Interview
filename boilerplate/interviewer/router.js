@@ -165,6 +165,13 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             mySessions.fetchFromFS({
                 dirPath: config.appDir,
                 success: function(){
+                    //Add durations for this view.
+                    //Should durations be stored?
+                    mySessions.each(function(session){
+                        if(session.get("endTime")){
+                            session.set("_duration", session.get("endTime") - session.get("startTime"));
+                        }
+                    })
                     $('body').html(compiledSessionsTemplate({sessions: mySessions.toJSON()}));
                 },
                 error: function(){
@@ -177,7 +184,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             var $time;
             var startUrl = $('body').data('start');
             var sessionId = GUID();
-            var recordingName = sessionId + ".amr";
+            var recordingPath = sfsf.joinPaths(config.appDir, sessionId + ".amr");
             
             if(session){
                 //i.e. If the user presses back from the first screen and lands here.
@@ -201,8 +208,8 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 $time.text(_.formatTime(new Date() - session.get('startTime')));
             }, 1000);
             if('Media' in window) {
-                var mediaRec = new Media(config.appDir + '/' + recordingName);
-                console.log("media created: " + config.appDir + '/' + recordingName);
+                var mediaRec = new Media(recordingPath);
+                console.log("media created: " + recordingPath);
                 mediaRec.startRecord();
                 //set startTime again to try to get as close as possible
                 //to the recording start time.
@@ -245,9 +252,23 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 });
             });
             $('#discard').click(function(){
-                //TODO: Delete recording?
-                session = null;
-                that.navigate('', {trigger: true, replace: true});
+                var recordingPath = sfsf.joinPaths(config.appDir, session.get('id') + ".amr");
+                if(confirm("Are you sure you want to discard this recording?")){
+                    sfsf.cretrieve(recordingPath, function(error, fileEntry){
+                        var errorFun = function(){
+                            alert("Error clearing recoding at: " + recordingPath + "\nIt will need to be manually deleted from the sd card.");
+                        }
+                        if(error){
+                            console.log(error);
+                            errorFun();
+                        }
+                        fileEntry.remove(function(){
+                            console.log("Entry successfully removed.");
+                        }, errorFun);
+                    });
+                    session = null;
+                    that.navigate('', {trigger: true, replace: true});
+                }
             });
         },
         recordData: function(page, params){

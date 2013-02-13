@@ -93,6 +93,14 @@ define(['underscore'], function(_){
      * The file system is automatically requested with the default options.
      **/
     cretrieve : function(path, options, callback) {
+        if(_.isFunction(options)){
+            callback = options;
+            options = {};
+        }
+        options = _.extend({
+            //Treat as file by default if last segment contains a dot
+            isFile: path.split('/').pop().match('\\.')
+        }, options);
         sfsf.politelyRequestFileSystem({}, function(error, fileSystem) {
             if(error){
                 callback(error);
@@ -126,8 +134,7 @@ define(['underscore'], function(_){
                 
                 }, callback);
             }
-            console.log("FileSystemName:", fileSystem.name)
-            //console.log(fileSystem.root.name);
+            console.log("FileSystemName:", fileSystem.name);
             var dirArray = path.split('/');
             var curPath = '';
             var getDirectoryHelper = function(dirEntry) {
@@ -141,6 +148,17 @@ define(['underscore'], function(_){
                             //Data was included so assume were creating a file.
                             //TODO: Check that the directory doesn't exist.
                             justWrite(curPath, options, callback);
+                            return;
+                        }
+                        if(options.isFile){
+                            fileSystem.root.getFile(curPath, {
+                                create: true,
+                                exclusive: false
+                            },
+                            function(fileEntry){
+                                callback(null, fileEntry);
+                            },
+                            callback);
                             return;
                         }
                     }
