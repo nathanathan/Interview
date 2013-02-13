@@ -26,11 +26,12 @@ require([
     'player/player',
     'LogItems',
     'Sessions',
+    'sfsf',
     'Popcorn',
     'backboneqp',
     'mixins'
 	], 
-	function(config, _, Backbone, player, LogItems, Sessions){
+	function(config, _, Backbone, player, LogItems, Sessions, sfsf){
         //TODO: I might need to think about how to release media on hash changes.
         
         var getMediaPhonegap = function(path, callback) {
@@ -154,8 +155,8 @@ require([
                                 console.error(qp.id);
                             }
                             
-                            var recordingPath = dirPath +
-                                qp.id +".amr";
+                            var recordingPath = sfsf.joinPaths(dirPath,
+                                qp.id +".amr");
                             console.log("recordingPath:" + recordingPath);
                             
                             getMedia(recordingPath, function(media){
