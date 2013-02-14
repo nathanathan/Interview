@@ -23,9 +23,13 @@
             <dd>
                 <%= session.startTime %>
             </dd>
-            <dt>end time:</dt>
+            <dt>duration:</dt>
             <dd>
-                <%= session.endTime || "" %>
+            <% if("_duration" in session) { %>
+                <%= _.formatTime( session._duration ) %>
+            <% } else { %>
+                ?
+            <% } %>
             </dd>
         </dl>
     </td>

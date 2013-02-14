@@ -1,43 +1,10 @@
-define(['jquery', 'backbone', 'underscore', 'LogItems', 'backbonels'],
-function($,        Backbone,   _,            LogItems) {
-    var myRequestFileSystem = function(success, error){
-        var storageNeeded = 0;
-        var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-        var PERSISTENT = ("LocalFileSystem" in window) ?  window.LocalFileSystem.PERSISTENT : window.PERSISTENT;
-        if(!requestFileSystem) {
-            error("Browser does not support filesystem API");
-            return;
-        }
-        if("webkitStorageInfo" in window && "requestQuota" in window.webkitStorageInfo){
-            storageNeeded = 5*1024*1024; //5MB
-            //We're using chrome probably and need to request storage space.
-            window.webkitStorageInfo.requestQuota(PERSISTENT, storageNeeded, function(grantedBytes) {
-                requestFileSystem(PERSISTENT, storageNeeded, success, error);
-            }, error);
-        } else {
-            requestFileSystem(PERSISTENT, storageNeeded, success, error);
-        }
-    };
-    /**
-     * Takes any number of file path strings as arguments and joins them into one.
-     * Trailing and leading slashes are added and removed as needed.
-     **/
-    function joinPaths() {
-        var result = arguments[0];
-        for (var i = 1; i < arguments.length; i++) {
-            if (result[result.length - 1] !== '/') {
-                result += '/';
-            }
-            if (arguments[i][0] === '/') {
-                result += arguments[i].substr(1);
-            } else {
-                result += arguments[i];
-            }
-        }
-        return result;
-    }
+define(['jquery', 'backbone', 'underscore', 'LogItems', 'sfsf'],
+function($,        Backbone,   _,            LogItems,   sfsf) {
     
     var Session = Backbone.Model.extend({
+        
+        sync: function(){},
+        
         toJSON: function(){
             var attrs = _.clone(this.attributes);
             if(attrs.startTime) {
@@ -73,9 +40,25 @@ function($,        Backbone,   _,            LogItems) {
                 session: that.toJSON(),
                 log: that.Log.toJSON()
             });
-            var filePath = joinPaths(options.dirPath, that.get('id') + '.json');
+            var filePath = sfsf.joinPaths(options.dirPath, that.get('id') + '.json');
             console.log("saving " + filePath);
-            myRequestFileSystem(function(fileSystem) {
+            sfsf.cretrieve(filePath, {
+                data: content,
+                type: 'text/plain'
+            }, function(error) {
+                if(error){
+                    options.error(error);
+                    return;
+                }
+                console.log("contents written!");
+                options.success();
+            });
+            /*
+            sfsf.politelyRequestFileSystem(function(error, fileSystem) {
+                if(error){
+                    options.error(error);
+                    return;
+                }
                 console.log("Got fileSystem");
                 fileSystem.root.getFile(filePath, {
                     create: true,
@@ -96,20 +79,23 @@ function($,        Backbone,   _,            LogItems) {
                         }
                     }, options.error);
                 }, options.error);
-            }, options.error);
+            });
+            */
         }
     });
     
     return Backbone.Collection.extend({
-
-        localStorage: new Backbone.LocalStorage("interview-sessions"),
         
         model: Session,
         
         fetchFromFS: function(options){
             var that = this;
             this.reset();
-            myRequestFileSystem(function(fileSystem) {
+            sfsf.politelyRequestFileSystem(function(error, fileSystem) {
+                if(error) {
+                    options.error(error);
+                    return;
+                }
                 console.log(fileSystem.name);
                 console.log(fileSystem.root.name);
                 fileSystem.root.getDirectory(options.dirPath, {
@@ -131,8 +117,11 @@ function($,        Backbone,   _,            LogItems) {
                                     try{
                                         fileJSON = JSON.parse(evt.target.result);
                                     } catch(e) {
-                                        console.error(e);
-                                        options.error("Could not parse result.");
+                                        alert("File could not be parsed: " + entry.name);
+                                        console.log(e);
+                                        //If the file could not be parsed we notify the user and continue.
+                                        //This is most likely due to errors when writing
+                                        successCounter();
                                         return;
                                     }
                                     var session = new Session();
@@ -161,9 +150,6 @@ function($,        Backbone,   _,            LogItems) {
                 }, function(error) {
                     alert("Unable to access directory: " + error.code);
                 });
-            }, function failFS(error) {
-                console.log(error);
-                alert("File System Error: " + String(error));
             });
             return this;
         },

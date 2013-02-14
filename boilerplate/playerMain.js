@@ -4,7 +4,8 @@ require.config({
 		"backbone": "libs/backbone-min",
         "backboneqp": "libs/backbone.queryparams",
         "backbonels": "libs/backbone-localstorage",
-        "Popcorn": "libs/popcorn-complete.min"
+        "Popcorn": "libs/popcorn-complete.min",
+        "sfsf": "libs/sfsf/sfsf"
 	},
 	'shim': 
 	{
@@ -19,16 +20,18 @@ require.config({
 }); 
 
 require([
+    'config',
 	'underscore',
 	'backbone',
     'player/player',
     'LogItems',
     'Sessions',
+    'sfsf',
     'Popcorn',
     'backboneqp',
     'mixins'
 	], 
-	function(_, Backbone, player, LogItems, Sessions){
+	function(config, _, Backbone, player, LogItems, Sessions, sfsf){
         //TODO: I might need to think about how to release media on hash changes.
         
         var getMediaPhonegap = function(path, callback) {
@@ -88,6 +91,15 @@ require([
                 });
             });
         };
+        
+        //We have a problem here b/c we need to convert the amr files into mp3s.
+        //see:
+        //http://stackoverflow.com/questions/14795118/playing-back-3gp-audio-recorded-in-android-cordova-elsewhere
+        var getMediaBrowser = function(relPath, callback) {
+            var path = "filesystem:https://c9.io/persistent/" + relPath;
+            var a = new Audio(path);
+            callback(a);
+        };
 
         var getMedia = function(path, callback) {
             //TODO: Download media into temporairy fs if not present.
@@ -95,7 +107,7 @@ require([
             if('Media' in window){
                 getMediaPhonegap(path, callback);
             } else {
-                getMediaDebug(path, callback);
+                getMediaBrowser(path, callback);
             }
         };
         
@@ -127,7 +139,7 @@ require([
             },
             
             playSession: function(qp){
-                var dirPath = "interviews/";
+                var dirPath = config.appDir;
                 if(qp && qp.id) {
                     if(qp.dirPath) {
                         dirPath = qp.dirPath;
@@ -143,8 +155,8 @@ require([
                                 console.error(qp.id);
                             }
                             
-                            var recordingPath = dirPath +
-                                qp.id +".amr";
+                            var recordingPath = sfsf.joinPaths(dirPath,
+                                qp.id +".amr");
                             console.log("recordingPath:" + recordingPath);
                             
                             getMedia(recordingPath, function(media){
@@ -199,7 +211,6 @@ require([
                         logItems: myLogItems
                     });
                 });
-
             }
         });
         new Router();

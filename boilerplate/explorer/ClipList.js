@@ -1,4 +1,5 @@
 define([
+    'config',
     'backbone',
     'underscore',
     'player/player',
@@ -6,7 +7,7 @@ define([
     'text!explorer/clipTemplate.html',
     'text!explorer/resultsTemplate.html'
 ],
-function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
+function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
     var compiledClipTemplate = _.template(clipTemplate);
     
     var getMediaPhonegap = function(path, callback) {
@@ -141,8 +142,8 @@ function(Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     }
                     //Getting the session will also make it easier to get rid
                     //of the _recordingStart param.
-                    var recordingPath = 'interviews/' +
-                        logItem.get('_sessionId') +".amr";
+                    var recordingPath = config.appDir +
+                        logItem.get('_sessionId') + ".amr";
                     console.log("recordingPath: " + recordingPath);
 
                     getMedia(recordingPath, function(media){

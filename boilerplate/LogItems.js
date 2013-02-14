@@ -1,4 +1,4 @@
-define(['jquery', 'backbone', 'underscore', 'backbonels'],
+define(['jquery', 'backbone', 'underscore'],
 function($,        Backbone,   _) {
     
     var LogItem = Backbone.Model.extend({
@@ -50,8 +50,6 @@ function($,        Backbone,   _) {
     return Backbone.Collection.extend({
 
         model: LogItem,
-        
-        localStorage: new Backbone.LocalStorage("interview-logItems"),
 
         //Saving a collection is kind of an unusual thing to do
         //because generally it is a good idea to immediately save models to avoid
