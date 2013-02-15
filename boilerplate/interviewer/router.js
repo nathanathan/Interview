@@ -17,15 +17,17 @@ define([
     'text!interviewer/interviewEnd.html',
     'text!interviewer/sessions.html',
     'text!interviewer/JSONQuestionTemplate.html',
+    'text!sandbox/sandbox.html',
     'backboneqp'],
 function(config, $, Backbone, _, LogItems, Sessions, sfsf,
-         openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate, JSONQuestionTemplate){
+         openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate, JSONQuestionTemplate,sandbox){
     console.log("Compiling templates...");
     var compiledOpeningTemplate = _.template(openingTemplate);
     var compiledBodyTemplate = _.template(bodyTemplate);
     var compiledInterviewEndTemplate = _.template(interviewEndTemplate);
     var compiledSessionsTemplate = _.template(sessionsTemplate);
     var compiledJSONQuestionTemplate = _.template(JSONQuestionTemplate);
+    var compiledSandboxTemplate = _.template(sandbox);
     console.log("Templates compiled");
     
     //This is a patch to make it so form submission puts the params after
@@ -151,15 +153,22 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
 		},
 		routes: {
             '': 'opening',
+            'opening':'opening',
             'sessions': 'showSessions',
             'interviewStart': 'interviewStart',
             'interviewEnd': 'interviewEnd',
+            'sandbox':'sandbox',
             //order is important here:
             'json/:question': 'setJSONQuestion',
             '*page': 'setPage'
 		},
         opening: function(){
             $('body').html(compiledOpeningTemplate({title: interviewTitle}));
+        },
+        sandbox: function () {
+            $('body').html(compiledSandboxTemplate());
+            
+        
         },
         showSessions: function(){
             mySessions.fetchFromFS({
