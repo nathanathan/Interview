@@ -4,7 +4,18 @@
             <p class="lead">
                 <%-  currentQuestion.label %>
             </p>
+            <ul class="nav nav-pills">
+            <% _.forEach(currentQuestion.__tags, function(tag) { %>
+    
+                <li>
+                    <a class="add-tag" data-tag="<%- tag.tag %>">
+                        <%- tag.tag %>
+                    </a>
+                </li>
+            <% }); %>
+            </ul>
         </div>
+
         <div class="span6">
             <ul class="nav nav-tabs nav-stacked">
             <% if(currentQuestion.__branches.length > 0) { %>

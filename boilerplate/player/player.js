@@ -4,8 +4,8 @@
 //Handling pauses would be really tricky, so I probably won't bother.
 //The popcorn.js movie maker has an interesting way of handling skips that might
 //be applicable.
-define(['backbone', 'underscore', 'text!player/playerTemplate.html', 'text!player/logItemTemplate.html'],
-function(Backbone,   _,            playerTemplate,                    logItemTemplate){
+define(['config', 'backbone', 'underscore', 'text!player/playerTemplate.html', 'text!player/logItemTemplate.html'],
+function(config,   Backbone,   _,            playerTemplate,                    logItemTemplate){
     var compiledPlayerTemplate = _.template(playerTemplate);
     var compiledLogItemTemplate  = _.template(logItemTemplate);
     
@@ -218,6 +218,15 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         
         playerView.setElement($playerControls.get(0));
         playerView.render();
+        
+        //It might be a good idea to lazy load the tag layers.
+        context.session.fetchTagLayers({
+            dirPath: config.appDir,
+            success: function() {
+                console.log("Tag Layers:", context.session.tagLayers);
+            }
+        });
+        
         return this;
 	};
     

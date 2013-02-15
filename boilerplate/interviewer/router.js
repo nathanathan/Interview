@@ -35,73 +35,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
         window.location = $(e.target).attr('action') + '?' + $(e.target).serialize();
     });
     
-    /**
-     * From backbone-localstorage:
-     * Generate a pseudo-GUID by concatenating random hexadecimal.
-     **/
-    function GUID() {
-        // Generate four random hex digits.
-        function S4() {
-           return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-        }
-       return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-    }
-    
-    /**
-     * Check that the directory path exists, and creates it if not.
-     * Returns the cordova dirEntry object to the success function,
-     * and an error string to the fail function.
-     **/
-    /*
-    function getDirectory(dirPath, success, fail) {
-        var requestFileSystemWrapper = function(success, error){
-            var storageNeeded;
-            var PERSISTENT = ("LocalFileSystem" in window) ?  window.LocalFileSystem.PERSISTENT : window.PERSISTENT;
-            var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-            if("webkitStorageInfo" in window && "requestQuota" in window.webkitStorageInfo){
-                storageNeeded = 5*1024*1024; //5MB
-                //We're using chrome probably and need to request storage space.
-                window.webkitStorageInfo.requestQuota(PERSISTENT, storageNeeded, function(grantedBytes) {
-                    requestFileSystem(PERSISTENT, storageNeeded, success, error);
-                }, error);
-            } else {
-                requestFileSystem(PERSISTENT, storageNeeded, success, error);
-            }
-        }
-        requestFileSystemWrapper(function(fileSystem) {
-            console.log(fileSystem.name);
-            console.log(fileSystem.root.name);
-            var dirArray = dirPath.split('/');
-            var curDir = '';
-            var getDirectoryHelper = function(dirEntry){
-                console.log(curDir);
-                var pathSegment = dirArray.shift();
-                if(pathSegment){
-                    curDir += pathSegment + '/';
-                    fileSystem.root.getDirectory(curDir, {
-                        create: true,
-                        exclusive: false
-                    },
-                    getDirectoryHelper,
-                    function(error) {
-                        console.log(error);
-                        console.log(curDir);
-                        fail("Unable to create new directory: " + error.code);
-                    });
-                } else if(dirArray.length !== 0) {
-                    fail("Error creating path: " + dirPath);
-                } else {
-                    success(dirEntry);
-                }
-            };
-            getDirectoryHelper();
-        }, function failFS(evt) {
-            console.log(evt);
-            fail("File System Error: " + evt.target.error.code);
-        });
-    }
-    */
-    
     var mySessions = new Sessions();
     var interviewTitle = $('title').text();
     var timerUpdater;
@@ -183,8 +116,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             var that = this;
             var $time;
             var startUrl = $('body').data('start');
-            var sessionId = GUID();
-            var recordingPath = sfsf.joinPaths(config.appDir, sessionId + ".amr");
             
             if(session){
                 //i.e. If the user presses back from the first screen and lands here.
@@ -193,23 +124,32 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             }
             
             session = mySessions.create({
-                id: sessionId,
                 startTime: new Date(),
                 interviewTitle: interviewTitle
             });
             session.Log = new LogItems();
             
-            //TODO: Make this a view
+            session.set("_recordingPath", sfsf.joinPaths(config.appDir, session.get("id") + ".amr"));
+            
+            //TODO: Make a session view that does the following:
+            //Updates the timer.
+            //displays errors when recording fails
+            //handles add-tag click events.
             $('body').html(compiledBodyTemplate());
+            $('body').delegate('.add-tag', 'click', function(evt){
+                console.log("adding tag:", $(evt.target).data("tag"));
+                session.addTag("base", $(evt.target).data("tag"), new Date());
+            });
             $time = $('#time');
             
             //TODO: Maybe use route event approach for timerUpdater as well?
             timerUpdater = window.setInterval(function() {
                 $time.text(_.formatTime(new Date() - session.get('startTime')));
             }, 1000);
+            
             if('Media' in window) {
-                var mediaRec = new Media(recordingPath);
-                console.log("media created: " + recordingPath);
+                var mediaRec = new Media(session.get('_recordingPath'));
+                console.log("media created: " + session.get('_recordingPath'));
                 mediaRec.startRecord();
                 //set startTime again to try to get as close as possible
                 //to the recording start time.
@@ -252,7 +192,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 });
             });
             $('#discard').click(function(){
-                var recordingPath = sfsf.joinPaths(config.appDir, session.get('id') + ".amr");
+                var recordingPath = session.get('_recordingPath');
                 if(confirm("Are you sure you want to discard this recording?")){
                     sfsf.cretrieve(recordingPath, function(error, fileEntry){
                         var errorFun = function(){
@@ -360,6 +300,12 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                                 //We've already handled this question
                                 return;
                             }
+                            if("tags" in currentQuestion){
+                                currentQuestion.__tags = _.map(currentQuestion.tags.split(","), function(tag){
+                                    return { tag: tag.trim() };
+                                });
+                            }
+                            
                             followingQuestions = nextQuestions.slice(1);
                             currentQuestion.__branches = [];
                             while(followingQuestions.length > 0 &&

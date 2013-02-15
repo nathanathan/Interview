@@ -59,9 +59,9 @@ require([
         }
         
         var getMediaDebug = function(path, callback) {
-            var $audioContainer = $('<div>');
+            var $audioContainer = $('<div style="height:400px">');
             $('body').append($audioContainer);
-            var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=HgzGwKwLmgM&width=0&height=0' );
+            var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=oozJH6jSr2U&width=0&height=0' );
             myAudio.on("loadedmetadata", function() {
                 myAudio.off("loadedmetadata");
                 callback({
@@ -107,7 +107,7 @@ require([
             if('Media' in window){
                 getMediaPhonegap(path, callback);
             } else {
-                getMediaBrowser(path, callback);
+                getMediaDebug(path, callback);
             }
         };
         
@@ -139,6 +139,7 @@ require([
             },
             
             playSession: function(qp){
+                //TODO: Should only need to fetch a single session
                 var dirPath = config.appDir;
                 if(qp && qp.id) {
                     if(qp.dirPath) {
