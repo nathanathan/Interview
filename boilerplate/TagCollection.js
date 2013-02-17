@@ -14,8 +14,7 @@ function(Backbone,   _,            sfsf) {
         //JSON stringifies dates in a way that the Date object can't parse in webkits.
         //Try: new Date(JSON.parse(JSON.stringify(new Date())))
         //To avoid this issue dates can be stringified with the String function.
-        //TODO: Use .toUTCString instead?
-        //TODO: Maybe add this to the Backbone core?
+        //Use .toUTCString instead?
         toJSON: function() {
             var attrs = _.clone(this.attributes);
             _.each(attrs, function(attrName, attrValue){

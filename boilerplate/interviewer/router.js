@@ -271,7 +271,8 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 
                 try{
                     renderedHtml = compiledJSONQuestionTemplate({
-                        currentQuestion: foundQuestion
+                        currentQuestion: foundQuestion,
+                        formDir: "example/"
                     });
                     $('#pagecontainer').html(renderedHtml);
                 } catch(e) {
@@ -281,14 +282,13 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             }
             var that = this;
             that.recordData(questionName, params);
-            if(that.__jsonInterviewDef__){
+            if(that.__annotatedFlatInterview__){
                 renderQuestion(that.__annotatedFlatInterview__);
             } else {
                 //TODO: Eventually, I think the name of the interview should be
                 //a prefix on all the routes. We will need to use that prefix
                 //here to construct the appropriate path.
                 $.getJSON('example/interview.json', function(jsonInterviewDef){
-                    that.__jsonInterviewDef__ = jsonInterviewDef;
                     //Here we create a flat array with all the questions, and where each 
                     //question has annotations indicating the next questions and branches.
                     that.__annotatedFlatInterview__ = [];
@@ -300,11 +300,9 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                                 //We've already handled this question
                                 return;
                             }
-                            if("tags" in currentQuestion){
-                                currentQuestion.__tags = _.map(currentQuestion.tags.split(","), function(tag){
-                                    return { tag: tag.trim() };
-                                });
-                            }
+                            currentQuestion.__tags = _.where(jsonInterviewDef.tags, {
+                                group: ("tags" in currentQuestion) ? currentQuestion.tags : "default"
+                            });
                             
                             followingQuestions = nextQuestions.slice(1);
                             currentQuestion.__branches = [];

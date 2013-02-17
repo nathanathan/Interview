@@ -27,14 +27,17 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
         
         sync: function(){},
         
-        toJSON: function(){
+        //JSON stringifies dates in a way that the Date object can't parse in webkits.
+        //Try: new Date(JSON.parse(JSON.stringify(new Date())))
+        //To avoid this issue dates can be stringified with the String function.
+        //Use .toUTCString instead?
+        toJSON: function() {
             var attrs = _.clone(this.attributes);
-            if(attrs.startTime) {
-                attrs.startTime = String(attrs.startTime);
-            }
-            if(attrs.endTime) {
-                attrs.endTime = String(attrs.endTime);
-            }
+            _.each(attrs, function(attrName, attrValue){
+                if(_.isDate(attrValue)){
+                    attrs[attrName] = String(attrValue);
+                }
+            });
             return attrs;
         },
 

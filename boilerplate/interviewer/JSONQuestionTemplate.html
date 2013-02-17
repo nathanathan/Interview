@@ -8,8 +8,13 @@
             <% _.forEach(currentQuestion.__tags, function(tag) { %>
     
                 <li>
-                    <a class="add-tag" data-tag="<%- tag.tag %>">
-                        <%- tag.tag %>
+                    <a class="add-tag" data-tag="<%- tag.name %>">
+                        <% if("imagePath" in tag) { %>
+                            <img src="<%- formDir %><%- tag.imagePath %>"></img>
+                        <% } %>
+                        <% if("label" in tag) { %>
+                            <%- tag.label %>
+                        <% } %>
                     </a>
                 </li>
             <% }); %>
@@ -38,7 +43,7 @@
                 <% }); %>
             <% } else if(currentQuestion.__nextQuestions.length > 0) { %>
                 <li>
-                <a href="#json/<%- currentQuestion.__nextQuestions[0] %>">
+                <a href="#json/<%- currentQuestion.__nextQuestions[0].name %>">
                     <i class="icon-chevron-right"></i>
                     Next Question
                 </a>
