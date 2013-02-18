@@ -28,13 +28,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
     var compiledJSONQuestionTemplate = _.template(JSONQuestionTemplate);
     console.log("Templates compiled");
     
-    //This is a patch to make it so form submission puts the params after
-    //the hash so they can be picked up by Backboneqp.
-    $(document).submit(function(e) {
-        e.preventDefault();
-        window.location = $(e.target).attr('action') + '?' + $(e.target).serialize();
-    });
-    
     var mySessions = new Sessions();
     var interviewTitle = $('title').text();
     var timerUpdater;
@@ -54,33 +47,20 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             url: ''
         },
         initialize: function(){
-            var onReady = function() {
-                $(function(){
-                    sfsf.cretrieve(config.appDir, {}, function(error, entry){
-                        if(error){
-                            console.log(error);
-                            alert("Could not create app directory.");
-                            return;
-                        }
-                        console.log("got directory");
-                        $('body').html('<div id="pagecontainer">');
+            sfsf.cretrieve(config.appDir, {}, function(error, entry){
+                if(error){
+                    console.log(error);
+                    alert("Could not create app directory.");
+                    return;
+                }
+                console.log("got directory");
+                $('body').html('<div id="pagecontainer">');
 
-                        var started = Backbone.history.start();
-                        if(!started){
-                            alert("Routes may be improperly set up.");
-                        }
-                    });
-                });
-            };
-            if ('cordova' in window) {
-                //No need to worry about timing. From cordova docs:
-                //This event behaves differently from others in that any event handler
-                //registered after the event has been fired will have its callback
-                //function called immediately.
-                document.addEventListener("deviceready", onReady);
-            } else {
-                onReady();
-            }
+                var started = Backbone.history.start();
+                if(!started){
+                    alert("Routes may be improperly set up.");
+                }
+            });
 		},
 		routes: {
             '': 'opening',
@@ -137,8 +117,16 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             //handles add-tag click events.
             $('body').html(compiledBodyTemplate());
             $('body').delegate('.add-tag', 'click', function(evt){
-                console.log("adding tag:", $(evt.target).data("tag"));
-                session.addTag("base", $(evt.target).data("tag"), new Date());
+                var $tagEl = $(evt.target).closest(".add-tag");
+                console.log("adding tag:", $tagEl.data("tag"));
+                session.addTag("base", $tagEl.data("tag"), new Date());
+                //Temporariliy disable the tag...
+                $tagEl.removeClass('add-tag');
+                $tagEl.addClass('add-tag-disabled');
+                window.setTimeout(function(){
+                    $tagEl.addClass('add-tag');
+                    $tagEl.removeClass('add-tag-disabled');
+                }, 2000);
             });
             $time = $('#time');
             

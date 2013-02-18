@@ -59,3 +59,21 @@
     color: #ffffff;
     background-color: #0088cc;
 }
+
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: .2;
+  }
+  to {
+    opacity:  1.0;
+  }
+}
+.add-tag-disabled {
+    opacity: .2;
+    -webkit-animation-duration: 2s;
+    -webkit-animation-iteration-count: 1;
+    -webkit-animation-name: fadeIn;
+}
+.add-tag-disabled:hover {
+    background-color: white !important;
+}

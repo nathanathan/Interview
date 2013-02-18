@@ -9,5 +9,5 @@ pip install xlrd
 
 ```
 cd XLSInterview
-python XLSInterviewConverter.py exampleInterview.xlsx interview.json
+python XLSInterviewConverter.py metaInterview.xlsx interview.json
 ```
