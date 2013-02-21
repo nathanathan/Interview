@@ -1,39 +1,105 @@
-#controls {
-    padding: 5px;
-    border: 1px dotted lightgray;
-    text-align: center;
-}
-.control {
-    height: 40px;
-    width: 100px;
-    font-size: 2em;
-}
-#play {
-    color: green;
-}
-#pause {
-    color: red;
-}
-#seeker {
-    margin-top: 5px;
-    width: 100%;
-    background-color: lightgray;
-}
-#progressBar {
-    height: 40px;
-    background-color: blue;
-}
-#progressBar.halted {
-    background-color: red;
-}
-#logItemContainer {
-    position: relative;
-}
-
 /*
-I discovered this triangle creation technique from
-http://apps.eky.hk/css-triangle-generator/
+CSS for player
 */
+.player .progress {
+    overflow:visible;
+    position:relative;
+    margin:20px 0px 0px 0px;
+    height: 3em;
+}
+.player .handle {
+	position:relative;
+	background-color:#e5e5e5;
+	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
+	background: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
+	height:100%;
+	width:10px;
+	/* border-radius: 10px; */
+	outline:solid 1px black;
+    
+} 
+ 
+.player  ul.marks {
+	position:relative;
+	margin:0px;
+	left:-5px;
+	top:-20px;
+}
+ 
+.player  ul.marks li {
+	display:inline;
+	list-style-type:none;
+	position:absolute;
+	width:10px;
+	height:10px;
+	border-radius: 0px 0px 5px 5px / 0px 0px 10px 10px;
+	top:-5px;
+	border: solid 1px black;
+	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
+	background: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
+}
+ 
+.player  ul.marks li div {
+	width:1px;
+	background-color:black;
+	height:15px;
+	position:absolute;
+	left:4px;
+	top:10px;
+}
+ 
+.player .controls {
+	text-align:center;
+}
+ 
+.player .time-display {
+	position: absolute;
+	display:inline-block;
+	font-size:9pt;
+	padding:0px;
+	margin:0px;
+	line-height:9pt;
+	top:-12px;
+}
+ 
+.player #elapsed-time {
+	left:5px;
+}
+ 
+.player #total-time {
+	right:5px;
+}
+ 
+.player .controls .btn 
+{
+	font-size:9pt;
+	line-height:0;
+}
+ 
+.player ul.tags {
+	position:relative;
+	margin-top:10px;
+	z-index:-1;
+}
+ 
+.player ul.tags li {
+	display:inline;
+	list-style-type:none;
+	position:absolute;
+}
+ 
+.player ul.tags li div{
+	position:absolute;
+	top:-10px;
+	width:1px;
+	background-color:black;
+	height:10px;
+}
+/*
+End CSS for player
+*/
+
+
 .logItemMarker {
     position: absolute;
     width: 0px;

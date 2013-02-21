@@ -59,9 +59,18 @@ require([
         }
         
         var getMediaDebug = function(path, callback) {
-            var $audioContainer = $('<div style="height:400px">');
+            var $audioContainer = $('<div style="height:400px" id="dbgAudioContainer">');
             $('body').append($audioContainer);
+            /*
             var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=oozJH6jSr2U&width=0&height=0' );
+            */
+            
+            var myAudio = Popcorn.smart(
+             "#dbgAudioContainer",
+             'http://cuepoint.org/dartmoor.mp4');
+             
+            
+            window.audioDbg = myAudio;
             myAudio.on("loadedmetadata", function() {
                 myAudio.off("loadedmetadata");
                 callback({
