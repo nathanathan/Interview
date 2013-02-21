@@ -50,7 +50,6 @@
 .nav-tabs a:visited {
     color: rgb(225, 221, 255);
 }
-*/
 .nav-tabs > .active > a {
     color: #ffffff;
     background-color: #0088cc;
@@ -59,7 +58,11 @@
     color: #ffffff;
     background-color: #0088cc;
 }
+*/
 
+/*
+Animation for tags
+*/
 @-webkit-keyframes fadeIn {
   from {
     opacity: .2;
@@ -76,4 +79,29 @@
 }
 .add-tag-disabled:hover {
     background-color: white !important;
+}
+
+/*
+Animation for undo button
+*/
+@-webkit-keyframes fadeOut {
+  from {
+    opacity: 1.0;
+    top: 0;
+  }
+  80% {
+    opacity: 1.0;
+    top: 0; 
+  }
+  to {
+    opacity: 0;
+    top: -30px;
+  }
+}
+.fade-out {
+    position: relative;
+    top: -30px;
+    -webkit-animation-duration: 3s;
+    -webkit-animation-iteration-count: 1;
+    -webkit-animation-name: fadeOut;
 }

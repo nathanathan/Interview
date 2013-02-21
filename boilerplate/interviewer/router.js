@@ -30,7 +30,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
     
     var mySessions = new Sessions();
     var interviewTitle = $('title').text();
-    var timerUpdater;
     //indexRelPathPrefix computed so the location of the boilerplate directory can change
     //only requiring modification of index.html
     //I haven't tested it though.
@@ -84,7 +83,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                         if(session.get("endTime")){
                             session.set("_duration", session.get("endTime") - session.get("startTime"));
                         }
-                    })
+                    });
                     $('body').html(compiledSessionsTemplate({sessions: mySessions.toJSON()}));
                 },
                 error: function(){
@@ -93,13 +92,13 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             });
         },
         interviewStart: function start(){
-            var that = this;
+            var thisRouter = this;
             var $time;
             var startUrl = $('body').data('start');
             
             if(session){
                 //i.e. If the user presses back from the first screen and lands here.
-                that.navigate("interviewEnd", {trigger: true });
+                thisRouter.navigate("interviewEnd", {trigger: true });
                 return;
             }
             
@@ -111,29 +110,56 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             
             session.set("_recordingPath", sfsf.joinPaths(config.appDir, session.get("id") + ".amr"));
             
-            //TODO: Make a session view that does the following:
-            //Updates the timer.
-            //displays errors when recording fails
-            //handles add-tag click events.
-            $('body').html(compiledBodyTemplate());
-            $('body').delegate('.add-tag', 'click', function(evt){
-                var $tagEl = $(evt.target).closest(".add-tag");
-                console.log("adding tag:", $tagEl.data("tag"));
-                session.addTag("base", $tagEl.data("tag"), new Date());
-                //Temporariliy disable the tag...
-                $tagEl.removeClass('add-tag');
-                $tagEl.addClass('add-tag-disabled');
-                window.setTimeout(function(){
-                    $tagEl.addClass('add-tag');
-                    $tagEl.removeClass('add-tag-disabled');
-                }, 2000);
+            var SessionView = Backbone.View.extend({
+                events: {
+                    'click .add-tag' : 'addTag',
+                    'click #stop' : 'endInterview',
+                    'click .undo' : 'undo'
+                },
+                
+                addTag: function(evt){
+                    var $tagEl = $(evt.target).closest(".add-tag");
+                    console.log("adding tag:", $tagEl.data("tag"));
+                    session.addTag("base", $tagEl.data("tag"), new Date());
+                    //Temporariliy disable the tag...
+                    $tagEl.removeClass('add-tag');
+                    $tagEl.addClass('add-tag-disabled');
+                    window.setTimeout(function(){
+                        $tagEl.addClass('add-tag');
+                        $tagEl.removeClass('add-tag-disabled');
+                    }, 2000);
+                },
+                
+                endInterview: function(evt){
+                    if(confirm("Are you sure you want to end the interview?")){
+                        thisRouter.navigate("interviewEnd", {trigger: true });
+                    }
+                },
+                
+                undo: function(evt){
+                    console.log("triggering undo");
+                    thisRouter.trigger("undo");
+                },
+                
+                render: function(){
+                    this.$el.html(compiledBodyTemplate());
+                    return this;
+                },
+                
+                startTimer: function(){
+                    var $time = this.$('#time');
+                    var timerUpdater = window.setInterval(function() {
+                        $time.text(_.formatTime(new Date() - session.get('startTime')));
+                    }, 1000);
+                    thisRouter.once("route:interviewEnd", function() {
+                        window.clearInterval(timerUpdater);
+                    });
+                    return this;
+                }
             });
-            $time = $('#time');
             
-            //TODO: Maybe use route event approach for timerUpdater as well?
-            timerUpdater = window.setInterval(function() {
-                $time.text(_.formatTime(new Date() - session.get('startTime')));
-            }, 1000);
+            var mySessionView = new SessionView({el: $('body').get(0)});
+            mySessionView.render().startTimer();
             
             if('Media' in window) {
                 var mediaRec = new Media(session.get('_recordingPath'));
@@ -142,7 +168,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 //set startTime again to try to get as close as possible
                 //to the recording start time.
                 session.set('startTime', new Date());
-                that.once("route:interviewEnd", function() {
+                thisRouter.once("route:interviewEnd", function() {
                     mediaRec.stopRecord();
                     mediaRec.release();
                     console.log("Recording stopped.");
@@ -152,7 +178,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 //TODO: Use template.
                 $('#alert-area').html('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Warning!</h4> Audio is not being recorded.</div>');
             }
-            that.navigate(startUrl, {trigger: true, replace: false});
+            thisRouter.navigate(startUrl, {trigger: true, replace: false});
         },
         interviewEnd: function(){
             if(!session){
@@ -160,7 +186,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 return;
             }
             var that = this;
-            window.clearInterval(timerUpdater);
             session.set("endTime", new Date());
             
             $('body').html(compiledInterviewEndTemplate());
@@ -199,8 +224,9 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 }
             });
         },
-        recordData: function(page, params){
+        recordData: function(route, page, params){
             var that = this;
+
             if(!session) {
                 console.log("No session to record data into.");
                 return;
@@ -208,6 +234,12 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             if(!params){
                 params = {};
             }
+            
+            if(params.__nolog) {
+                console.log("A log item is not created when the __nolog flag is passed.");
+                return;
+            }
+            
             var newLogItem = new session.Log.model(_.extend({}, params, {
                 page: page,
                 lastPage: that.currentContext.page,
@@ -215,31 +247,56 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 //This is duplicate information but it is convenient to have available on the model.
                 _recordingStart: session.get('startTime')
             }));
+            
             session.Log.add(newLogItem);
-            //Set up events to set the logItem's duration
-            //when the next page is reached.
-            var onNextPage = function(page, qp){
-                console.log(page);
-                console.log(newLogItem.get('_timestamp'));
-                //TODO: If the next route event is for an annotation don't do anything?
-                newLogItem.set({
-                    '_duration': (new Date()) - newLogItem.get('_timestamp'),
-                    'nextPage': page
-                });
-                //remove the event listeners.
-                that.off(null, onNextPage);
-            };
-            _.defer(function(){
-                //Route event binding is deferred because it will pick up the
-                //current route event otherwise.
-                that.on('route:setPage', onNextPage);
-                that.on('route:setJSONQuestion', onNextPage);
-                that.on('route:interviewEnd', onNextPage);
-            });
+            
             //Save the params that do not begin with an underscore into the session.
             //TODO: To avoid collisions the backend session vars should begin
             //with an underscore.
             session.set(_.omitUnderscored(params));
+            
+            var setupEvents = function(){
+                var prevPagePath = page;
+                if(route){
+                    prevPagePath = route + '/' + page;
+                }
+                //Set up events to set the logItem's duration
+                //when the next page is reached.
+                var onNextPage = function(page, qp){
+                    console.log(page);
+                    console.log(newLogItem.get('_timestamp'));
+                    //TODO: If the next route event is for an annotation don't do anything?
+                    newLogItem.set({
+                        '_duration': (new Date()) - newLogItem.get('_timestamp'),
+                        'nextPage': page
+                    });
+                    //remove the event listeners.
+                    that.off(null, onNextPage);
+                    that.off('undo');
+                    that.once('undo', function(){
+                        console.log("undoing...");
+                        console.log("Removing the last log item...");
+                        session.Log.pop();
+                        console.log("Navigating back to the previuos page...");
+                        that.navigate(that.toFragment(prevPagePath, _.extend({
+                            __nolog: true
+                        }, params)), {
+                            trigger: true
+                        });
+                        console.log("Rebinding events...");
+                        setupEvents();
+                    });
+                };
+                _.defer(function(){
+                    //Route event binding is deferred because it will pick up the
+                    //current route event otherwise.
+                    that.on('route:setPage', onNextPage);
+                    that.on('route:setJSONQuestion', onNextPage);
+                    that.on('route:interviewEnd', onNextPage);
+                });
+
+            };
+            setupEvents();
         },
         setJSONQuestion: function(questionName, params){
             function renderQuestion(annotatedFlatInterview){
@@ -269,7 +326,15 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 }
             }
             var that = this;
-            that.recordData(questionName, params);
+            if(!params){
+                params = {};
+            }
+            if(!params.__nolog){
+                $('.undo').removeClass("fade-out");
+                _.delay(function(){ $('.undo').addClass("fade-out"); }, 100);
+            }
+            
+            that.recordData('json', questionName, params);
             if(that.__annotatedFlatInterview__){
                 renderQuestion(that.__annotatedFlatInterview__);
             } else {
@@ -325,7 +390,13 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             if(!params){
                 params = {};
             }
-            that.recordData(page, params);
+            if(!params.__nolog){
+                $('.undo').css('opacity', 1.0);
+                $('.undo').animate({
+                    opacity: 0
+                }, 3000);
+            }
+            that.recordData(null, page, params);
             require(['text!' + indexRelPathPrefix + page], function(template){
                 var compiledTemplate, renderedHtml;
                 that.currentContext = {
