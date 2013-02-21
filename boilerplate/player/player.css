@@ -99,7 +99,9 @@ CSS for player
 End CSS for player
 */
 
-
+#logItemContainer {
+    position: relative;
+}
 .logItemMarker {
     position: absolute;
     width: 0px;

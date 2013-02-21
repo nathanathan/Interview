@@ -57,7 +57,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
         goback: function(evt){
             var offest = $(evt.target).data('offset');
             
-            var newTime = this.model.get('time') + parseInt(offest, 10);
+            var newTime = Math.max(0, this.model.get('time') + parseInt(offest, 10));
             console.log("newTime", newTime, offest);
             this.model.setTime(newTime);
             console.log('seeking media to: ' + newTime * 1000);

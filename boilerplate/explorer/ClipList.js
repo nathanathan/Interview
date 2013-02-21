@@ -151,7 +151,7 @@ function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     }
                     //Getting the session will also make it easier to get rid
                     //of the _recordingStart param.
-                    var recordingPath = config.appDir +
+                    var recordingPath = config.appDir + '/' +
                         logItem.get('_sessionId') + ".amr";
                     console.log("recordingPath: " + recordingPath);
 
