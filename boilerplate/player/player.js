@@ -55,9 +55,10 @@ function(config,   Backbone,   _,            playerTemplate,                    
             this.model.setTime(this.options.logItems.getNextLogItem(this.model.get('time')));
         },
         goback: function(evt){
-            var offest = $(evt.target).data('offset');
-            
+            var $button = $(evt.target).closest(".seek-offset");
+            var offest = $button.data('offset');
             var newTime = Math.max(0, this.model.get('time') + parseInt(offest, 10));
+            if(_.isNaN(newTime)) return;
             console.log("newTime", newTime, offest);
             this.model.setTime(newTime);
             console.log('seeking media to: ' + newTime * 1000);

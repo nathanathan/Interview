@@ -83,7 +83,7 @@ Animation for tags
 
 /*
 Animation for undo button
-*/
+
 @-webkit-keyframes fadeOut {
   from {
     opacity: 1.0;
@@ -105,3 +105,4 @@ Animation for undo button
     -webkit-animation-iteration-count: 1;
     -webkit-animation-name: fadeOut;
 }
+*/
