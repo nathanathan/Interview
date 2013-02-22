@@ -1,39 +1,107 @@
-#controls {
-    padding: 5px;
-    border: 1px dotted lightgray;
-    text-align: center;
+/*
+CSS for player
+*/
+.player .progress {
+    overflow:visible;
+    position:relative;
+    margin:20px 0px 0px 0px;
+    height: 3em;
 }
-.control {
-    height: 40px;
-    width: 100px;
-    font-size: 2em;
+.player .handle {
+	position:relative;
+	background-color:#e5e5e5;
+	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
+	background: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
+	height:100%;
+	width:10px;
+	/* border-radius: 10px; */
+	outline:solid 1px black;
+    
+} 
+ 
+.player  ul.marks {
+	position:relative;
+	margin:0px;
+	left:-5px;
+	top:-20px;
 }
-#play {
-    color: green;
+ 
+.player  ul.marks li {
+	display:inline;
+	list-style-type:none;
+	position:absolute;
+	width:10px;
+	height:10px;
+	border-radius: 0px 0px 5px 5px / 0px 0px 10px 10px;
+	top:-5px;
+	border: solid 1px black;
+	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
+	background: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
 }
-#pause {
-    color: red;
+ 
+.player  ul.marks li div {
+	width:1px;
+	background-color:black;
+	height:15px;
+	position:absolute;
+	left:4px;
+	top:10px;
 }
-#seeker {
-    margin-top: 5px;
-    width: 100%;
-    background-color: lightgray;
+ 
+.player .controls {
+	text-align:center;
 }
-#progressBar {
-    height: 40px;
-    background-color: blue;
+ 
+.player .time-display {
+	position: absolute;
+	display:inline-block;
+	font-size:9pt;
+	padding:0px;
+	margin:0px;
+	line-height:9pt;
+	top:-12px;
 }
-#progressBar.halted {
-    background-color: red;
+ 
+.player #elapsed-time {
+	left:5px;
 }
+ 
+.player #total-time {
+	right:5px;
+}
+ 
+.player .controls .btn 
+{
+	font-size:9pt;
+	line-height:0;
+}
+ 
+.player ul.tags {
+	position:relative;
+	margin-top:10px;
+	z-index:-1;
+}
+ 
+.player ul.tags li {
+	display:inline;
+	list-style-type:none;
+	position:absolute;
+}
+ 
+.player ul.tags li div{
+	position:absolute;
+	top:-10px;
+	width:1px;
+	background-color:black;
+	height:10px;
+}
+/*
+End CSS for player
+*/
+
 #logItemContainer {
     position: relative;
 }
-
-/*
-I discovered this triangle creation technique from
-http://apps.eky.hk/css-triangle-generator/
-*/
 .logItemMarker {
     position: absolute;
     width: 0px;
@@ -57,111 +125,3 @@ http://apps.eky.hk/css-triangle-generator/
 .logItemBtn {
     height: 40px;
 }
-
-/*
-CSS for player
-*/
-.player {
-    position:relative;
-    height: 50%;
-	padding:10px;
-	top:50px;
-}
-
-.player #progress-bar {
-	overflow:visible;
-	position:relative;
-	margin:20px 0px 0px 0px;
-}
-
-.player .handle {
-	position:relative;
-	background-color:#e5e5e5;
-	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
-	background: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
-	height:24px;
-	width:10px;
-	border-radius: 10px;
-	top:-2px;
-	border:solid 1px black;
-} 
-
-.player #progress-bar ul {
-	position:relative;
-	margin:0px;
-	left:-5px;
-}
-
-.player #progress-bar ul li {
-	display:inline;
-	list-style-type:none;
-	position:absolute;
-	width:10px;
-	height:10px;
-	border-radius: 0px 0px 5px 5px / 0px 0px 10px 10px;
-	top:-5px;
-	border: solid 1px black;
-	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
-	background: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
-}
-
-.player #progress-bar ul li div {
-	width:1px;
-	background-color:black;
-	height:15px;
-	position:absolute;
-	left:4px;
-	top:10px;
-}
-
-.player .controls {
-	text-align:center;
-    border:none;
-}
-
-.player .time-display {
-	position: absolute;
-	display:inline-block;
-	font-size:9pt;
-	padding:0px;
-	margin:0px;
-	line-height:9pt;
-	top:-12px;
-}
-
-.player #elapsed-time {
-	left:5px;
-}
-
-.player #total-time {
-	right:5px;
-}
-
-.player .controls .btn 
-{
-	font-size:9pt;
-	line-height:0;
-}
-
-.player ul.tags {
-	position:relative;
-	margin-top:10px;
-}
-
-.player ul.tags li {
-	display:inline;
-	list-style-type:none;
-	position:absolute;
-}
-
-.player ul.tags li div{
-	position:absolute;
-	top:-10px;
-	width:1px;
-	background-color:black;
-	height:10px;
-}
-
-/*
-End CSS for player
-*/

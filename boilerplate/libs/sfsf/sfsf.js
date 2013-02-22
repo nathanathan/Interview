@@ -126,7 +126,7 @@ define(['underscore'], function(_){
                             if (options.data.__proto__ == ArrayBuffer.prototype) {
                                 options.data = new Uint8Array(options.data);
                             }
-                            fileWriter.write([options.data], {type: options.type || 'text/plain'});
+                            fileWriter.write(new Blob([options.data], {type: options.type || 'text/plain'}));
                         } else {
                             fileWriter.write(options.data);
                         }

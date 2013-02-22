@@ -4,8 +4,8 @@
 //Handling pauses would be really tricky, so I probably won't bother.
 //The popcorn.js movie maker has an interesting way of handling skips that might
 //be applicable.
-define(['backbone', 'underscore', 'text!player/playerTemplate.html', 'text!player/logItemTemplate.html'],
-function(Backbone,   _,            playerTemplate,                    logItemTemplate){
+define(['config', 'backbone', 'underscore', 'text!player/playerTemplate.html', 'text!player/logItemTemplate.html'],
+function(config,   Backbone,   _,            playerTemplate,                    logItemTemplate){
     var compiledPlayerTemplate = _.template(playerTemplate);
     var compiledLogItemTemplate  = _.template(logItemTemplate);
     
@@ -47,7 +47,23 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             'click #seeker' : 'seek',
             'click #play' : 'play',
             'click #pause' : 'pause',
-            'click #stop' : 'stop'
+            'click #stop' : 'stop',
+            'click .seek-offset' : 'goback',
+            'click #nextLogItem' : 'nextLogItem'
+        },
+        nextLogItem: function(evt){
+            this.model.setTime(this.options.logItems.getNextLogItem(this.model.get('time')));
+        },
+        goback: function(evt){
+            var $button = $(evt.target).closest(".seek-offset");
+            var offest = $button.data('offset');
+            var newTime = Math.max(0, this.model.get('time') + parseInt(offest, 10));
+            if(_.isNaN(newTime)) return;
+            console.log("newTime", newTime, offest);
+            this.model.setTime(newTime);
+            console.log('seeking media to: ' + newTime * 1000);
+            this.options.media.seekTo(newTime * 1000);
+            return this;
         },
         seek: function(evt){
             console.log('seek');
@@ -73,6 +89,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
             this.updater = setInterval(function(){
                 //TODO: Add failure function that pauses and goes to start/end
                 that.options.media.getCurrentPosition(function(positionSeconds){
+                    console.log(positionSeconds);
                     if(playerModel.get('time') === positionSeconds){
                         that.$('#progressBar').addClass('halted');
                     } else {
@@ -163,7 +180,7 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         player.setTime(context.start / 1000);
         context.media.seekTo(context.start);
         
-        var $playerControls = $('<div>');
+        var $playerControls = $('<div class="player">');
         var $markers = $('<div id="logItemContainer">');
         var $info = $('<div id="logItemInfo">');
         
@@ -208,7 +225,8 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         
         var playerView = new PlayerView({
             model: player,
-            media: context.media
+            media: context.media,
+            logItems: context.logItems
         });
         player.on("change", playerView.render, playerView);
         
@@ -218,6 +236,15 @@ function(Backbone,   _,            playerTemplate,                    logItemTem
         
         playerView.setElement($playerControls.get(0));
         playerView.render();
+        
+        //It might be a good idea to lazy load the tag layers.
+        context.session.fetchTagLayers({
+            dirPath: config.appDir,
+            success: function() {
+                console.log("Tag Layers:", context.session.tagLayers);
+            }
+        });
+        
         return this;
 	};
     

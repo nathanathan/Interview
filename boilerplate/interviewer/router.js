@@ -30,83 +30,8 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
     var compiledSandboxTemplate = _.template(sandbox);
     console.log("Templates compiled");
     
-    //This is a patch to make it so form submission puts the params after
-    //the hash so they can be picked up by Backboneqp.
-    $(document).submit(function(e) {
-        e.preventDefault();
-        window.location = $(e.target).attr('action') + '?' + $(e.target).serialize();
-    });
-    
-    /**
-     * From backbone-localstorage:
-     * Generate a pseudo-GUID by concatenating random hexadecimal.
-     **/
-    function GUID() {
-        // Generate four random hex digits.
-        function S4() {
-           return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-        }
-       return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-    }
-    
-    /**
-     * Check that the directory path exists, and creates it if not.
-     * Returns the cordova dirEntry object to the success function,
-     * and an error string to the fail function.
-     **/
-    /*
-    function getDirectory(dirPath, success, fail) {
-        var requestFileSystemWrapper = function(success, error){
-            var storageNeeded;
-            var PERSISTENT = ("LocalFileSystem" in window) ?  window.LocalFileSystem.PERSISTENT : window.PERSISTENT;
-            var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-            if("webkitStorageInfo" in window && "requestQuota" in window.webkitStorageInfo){
-                storageNeeded = 5*1024*1024; //5MB
-                //We're using chrome probably and need to request storage space.
-                window.webkitStorageInfo.requestQuota(PERSISTENT, storageNeeded, function(grantedBytes) {
-                    requestFileSystem(PERSISTENT, storageNeeded, success, error);
-                }, error);
-            } else {
-                requestFileSystem(PERSISTENT, storageNeeded, success, error);
-            }
-        }
-        requestFileSystemWrapper(function(fileSystem) {
-            console.log(fileSystem.name);
-            console.log(fileSystem.root.name);
-            var dirArray = dirPath.split('/');
-            var curDir = '';
-            var getDirectoryHelper = function(dirEntry){
-                console.log(curDir);
-                var pathSegment = dirArray.shift();
-                if(pathSegment){
-                    curDir += pathSegment + '/';
-                    fileSystem.root.getDirectory(curDir, {
-                        create: true,
-                        exclusive: false
-                    },
-                    getDirectoryHelper,
-                    function(error) {
-                        console.log(error);
-                        console.log(curDir);
-                        fail("Unable to create new directory: " + error.code);
-                    });
-                } else if(dirArray.length !== 0) {
-                    fail("Error creating path: " + dirPath);
-                } else {
-                    success(dirEntry);
-                }
-            };
-            getDirectoryHelper();
-        }, function failFS(evt) {
-            console.log(evt);
-            fail("File System Error: " + evt.target.error.code);
-        });
-    }
-    */
-    
     var mySessions = new Sessions();
     var interviewTitle = $('title').text();
-    var timerUpdater;
     //indexRelPathPrefix computed so the location of the boilerplate directory can change
     //only requiring modification of index.html
     //I haven't tested it though.
@@ -123,33 +48,20 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             url: ''
         },
         initialize: function(){
-            var onReady = function() {
-                $(function(){
-                    sfsf.cretrieve(config.appDir, {}, function(error, entry){
-                        if(error){
-                            console.log(error);
-                            alert("Could not create app directory.");
-                            return;
-                        }
-                        console.log("got directory");
-                        $('body').html('<div id="pagecontainer">');
+            sfsf.cretrieve(config.appDir, {}, function(error, entry){
+                if(error){
+                    console.log(error);
+                    alert("Could not create app directory.");
+                    return;
+                }
+                console.log("got directory");
+                $('body').html('<div id="pagecontainer">');
 
-                        var started = Backbone.history.start();
-                        if(!started){
-                            alert("Routes may be improperly set up.");
-                        }
-                    });
-                });
-            };
-            if ('cordova' in window) {
-                //No need to worry about timing. From cordova docs:
-                //This event behaves differently from others in that any event handler
-                //registered after the event has been fired will have its callback
-                //function called immediately.
-                document.addEventListener("deviceready", onReady);
-            } else {
-                onReady();
-            }
+                var started = Backbone.history.start();
+                if(!started){
+                    alert("Routes may be improperly set up.");
+                }
+            });
 		},
 		routes: {
             '': 'opening',
@@ -180,7 +92,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                         if(session.get("endTime")){
                             session.set("_duration", session.get("endTime") - session.get("startTime"));
                         }
-                    })
+                    });
                     $('body').html(compiledSessionsTemplate({sessions: mySessions.toJSON()}));
                 },
                 error: function(){
@@ -189,41 +101,83 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             });
         },
         interviewStart: function start(){
-            var that = this;
+            var thisRouter = this;
             var $time;
             var startUrl = $('body').data('start');
-            var sessionId = GUID();
-            var recordingPath = sfsf.joinPaths(config.appDir, sessionId + ".amr");
             
             if(session){
                 //i.e. If the user presses back from the first screen and lands here.
-                that.navigate("interviewEnd", {trigger: true });
+                thisRouter.navigate("interviewEnd", {trigger: true });
                 return;
             }
             
             session = mySessions.create({
-                id: sessionId,
                 startTime: new Date(),
                 interviewTitle: interviewTitle
             });
             session.Log = new LogItems();
             
-            //TODO: Make this a view
-            $('body').html(compiledBodyTemplate());
-            $time = $('#time');
+            session.set("_recordingPath", sfsf.joinPaths(config.appDir, session.get("id") + ".amr"));
             
-            //TODO: Maybe use route event approach for timerUpdater as well?
-            timerUpdater = window.setInterval(function() {
-                $time.text(_.formatTime(new Date() - session.get('startTime')));
-            }, 1000);
+            var SessionView = Backbone.View.extend({
+                events: {
+                    'click .add-tag' : 'addTag',
+                    'click #stop' : 'endInterview',
+                    'click .undo' : 'undo'
+                },
+                
+                addTag: function(evt){
+                    var $tagEl = $(evt.target).closest(".add-tag");
+                    console.log("adding tag:", $tagEl.data("tag"));
+                    session.addTag("base", $tagEl.data("tag"), new Date());
+                    //Temporariliy disable the tag...
+                    $tagEl.removeClass('add-tag');
+                    $tagEl.addClass('add-tag-disabled');
+                    window.setTimeout(function(){
+                        $tagEl.addClass('add-tag');
+                        $tagEl.removeClass('add-tag-disabled');
+                    }, 2000);
+                },
+                
+                endInterview: function(evt){
+                    if(confirm("Are you sure you want to end the interview?")){
+                        thisRouter.navigate("interviewEnd", {trigger: true });
+                    }
+                },
+                
+                undo: function(evt){
+                    console.log("triggering undo");
+                    thisRouter.trigger("undo");
+                },
+                
+                render: function(){
+                    this.$el.html(compiledBodyTemplate());
+                    return this;
+                },
+                
+                startTimer: function(){
+                    var $time = this.$('#time');
+                    var timerUpdater = window.setInterval(function() {
+                        $time.text(_.formatTime(new Date() - session.get('startTime')));
+                    }, 1000);
+                    thisRouter.once("route:interviewEnd", function() {
+                        window.clearInterval(timerUpdater);
+                    });
+                    return this;
+                }
+            });
+            
+            var mySessionView = new SessionView({el: $('body').get(0)});
+            mySessionView.render().startTimer();
+            
             if('Media' in window) {
-                var mediaRec = new Media(recordingPath);
-                console.log("media created: " + recordingPath);
+                var mediaRec = new Media(session.get('_recordingPath'));
+                console.log("media created: " + session.get('_recordingPath'));
                 mediaRec.startRecord();
                 //set startTime again to try to get as close as possible
                 //to the recording start time.
                 session.set('startTime', new Date());
-                that.once("route:interviewEnd", function() {
+                thisRouter.once("route:interviewEnd", function() {
                     mediaRec.stopRecord();
                     mediaRec.release();
                     console.log("Recording stopped.");
@@ -233,7 +187,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 //TODO: Use template.
                 $('#alert-area').html('<div class="alert alert-block"><button type="button" class="close" data-dismiss="alert">×</button><h4>Warning!</h4> Audio is not being recorded.</div>');
             }
-            that.navigate(startUrl, {trigger: true, replace: false});
+            thisRouter.navigate(startUrl, {trigger: true, replace: false});
         },
         interviewEnd: function(){
             if(!session){
@@ -241,7 +195,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 return;
             }
             var that = this;
-            window.clearInterval(timerUpdater);
             session.set("endTime", new Date());
             
             $('body').html(compiledInterviewEndTemplate());
@@ -261,7 +214,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 });
             });
             $('#discard').click(function(){
-                var recordingPath = sfsf.joinPaths(config.appDir, session.get('id') + ".amr");
+                var recordingPath = session.get('_recordingPath');
                 if(confirm("Are you sure you want to discard this recording?")){
                     sfsf.cretrieve(recordingPath, function(error, fileEntry){
                         var errorFun = function(){
@@ -280,8 +233,9 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 }
             });
         },
-        recordData: function(page, params){
+        recordData: function(route, page, params){
             var that = this;
+
             if(!session) {
                 console.log("No session to record data into.");
                 return;
@@ -289,6 +243,12 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             if(!params){
                 params = {};
             }
+            
+            if(params.__nolog) {
+                console.log("A log item is not created when the __nolog flag is passed.");
+                return;
+            }
+            
             var newLogItem = new session.Log.model(_.extend({}, params, {
                 page: page,
                 lastPage: that.currentContext.page,
@@ -296,31 +256,56 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 //This is duplicate information but it is convenient to have available on the model.
                 _recordingStart: session.get('startTime')
             }));
+            
             session.Log.add(newLogItem);
-            //Set up events to set the logItem's duration
-            //when the next page is reached.
-            var onNextPage = function(page, qp){
-                console.log(page);
-                console.log(newLogItem.get('_timestamp'));
-                //TODO: If the next route event is for an annotation don't do anything?
-                newLogItem.set({
-                    '_duration': (new Date()) - newLogItem.get('_timestamp'),
-                    'nextPage': page
-                });
-                //remove the event listeners.
-                that.off(null, onNextPage);
-            };
-            _.defer(function(){
-                //Route event binding is deferred because it will pick up the
-                //current route event otherwise.
-                that.on('route:setPage', onNextPage);
-                that.on('route:setJSONQuestion', onNextPage);
-                that.on('route:interviewEnd', onNextPage);
-            });
+            
             //Save the params that do not begin with an underscore into the session.
             //TODO: To avoid collisions the backend session vars should begin
             //with an underscore.
             session.set(_.omitUnderscored(params));
+            
+            var setupEvents = function(){
+                var prevPagePath = page;
+                if(route){
+                    prevPagePath = route + '/' + page;
+                }
+                //Set up events to set the logItem's duration
+                //when the next page is reached.
+                var onNextPage = function(page, qp){
+                    console.log(page);
+                    console.log(newLogItem.get('_timestamp'));
+                    //TODO: If the next route event is for an annotation don't do anything?
+                    newLogItem.set({
+                        '_duration': (new Date()) - newLogItem.get('_timestamp'),
+                        'nextPage': page
+                    });
+                    //remove the event listeners.
+                    that.off(null, onNextPage);
+                    that.off('undo');
+                    that.once('undo', function(){
+                        console.log("undoing...");
+                        console.log("Removing the last log item...");
+                        session.Log.pop();
+                        console.log("Navigating back to the previuos page...");
+                        that.navigate(that.toFragment(prevPagePath, _.extend({
+                            __nolog: true
+                        }, params)), {
+                            trigger: true
+                        });
+                        console.log("Rebinding events...");
+                        setupEvents();
+                    });
+                };
+                _.defer(function(){
+                    //Route event binding is deferred because it will pick up the
+                    //current route event otherwise.
+                    that.on('route:setPage', onNextPage);
+                    that.on('route:setJSONQuestion', onNextPage);
+                    that.on('route:interviewEnd', onNextPage);
+                });
+
+            };
+            setupEvents();
         },
         setJSONQuestion: function(questionName, params){
             function renderQuestion(annotatedFlatInterview){
@@ -340,7 +325,8 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 
                 try{
                     renderedHtml = compiledJSONQuestionTemplate({
-                        currentQuestion: foundQuestion
+                        currentQuestion: foundQuestion,
+                        formDir: "example/"
                     });
                     $('#pagecontainer').html(renderedHtml);
                 } catch(e) {
@@ -349,15 +335,22 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 }
             }
             var that = this;
-            that.recordData(questionName, params);
-            if(that.__jsonInterviewDef__){
+            if(!params){
+                params = {};
+            }
+            if(!params.__nolog){
+                $('.undo').removeClass("fade-out");
+                _.delay(function(){ $('.undo').addClass("fade-out"); }, 100);
+            }
+            
+            that.recordData('json', questionName, params);
+            if(that.__annotatedFlatInterview__){
                 renderQuestion(that.__annotatedFlatInterview__);
             } else {
                 //TODO: Eventually, I think the name of the interview should be
                 //a prefix on all the routes. We will need to use that prefix
                 //here to construct the appropriate path.
                 $.getJSON('example/interview.json', function(jsonInterviewDef){
-                    that.__jsonInterviewDef__ = jsonInterviewDef;
                     //Here we create a flat array with all the questions, and where each 
                     //question has annotations indicating the next questions and branches.
                     that.__annotatedFlatInterview__ = [];
@@ -369,6 +362,10 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                                 //We've already handled this question
                                 return;
                             }
+                            currentQuestion.__tags = _.where(jsonInterviewDef.tags, {
+                                group: ("tags" in currentQuestion) ? currentQuestion.tags : "default"
+                            });
+                            
                             followingQuestions = nextQuestions.slice(1);
                             currentQuestion.__branches = [];
                             while(followingQuestions.length > 0 &&
@@ -402,7 +399,13 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             if(!params){
                 params = {};
             }
-            that.recordData(page, params);
+            if(!params.__nolog){
+                $('.undo').css('opacity', 1.0);
+                $('.undo').animate({
+                    opacity: 0
+                }, 3000);
+            }
+            that.recordData(null, page, params);
             require(['text!' + indexRelPathPrefix + page], function(template){
                 var compiledTemplate, renderedHtml;
                 that.currentContext = {

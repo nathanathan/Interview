@@ -20,17 +20,17 @@ function($,        Backbone,   _) {
             return (this.get('_timestamp') - this.get('_recordingStart'));
         },
         
-        //new Date(JSON.parse(JSON.stringify(new Date())))
-        //JSON stringifies dates in a wierd way that the Date object can't parse in webkits.
-        //TODO: Localize
-        toJSON: function(){
+        //JSON stringifies dates in a way that the Date object can't parse in webkits.
+        //Try: new Date(JSON.parse(JSON.stringify(new Date())))
+        //To avoid this issue dates can be stringified with the String function.
+        //Use .toUTCString instead?
+        toJSON: function() {
             var attrs = _.clone(this.attributes);
-            if(attrs._timestamp) {
-                attrs._timestamp = String(attrs._timestamp);
-            }
-            if(attrs._recordingStart) {
-                attrs._recordingStart = String(attrs._recordingStart);
-            }
+            _.each(attrs, function(attrName, attrValue){
+                if(_.isDate(attrValue)){
+                    attrs[attrName] = String(attrValue);
+                }
+            });
             return attrs;
         },
 

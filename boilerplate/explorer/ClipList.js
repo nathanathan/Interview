@@ -35,9 +35,18 @@ function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
     }
     
     var getMediaDebug = function(path, callback) {
-        var $audioContainer = $('<div>');
+        var $audioContainer = $('<div style="height:400px" id="dbgAudioContainer">');
         $('body').append($audioContainer);
-        var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=HgzGwKwLmgM&width=0&height=0' );
+        /*
+        var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=oozJH6jSr2U&width=0&height=0' );
+        */
+        
+        var myAudio = Popcorn.smart(
+         "#dbgAudioContainer",
+         'http://cuepoint.org/dartmoor.mp4');
+         
+        
+        window.audioDbg = myAudio;
         myAudio.on("loadedmetadata", function() {
             myAudio.off("loadedmetadata");
             callback({
@@ -142,7 +151,7 @@ function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     }
                     //Getting the session will also make it easier to get rid
                     //of the _recordingStart param.
-                    var recordingPath = config.appDir +
+                    var recordingPath = config.appDir + '/' +
                         logItem.get('_sessionId') + ".amr";
                     console.log("recordingPath: " + recordingPath);
 

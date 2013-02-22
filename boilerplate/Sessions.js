@@ -1,18 +1,43 @@
-define(['jquery', 'backbone', 'underscore', 'LogItems', 'sfsf'],
-function($,        Backbone,   _,            LogItems,   sfsf) {
+define(['jquery', 'backbone', 'underscore', 'LogItems', 'sfsf', 'TagCollection'],
+function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) {
+    
+    /**
+     * From backbone-localstorage:
+     * Generate a pseudo-GUID by concatenating random hexadecimal.
+     **/
+    function GUID() {
+        // Generate four random hex digits.
+        function S4() {
+           return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+        }
+       return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+    }
     
     var Session = Backbone.Model.extend({
         
+        initialize: function(){
+            this.tagLayers = {};
+        },
+        
+        defaults: function(){
+            return {
+                id: GUID()
+            };
+        },
+        
         sync: function(){},
         
-        toJSON: function(){
+        //JSON stringifies dates in a way that the Date object can't parse in webkits.
+        //Try: new Date(JSON.parse(JSON.stringify(new Date())))
+        //To avoid this issue dates can be stringified with the String function.
+        //Use .toUTCString instead?
+        toJSON: function() {
             var attrs = _.clone(this.attributes);
-            if(attrs.startTime) {
-                attrs.startTime = String(attrs.startTime);
-            }
-            if(attrs.endTime) {
-                attrs.endTime = String(attrs.endTime);
-            }
+            _.each(attrs, function(attrName, attrValue){
+                if(_.isDate(attrValue)){
+                    attrs[attrName] = String(attrValue);
+                }
+            });
             return attrs;
         },
 
@@ -50,37 +75,108 @@ function($,        Backbone,   _,            LogItems,   sfsf) {
                     options.error(error);
                     return;
                 }
-                console.log("contents written!");
-                options.success();
+                console.log("main content written, persisting layers...");
+                var tagLayerNames = _.keys(that.tagLayers);
+                var successCounter = _.after(tagLayerNames.length, options.success);
+                _.each(tagLayerNames, function(layerName){
+                    that.tagLayers[layerName].saveToFS(_.extend({}, options, {
+                        success: successCounter
+                    }));
+                });
             });
-            /*
+            
+        },
+        
+        addTag: function(layerName, tag, timestamp){
+            if(!(layerName in this.tagLayers)){
+                this.tagLayers[layerName] = new TagCollection([], {
+                    id: this.get("id"),
+                    layerName: layerName
+                });
+            }
+            this.tagLayers[layerName].create({tag : tag, _timestamp : timestamp});
+        },
+        
+        fetchTagLayers: function(options){
+            var that = this;
+            that.tagLayers = {};
+            //Search FS for tag collections corresponding to this session.
+            //Read each collection and add them to this.
+            //voila
             sfsf.politelyRequestFileSystem(function(error, fileSystem) {
-                if(error){
+                if(error) {
                     options.error(error);
                     return;
                 }
-                console.log("Got fileSystem");
-                fileSystem.root.getFile(filePath, {
-                    create: true,
+                fileSystem.root.getDirectory(options.dirPath, {
                     exclusive: false
-                }, function gotFileEntry(fileEntry) {
-                    console.log("Got fileEntry");
-                    fileEntry.createWriter(function gotFileWriter(writer) {
-                        console.log(writer);
-                        console.log("created writer");
-                        writer.onwriteend = function(evt) {
-                            console.log("contents written!");
-                            options.success();
-                        };
-                        if('chrome' in window){
-                            writer.write(new Blob([content], {type: 'text/plain'}));
-                        } else {
-                            writer.write(content);
-                        }
-                    }, options.error);
-                }, options.error);
+                }, function(dirEntry) {
+                    var directoryReader = dirEntry.createReader();
+
+                    // Get a list of all the entries in the directory
+                    directoryReader.readEntries(function(entries) {
+                        var filteredEntries = _.filter(entries, function(entry){
+                            var nameParse = entry.name.split('.');
+                            if(!entry.isFile) return false;
+                            if(nameParse[3] !== "json") return false;
+                            if(nameParse[2] !== "tags") return false;
+                            if(nameParse[0] !== that.get("id")) return false;
+                            entry.layerName = nameParse[1];
+                            return true;
+                        });
+                        var successCounter = _.after(filteredEntries.length, options.success);
+                        filteredEntries.forEach(function(entry){
+                            
+                            var fileReader = new FileReader();
+                            entry.file(function(file){
+                                fileReader.onloadend = function(evt) {
+                                    console.log("finished reading: " + entry.name);
+                                    var fileJSON;
+                                    try{
+                                        fileJSON = JSON.parse(evt.target.result);
+                                    } catch(e) {
+                                        alert("File could not be parsed: " + entry.name);
+                                        console.log(e);
+                                        //If the file could not be parsed we notify the user and continue.
+                                        //This is most likely due to errors when writing
+                                        successCounter();
+                                        return;
+                                    }
+                                    that.tagLayers[entry.layerName] = new TagCollection(fileJSON, {
+                                        id:that.get("id"),
+                                        layerName: entry.layerName
+                                    });
+                                    //TODO: Can this be removed?
+                                    that.tagLayers[entry.layerName].each(function(tag){
+                                        if(!_.isDate(tag.get("_timestamp"))){
+                                            console.log("Tag timestamps are not parsed");
+                                            tag.set("_timestamp", new Date(tag.get("_timestamp")));
+                                        }
+                                    });
+                                    successCounter();
+                                };
+                                console.log("calling read...");
+                                try {
+                                    fileReader.readAsText(file);
+                                    console.log("Reading...");
+                                } catch(e) {
+                                    if(window.chrome) {
+                                        console.error(e);
+                                        console.error(file);
+                                    }
+                                    options.error("Read error");
+                                }
+                            }, options.error);
+                        });
+                    }, function(error) {
+                        alert("Failed to list directory contents: " + error.code);
+                    });
+                }, function(error) {
+                    alert("Unable to access directory: " + error.code);
+                });
             });
-            */
+            return this;
+            
         }
     });
     
@@ -105,7 +201,11 @@ function($,        Backbone,   _,            LogItems,   sfsf) {
                     // Get a list of all the entries in the directory
                     directoryReader.readEntries(function(entries) {
                         var filteredEntries = _.filter(entries, function(entry){
-                            return entry.isFile && entry.name.slice(-5) === ".json";
+                            var nameParse = entry.name.split('.');
+                            if(!entry.isFile) return false;
+                            if(nameParse.length !== 2) return false;
+                            if(nameParse[1] !== "json") return false;
+                            return true;
                         });
                         var successCounter = _.after(filteredEntries.length, options.success);
                         filteredEntries.forEach(function(entry){
@@ -153,6 +253,9 @@ function($,        Backbone,   _,            LogItems,   sfsf) {
             });
             return this;
         },
+        /**
+         * Gather all the logItems of all the sessions into a single LogItem collection.
+         **/
         collectLogItems: function() {
             var outLogItems = new LogItems();
             this.forEach(function(session){
