@@ -177,7 +177,37 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
             });
             return this;
             
-        }
+        },
+        
+        logPage: function(pageContext){
+            var that = this;
+            
+            if(pageContext.params.__nolog) {
+                console.log("A log item is not created when the __nolog flag is passed.");
+                return;
+            }
+            
+            var curLogItem = new this.Log.model(_.extend({}, pageContext.params, {
+                page: pageContext.page,
+                _sessionId: this.get('id'),
+                //This is duplicate information but it is convenient to have available on the model.
+                _recordingStart: this.get('startTime')
+            }));
+            
+            this.Log.add(curLogItem);
+            
+            //Save the params that do not begin with an underscore into the session.
+            //TODO: To avoid collisions the backend session vars should begin
+            //with an underscore.
+            this.set(_.omitUnderscored(pageContext.params));
+            
+            this.Log.on('add', function(newLogItem){
+                curLogItem.set({
+                    '_duration': (new Date()) - curLogItem.get('_timestamp'),
+                    'nextPage': newLogItem.page
+                });
+            });
+        },
     });
     
     return Backbone.Collection.extend({

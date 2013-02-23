@@ -1,0 +1,29 @@
+<h1>Choose an interview:</h1>
+
+<a class="menu-item sort-name">Sort | Name</a>
+<a class="menu-item sort-date">Sort | Date</a>
+<a class="menu-item refresh">Refresh</a>
+<% if("chrome" in window){ %>
+    <a class="menu-item " href="boilerplate/libs/filerjs/demos/filer.html">
+        Add Interivews
+    </a>
+<% } %>
+<div style="clear:both;"></div>
+
+<ul class="navlist">
+<%
+_.each(interviews, function(interview){ 
+%>
+    <li>
+    <a href="boilerplate/interview.html?interview=<%- interview.name %>/">
+        <h2><%- interview.name %></h2>
+        <p>
+            <strong>Last Modified:</strong><br />
+            <%- interview.metadata.modificationTime %>
+        </p>
+    </a>
+    </li>
+<%
+});
+%>
+</ul>

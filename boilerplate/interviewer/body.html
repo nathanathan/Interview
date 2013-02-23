@@ -13,11 +13,29 @@
             <li>
                 <form class="navbar-form">
                     <a id="stop" class="btn btn-danger">Stop</a>
-                    <a class="btn btn-warning undo">Undo</a>
+                    <a class="btn btn-warning pauseRecording">Pause</a>
                 </form>
             </li>
+            <% if("_recording" in session){ %>
+                <li>Recording...</li>
+            <% } %>
         </ul>
     </div>
 </div>
-<div id="alert-area"></div>
+<div id="alert-area">
+<% if("_warning" in session){ %>
+    <div class="alert alert-block">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <h4>Warning!</h4>
+        <%- session._warning %>
+    </div>
+<% } %>
+<% if("_error" in session){ %>
+    <div class="alert alert-block">
+        <button type="button" class="close" data-dismiss="alert">×</button>
+        <h4>Error!</h4>
+        <%- session._error %>
+    </div>
+<% } %>
+</div>
 <div id="pagecontainer"></div>
