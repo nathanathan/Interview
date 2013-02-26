@@ -1,13 +1,7 @@
-define([
-    'config',
-    'backbone',
-    'underscore',
-    'player/player',
-    'Sessions',
-    'text!explorer/clipTemplate.html',
-    'text!explorer/resultsTemplate.html'
-],
-function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
+define([ 'underscore', 'backbone', 'player/player', 'text!explorer/explorerTemplate.html', 'text!explorer/clipTemplate.html', 'Popcorn'],
+function( _,            Backbone,   player,          explorerTemplate,                      clipTemplate ) {
+    
+    var compiledExplorerTemplate = _.template(explorerTemplate);
     var compiledClipTemplate = _.template(clipTemplate);
     
     var getMediaPhonegap = function(path, callback) {
@@ -32,7 +26,7 @@ function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
             }
         }
         waitForDuration();
-    }
+    };
     
     var getMediaDebug = function(path, callback) {
         var $audioContainer = $('<div style="height:400px" id="dbgAudioContainer">');
@@ -45,7 +39,6 @@ function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
          "#dbgAudioContainer",
          'http://cuepoint.org/dartmoor.mp4');
          
-        
         window.audioDbg = myAudio;
         myAudio.on("loadedmetadata", function() {
             myAudio.off("loadedmetadata");
@@ -86,52 +79,60 @@ function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
             getMediaDebug(path, callback);
         }
     };
-                    
-/*
-    function getMediaAudioEl(callback) {
-        var myAudio = new Audio();
-        myAudio.src = 'http://www.html5rocks.com/en/tutorials/audio/quick/test.ogg';
-        myAudio.addEventListener("loadedmetadata", function(evt) {
-            callback({
-                play: function(){
-                    myAudio.play();
-                },
-                pause: function(){
-                    myAudio.pause();
-                },
-                stop: function(){
-                    myAudio.stop();
-                },
-                getCurrentPosition: function(mediaSuccess, mediaError){
-                    //mediaSuccess(myAudio.currentTime);
-                    mediaSuccess(myAudio.currentTime);
-                },
-                getDuration: function(){
-                    //return myAudio.duration;
-                    return myAudio.duration;
-                },
-                seekTo: function(timeSeconds){
-                    //myAudio.currentTime = timeSeconds;
-                    myAudio.currentTime = timeSeconds;
-                }
-            });
-        });
-    }
-*/
     
-    var ListView = Backbone.View.extend({
+    
+    var ExplorerView = Backbone.View.extend({
+        
+        template: compiledExplorerTemplate,
+
         orderVar: 1,
-        render: function() {
-            console.log('render');
+        
+        filter: function(){ return true; },
+
+        sortIterator: function() {
+            return 0;
+        },
+
+        initialize: function(options){
             var that = this;
-            this.$el.html(resultsTemplate);
+
+            options.model.on("change", function(){
+                console.log("page change");
+                var page = that.model.get("page");
+                var matcher = new RegExp(page);
+                that.filter = function(logItem){
+                    return matcher.test(logItem.get("page"));
+                };
+                console.log("sort change");
+                var sortBy = that.model.get("sortBy");
+                that.sortIterator = function(logItem){
+                    return logItem.get(sortBy);
+                };
+                that.render();
+            });
+        },
+
+        render: function() {
+            this.$el.html(this.template({ data: this.model.toJSON() }));
+            this.renderResults();
+        },
+        
+        renderResults: function() {
+            var that = this;
             var resultsList = this.$('#result-list');
-            this.collection.each(function(logItem){
+            var sessions = this.options.sessions;
+            _.chain(sessions.collectLogItems().models).tap(function(x){ console.log(x) })
+            .filter(that.filter)
+            .sortBy(that.sortIterator)
+            .each(function(logItem){
                 var $logItemDom;
+                console.log(logItem);
                 try {
                     $logItemDom = $(compiledClipTemplate({data: logItem.toJSON()}));
                 } catch(e) {
+                    console.log(logItem.toJSON());
                     alert("clipTemplate error");
+                    return;
                 }
                 resultsList.append($logItemDom);
                 $logItemDom.find('.play-btn').click(function(e){
@@ -139,31 +140,30 @@ function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     console.log('playClip');
                     console.log(logItem);
                     var $clipPlayArea = $(e.target).closest('.play-area');
-                    //TODO: Not sure if this will work
-                    //$mediaContainer.css("display", "none");
+                    
                     var $playerContainer = $('<div id="player-container">');
                     $clipPlayArea.empty();
                     $clipPlayArea.append($playerContainer);
-                    var session = that.options.allSessions.get(logItem.get('_sessionId'));
+                    var session = sessions.get(logItem.get('_sessionId'));
                     if(!session) {
                         alert("Could not get session");
                         console.error(logItem.get('_sessionId'));
+                        return;
                     }
-                    //Getting the session will also make it easier to get rid
-                    //of the _recordingStart param.
-                    var recordingPath = config.appDir + '/' +
-                        logItem.get('_sessionId') + ".amr";
-                    console.log("recordingPath: " + recordingPath);
 
-                    getMedia(recordingPath, function(media){
+                    console.log("recordingPath: " + session.get('_recordingPath'));
+
+                    getMedia(session.get('_recordingPath'), function(media){
                         console.log("Got media.");
                         var timestamp = logItem.get('_timestamp');
                         var recordingStart = logItem.get('_recordingStart');
+                        
                         if(!_.isDate(timestamp)) {
                             console.error("String dates in model");
                             timestamp = new Date(timestamp);
                             recordingStart = new Date(recordingStart);
                         }
+                        
                         player.create({
                             containerEl: $playerContainer.get(0),
                             media: media,
@@ -178,34 +178,8 @@ function(config, Backbone, _, player, Sessions,  clipTemplate, resultsTemplate){
                     });
                 });
             });
-        },
-        events: {
-            'click .sort' : 'sort'
-        },
-        genComparator : function(cfunc, incr) {
-            if(!incr) {
-                incr = 1;
-            }
-            return function(Ain, Bin) {
-                var A = cfunc(Ain);
-                var B = cfunc(Bin);
-                if(A < B) return -incr;
-                if(A > B) return incr;
-                if(A == B) return 0;
-            };
-        },
-        sort: function(e) {
-            console.log('sort');
-            console.log(e);
-            var sortParam = this.$('#sortParam');
-            this.orderVar = -this.orderVar;
-            this.collection.comparator = this.genComparator(function(entry) {
-                return entry.get(sortParam);
-            }, this.orderVar);
-            this.collection.sort();
-            this.render();
-            return this;
         }
+        
     });
-	return ListView;
+	return ExplorerView;
 });

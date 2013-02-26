@@ -1,6 +1,3 @@
-/**
- * @author nbnate
- */
 define([
     'config',
     'jquery', 
@@ -26,6 +23,8 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
     console.log("Templates compiled");
     
     var mySessions = new Sessions();
+
+    var myExplorerView;
 
     var SessionView = Backbone.View.extend({
         
@@ -102,10 +101,11 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
         },
         pauseRecording: function(evt){
             this.mediaRec.stopRecord();
+            //TODO: What should the pause screen look like.
             this.$el.css("opacity", .5);
         },
         resumeRecording: function(evt){
-            this.mediaRec.startRecord();
+            //TODO: Create a new recording and filenames in an ordered list.
         },
         undo: function(evt){
             console.log("triggering undo");
@@ -289,6 +289,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
 		routes: {
             '': 'opening',
             'sessions': 'showSessions',
+            'explorer': 'explorer',
             'beginSession' : 'beginSession',
             'interviewEnd': 'interviewEnd',
             'json/:question': 'setJSONQuestion',
@@ -315,6 +316,37 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     alert("Error loading sessions");
                 }
             });
+        },
+        explorer: function(qp){
+            var that = this;
+            if(myExplorerView && qp){
+                console.log(myExplorerView);
+                myExplorerView.model.set(qp);
+            } else {
+                require(['explorer/ExplorerView'], function(ExplorerView){
+                    myExplorerView = new ExplorerView({
+                        model: new Backbone.Model(qp),
+                        sessions: mySessions,
+                        el: $('body').get(0)
+                    });
+                    mySessions.fetchFromFS({
+                        dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
+                        success: function(){
+                            //Add durations for this view.
+                            //Should durations be stored?
+                            mySessions.each(function(session){
+                                if(session.get("endTime")){
+                                    session.set("_duration", session.get("endTime") - session.get("startTime"));
+                                }
+                            });
+                            myExplorerView.render();
+                        },
+                        error: function(){
+                            alert("Error loading sessions");
+                        }
+                    });
+                });
+            }
         },
         beginSession: function(){
             var startUrl = "start.html";

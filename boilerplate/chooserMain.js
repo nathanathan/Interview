@@ -121,7 +121,7 @@ function(config, _, Backbone, dirListView, sfsf){
         }
     });
     
-    var installDefaultInterview = function(){
+    var installDefaultInterview = function(callback){
         var files = [
             'example/start.html',
             'example/interview.json',
@@ -137,14 +137,10 @@ function(config, _, Backbone, dirListView, sfsf){
                 sfsf.cretrieve(sfsf.joinPaths(config.appDir, 'interviews', file), {
                     data: fileContent,
                     type: type
-                }, function(error, dirEntry) {
-                    if (error) {
-                        console.error(error);
-                    }
-                });
+                }, callback);
             });
         });
-    }
+    };
     
     var onReady = function() {
         $(function() {
@@ -170,8 +166,12 @@ function(config, _, Backbone, dirListView, sfsf){
                     console.log("Success!");
                     if(myInterviewDefs.length === 0){
                         console.log("No interviews found, installing default.");
-                        installDefaultInterview();
-                        myInterviewDefs.refresh();
+                        installDefaultInterview(function(err){
+                            if(err) {
+                                console.error(err);
+                            }
+                            myInterviewDefs.refresh();
+                        });
                     }
                 },
                 fail: function(err){
