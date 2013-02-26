@@ -1,0 +1,68 @@
+ <html>
+     <head>
+       
+       <title>Player Template</title>
+       
+        <link href="../../libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+        <link href="../../libs/bootstrap/css/font-awesome.css" rel="stylesheet">
+        <link href="../../libs/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+        <link href="../../base.css" rel="stylesheet">
+        <link href="../../player/player.css" rel="stylesheet">
+	   
+     </head>
+     <body>
+        <div class="navbar navbar-static-top">
+        <div class="navbar-inner">
+            <ul class="nav">
+                <li>
+                    <a href="../../index.html#sandbox">Back</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+		
+		<div class="player" id="player">
+    	
+			<div class="player-controls">
+				
+				<div class="btn-player btn-player-large"><i id="play_pause" class="icon-play"></i></div>
+				
+				<div>
+				<div class="control-group">
+					<span>Skip Backwards (sec)</span>
+					<div class="btn-player"><i data-offeset="-5" class="icon-step-backward"></i><label>5</label></div>
+					<div class="btn-player "><i data-offeset="-10" class="icon-step-backward"></i><label>10</label></div>
+					<div class="btn-player"><i data-offeset="-30" class="icon-fast-backward"></i><label>30</label></div>
+				</div>
+				<br>
+				<div class="btn-player"><i class="icon-fast-backward"></i></div>
+				<div class="btn-player"><i class="icon-fast-forward"></i></div>
+			</div>
+			</div>
+			
+			<div class="progress progress-striped" id="progress-bar">
+				<div class="time-display" id="elapsed-time">02:05</div>
+				
+				<div class="bar" style="width:50%"></div>
+				<div class="time-display" id="total-time">04:10</div>
+			</div>
+			
+			<ul class="marks">
+				<li style="left:20%"><div></div></li>
+				<li style="left:50%"><div></div></li>
+				<li style="left:80%"><div></div></li>
+			</ul>
+			
+			<ul class="tags">
+				<li class="icon-tag" style="left:0%"><div></div></li>
+				<li class="icon-tag" style="left:20%"><div></div></li>
+				<li class="icon-tag" style="left:48%"><div></div></li>
+				<li class="icon-tag" style="left:100%"><div></div></li>
+			</ul>
+			
+		</div>
+		
+
+     </body>
+ </html>
