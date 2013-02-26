@@ -4,10 +4,88 @@
 //Handling pauses would be really tricky, so I probably won't bother.
 //The popcorn.js movie maker has an interesting way of handling skips that might
 //be applicable.
-define(['config', 'backbone', 'underscore', 'text!player/playerTemplate.html', 'text!player/logItemTemplate.html'],
+define(['config', 'backbone', 'underscore', 'text!player/playerTemplate.html', 'text!player/logItemTemplate.html', 'Popcorn'],
 function(config,   Backbone,   _,            playerTemplate,                    logItemTemplate){
     var compiledPlayerTemplate = _.template(playerTemplate);
     var compiledLogItemTemplate  = _.template(logItemTemplate);
+    
+    var getMediaPhonegap = function(path, callback) {
+        var media = new Media(path,
+        function(){},
+        function(err){
+            console.error("Media error:");
+            console.error(err);
+        });
+        media.seekTo(0);
+        var attempts = 10;
+        function waitForDuration(){
+            if(attempts === 0) {
+                alert("Could not get media duration");
+                return;
+            }
+            attempts--;
+            if(media.getDuration() > 0) {
+                callback(media);
+            } else {
+                window.setTimeout(waitForDuration, 100);
+            }
+        }
+        waitForDuration();
+    };
+    
+    var getMediaDebug = function(path, callback) {
+        var $audioContainer = $('<div style="height:400px" id="dbgAudioContainer">');
+        $('body').append($audioContainer);
+        /*
+        var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=oozJH6jSr2U&width=0&height=0' );
+        */
+        
+        var myAudio = Popcorn.smart(
+         "#dbgAudioContainer",
+         'http://cuepoint.org/dartmoor.mp4');
+         
+        
+        window.audioDbg = myAudio;
+        myAudio.on("loadedmetadata", function() {
+            myAudio.off("loadedmetadata");
+            callback({
+                play: function(){
+                    myAudio.play();
+                },
+                pause: function(){
+                    myAudio.pause();
+                },
+                stop: function(){
+                    myAudio.stop();
+                },
+                getCurrentPosition: function(mediaSuccess, mediaError){
+                    //mediaSuccess(myAudio.currentTime);
+                    mediaSuccess(myAudio.currentTime());
+                },
+                getDuration: function(){
+                    //return myAudio.duration;
+                    return myAudio.duration();
+                },
+                seekTo: function(millis){
+                    console.log("seeking to: " + millis);
+                    //myAudio.currentTime = timeSeconds;
+                    myAudio.currentTime(Math.floor(millis / 1000));
+                    //myAudio.currentTime = Math.floor(millis / 1000);
+                }
+            });
+        });
+    };
+    
+    var getMedia = function(path, callback) {
+        //TODO: Download media into temporairy fs if not present? Maybe it is better to just sync everything up front for now.
+        //TODO: Figure out how to play audio from chrome.
+        if('Media' in window){
+            getMediaPhonegap(path, callback);
+        } else {
+            getMediaDebug(path, callback);
+        }
+    };
+    
     
     var PlayerModel = Backbone.Model.extend({
         validate: function(attrs) {
@@ -126,125 +204,112 @@ function(config,   Backbone,   _,            playerTemplate,                    
     });
     
     var create = function(context){
-        console.log("Creating player");
-        var defaultContext = {
-            containerEl: document.getElementById("player-container"),
-            media: null,
-            logItems: new Backbone.Collection(),//Problem
-            session: new Backbone.Model({
+        var startTime = context.startTime || 0;
+        var session = context.session;
+        if(!session) {
+            alert("No session id. Debug mode.");
+            session = new Backbone.Model({
                 startTime: new Date(0),
-                endTime: new Date(context.media.getDuration() * 1000)
-            }),
-            //Start time in millis
-            start: 0
-        };
-        context = _.extend(defaultContext, context);
-        
-        //Note:
-        //The timeline shows the session duration rather than the recording duration.
-        //This means that we need to be careful when seeking as these might have some discrepancies...
-        var sessionDuration = context.session.get('endTime') - context.session.get('startTime');
-        console.log("session duration:" + sessionDuration);
-        
-        if(!(context.media.getDuration() > 0)){
-            alert("Could not get media duration, be sure it is loaded before passing it to player.create()");
+                endTime: 60000
+            });
         }
-        if(context.media.getDuration() === Infinity) {
-            alert("Media is infinately long?");
-        }
-
+        var logItems = session.Log;
         
-        var player = new PlayerModel({
-            //Progress as a percentage:
-            progress: 0,
-            //Time in seconds
-            //(note that this lags behind the actual media object's time)
-            time: 0,
-            duration: sessionDuration / 1000,
-            playing: false
-        });
-        
-        /*
-        var startTimestamp = new Date();
-        //Assuming that the first logItem's timestamp matches the start of the
-        //recording.
-        context.logItems.forEach(function(logItem){
-            var timestamp = logItem.get('_timestamp');
-            if(timestamp < startTimestamp) {
-                startTimestamp = timestamp;
+        getMedia(session.get('_recordingPath'), function(media){
+            //Note:
+            //The timeline shows the session duration rather than the recording duration.
+            //This means that we need to be careful when seeking as these might have some discrepancies...
+            var sessionDuration = session.get('endTime') - session.get('startTime');
+            console.log("session duration:" + sessionDuration);
+            
+            if(!(media.getDuration() > 0)){
+                alert("Could not get media duration, be sure it is loaded before passing it to player.create()");
             }
-        });
-        */
-        console.log("Start time: " + context.start);
-        //Setting the start time is a bit inelegant right now.
-        player.setTime(context.start / 1000);
-        context.media.seekTo(context.start);
-        
-        var $playerControls = $('<div class="player">');
-        var $markers = $('<div id="logItemContainer">');
-        var $info = $('<div id="logItemInfo">');
-        
-        $(context.containerEl)
-            .empty()
-            .append($playerControls)
-            .append($markers)
-            .append($info);
-        
-        var selectedLogItem = null;
-        var updateMarkers = function(){
-            console.log("updateMarkers");
-            $markers.empty();
-            //Track current log item in url for navigation?
-            context.logItems.each(function(logItem){
-                var millisOffset = logItem.get('_timestamp') - context.session.get('startTime');
-                var logItemProgress = (millisOffset / 1000) / player.get("duration");
-                var $marker = $('<div class="logItemMarker">');
-                $marker.css("left", logItemProgress * 100 + '%');
-                window.x = logItem.get('_timestamp'); window.y = context.session.get('startTime');
-                $markers.append($marker);
-                $marker.click(function(){
-                    selectedLogItem = logItem;
-                    updateMarkers();
-                });
-                if(selectedLogItem === logItem){
-                    $marker.addClass("selected");
-                    try{
-                        $info.html(compiledLogItemTemplate(logItem.toJSON()));
-                    } catch(e) {
-                        alert("Could not render template.");
-                        console.error(e);
-                        return;
-                    }
-                    $info.find('.playhere').click(function(evt){
-                        player.setTime(millisOffset / 1000);
-                        context.media.seekTo(millisOffset);
+            if(media.getDuration() === Infinity) {
+                alert("Media is infinately long?");
+            }
+            
+            var player = new PlayerModel({
+                //Progress as a percentage:
+                progress: 0,
+                //Time in seconds
+                //(note that this lags behind the actual media object's time)
+                time: 0,
+                duration: sessionDuration / 1000,
+                playing: false
+            });
+            
+            console.log("Start time: " + startTime);
+            //Setting the start time is a bit inelegant right now.
+            player.setTime(startTime / 1000);
+            media.seekTo(startTime);
+            
+            var $playerControls = $('<div class="player">');
+            var $markers = $('<div id="logItemContainer">');
+            var $info = $('<div id="logItemInfo">');
+            
+            $(context.el)
+                .empty()
+                .append($playerControls)
+                .append($markers)
+                .append($info);
+            
+            var selectedLogItem = null;
+            var updateMarkers = function(){
+                console.log("updateMarkers");
+                $markers.empty();
+                //Track current log item in url for navigation?
+                logItems.each(function(logItem){
+                    var millisOffset = logItem.get('_timestamp') - session.get('startTime');
+                    var logItemProgress = (millisOffset / 1000) / player.get("duration");
+                    var $marker = $('<div class="logItemMarker">');
+                    $marker.css("left", logItemProgress * 100 + '%');
+                    window.x = logItem.get('_timestamp'); window.y = session.get('startTime');
+                    $markers.append($marker);
+                    $marker.click(function(){
+                        selectedLogItem = logItem;
+                        updateMarkers();
                     });
+                    if(selectedLogItem === logItem){
+                        $marker.addClass("selected");
+                        try{
+                            $info.html(compiledLogItemTemplate(logItem.toJSON()));
+                        } catch(e) {
+                            alert("Could not render template.");
+                            console.error(e);
+                            return;
+                        }
+                        $info.find('.playhere').click(function(evt){
+                            player.setTime(millisOffset / 1000);
+                            media.seekTo(millisOffset);
+                        });
+                    }
+                });
+            };
+            
+            var playerView = new PlayerView({
+                model: player,
+                media: media,
+                logItems: logItems
+            });
+            player.on("change", playerView.render, playerView);
+            
+            updateMarkers();
+            
+            player.on("error", playerView.pause, playerView);
+            
+            playerView.setElement($playerControls.get(0));
+            playerView.render();
+            
+            //It might be a good idea to lazy load the tag layers.
+            session.fetchTagLayers({
+                dirPath: config.appDir,
+                success: function() {
+                    console.log("Tag Layers:", session.tagLayers);
                 }
             });
-        };
-        
-        var playerView = new PlayerView({
-            model: player,
-            media: context.media,
-            logItems: context.logItems
         });
-        player.on("change", playerView.render, playerView);
-        
-        updateMarkers();
-        
-        player.on("error", playerView.pause, playerView);
-        
-        playerView.setElement($playerControls.get(0));
-        playerView.render();
-        
-        //It might be a good idea to lazy load the tag layers.
-        context.session.fetchTagLayers({
-            dirPath: config.appDir,
-            success: function() {
-                console.log("Tag Layers:", context.session.tagLayers);
-            }
-        });
-        
+
         return this;
 	};
     

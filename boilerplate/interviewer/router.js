@@ -290,6 +290,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             '': 'opening',
             'sessions': 'showSessions',
             'explorer': 'explorer',
+            'playSession': 'playSession',
             'beginSession' : 'beginSession',
             'interviewEnd': 'interviewEnd',
             'json/:question': 'setJSONQuestion',
@@ -348,6 +349,36 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 });
             }
         },
+        
+        playSession: function(qp){
+            var that = this;
+            require(['player/player','text!player/playerContainerTemplate.html'],
+            function( player,         playerContainerTemplate){
+                if(qp && qp.id) {
+                    mySessions.fetchFromFS({
+                        id: qp.id, //TODO: Make it so this limits us to fetching the mession with the given id.
+                        dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
+                        success: function(){
+                            var sessionToPlay = mySessions.get(qp.id);
+                            if(!sessionToPlay) {
+                                alert("Could not get session: " + qp.id);
+                            }
+                            $('body').html(_.template(playerContainerTemplate));
+                            player.create({
+                                el:  document.getElementById("player-container"),
+                                session: sessionToPlay
+                            });
+                        },
+                        error: function(){
+                            alert("Error loading sessions");
+                        }
+                    });
+                } else {
+                    alert('missing session id');
+                }
+            });
+        },
+        
         beginSession: function(){
             var startUrl = "start.html";
             
