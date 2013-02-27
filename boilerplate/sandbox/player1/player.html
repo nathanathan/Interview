@@ -28,18 +28,26 @@
 		
 		<div class="player" id="player">
     	
-				<div class=" row-fluid player-controls">
+			<div class="row-fluid player-controls">
+				
+				<div class="span4">
+					<div class="btn-player btn-player-large" id="play"><i class="icon-play"></i></div>
+					<div class="btn-player btn-player-large" id="pause" style="display:none"><i class="icon-pause"></i></div>
+				</div>
 					
-					<div class="span4">
-						<div class="btn-player btn-player-large" id="play"><i id="play_pause" class="icon-play"></i></div>
-					</div>
-					
-					<div class="span8">
-					<div class="control-group">
+				<div class="span8">
+					<div class="span12 control-group">
 						<span>Skip Back (sec)</span>
-						<div class="btn-player"><i data-offeset="-5" class="icon-step-backward"></i><label>5</label></div>
-						<div class="btn-player "><i data-offeset="-10" class="icon-step-backward"></i><label>10</label></div>
-						<div class="btn-player"><i data-offeset="-30" class="icon-fast-backward"></i><label>30</label></div>
+						<div class="row-fluid">
+							<div class="span4"><div class="btn-player"><i data-offeset="-5" class="icon-step-backward"></i></div></div>
+							<div class="span4"><div class="btn-player "><i data-offeset="-10" class="icon-step-backward"></i></div></div>
+							<div class="span4"><div class="btn-player"><i data-offeset="-30" class="icon-fast-backward"></i></div></div>
+						</div>
+						<div class="row-fluid labels">
+							<div class="span4">5</div>
+							<div class="span4">10</div>
+							<div class="span4">30</div>
+						</div>
 					</div>
 					<br>
 					<div class="btn-player"><i class="icon-fast-backward"></i></div>
@@ -48,21 +56,10 @@
 				</div>
 			</div>
 			
-			<div class="timeline-wrapper">
-				<div class="timeline">
-					<ul class="marks">
-						<li style="left:20%"><div></div></li>
-						<li style="left:30%"><div></div></li>
-						<li style="left:40%"><div></div></li>
-						<li style="left:50%"><div></div></li>
-						<li style="left:60%"><div></div></li>
-						<li style="left:70%"><div></div></li>
-						<li style="left:80%"><div></div></li>
-						<li style="left:90%"><div></div></li>
-					</ul>
-				</div>
-			</div>
+			<div class="timeline-window"></div>
 			
+			
+			<!--
 			<div class="progress progress-striped" id="progress-bar">
 				<div class="time-display" id="elapsed-time">02:05</div>
 				
@@ -82,7 +79,7 @@
 				<li class="icon-tag" style="left:48%"><div></div></li>
 				<li class="icon-tag" style="left:100%"><div></div></li>
 			</ul>
-			
+			-->
 		</div>
 		
 

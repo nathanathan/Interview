@@ -12,12 +12,11 @@ CSS for player
 .player .player-controls {
 	background-color:lightsteelblue;
     display:inline-block;
-    width:auto;
+    width:15em;
 	border-radius: 1.25em;
 	font-size:20px;
 	position:relative;
 	padding:10px;
-
 }
 
 .player .btn-player {
@@ -42,16 +41,20 @@ CSS for player
 	position:relative;
 	display:inline-block;
 	background-color:lightgray;
-	padding: 5px 30px 10px 30px;
 	border-radius:2em;
 	vertical-align:middle;
 	border:1px solid darkgray;
+	margin-left:15px;
 }
 
-.player .control-group .btn-player label {
+.player .control-group .labels {
 	font-size:.6em;
-	top:.35em;
 	position:relative;
+	line-height:1em;
+}
+
+.player .control-group .labels div {
+	min-height:0px;
 }
 
 .player .control-group span{
@@ -84,6 +87,7 @@ CSS for player
 
 .player .btn-player-large i {
 	font-size:1em;
+	margin-left:-10px;
 }
 
 .player #progress-bar {
@@ -176,27 +180,51 @@ CSS for player
 End CSS for player
 */
 
-.timeline-wrapper {
+/*
+CSS for timeline
+*/
+
+
+.timeline-window {
 	width:400px;
-	height:200px;
+	height:2em;
 	border:1px black solid;
 	margin:auto;
 	position:relative;
 	overflow:hidden;
+	font-size:20px;
 }
 
 .timeline {
-	width:1200px;
-	height:180px;
-	position:relative;
-	top:10px;
+	height:2em;
+	position:absolute;
 	background-color:limegreen;
+	left:50%;
 }
 
-.timeline ul.marks {
+.timeline .time-marks div{
+	border-left:solid 1px gray;
+	width:2.4em;
+	height:2em;
+	display:inline-block;
+	float:left;
+}
+
+.timeline-window .current-time-maker {
+	background-color:blue;
+	position:absolute;
+	width:.25em;
 	top:0px;
+	left:50%;
+	margin-left:-.125em;
+	height:2em;
+	display:inline;
+	opacity:0.5;
 }
 
+/*
+End CSS for player
+*/
 
 #logItemContainer {
     position: relative;
