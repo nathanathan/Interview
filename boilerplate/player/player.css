@@ -38,10 +38,6 @@ CSS for player
 
 }
 
-.player .btn-player-large {
-	font-size:3em;
-}
-
 .player .control-group {
 	position:relative;
 	display:inline-block;
@@ -67,7 +63,6 @@ CSS for player
 }
 
 
-
 .player .btn-player:hover {
 	background-image:linear-gradient(to top, #ffffff 0%,#e5e5e5 100%);
 	background-image: -webkit-linear-gradient(bottom, #ffffff 0%,#e5e5e5 100%);
@@ -80,6 +75,15 @@ CSS for player
 	position:relative;
 	top:.166em;
 	left:.083em;
+	font-size:.8em;
+}
+
+.player .btn-player-large {
+	font-size:3em;
+}
+
+.player .btn-player-large i {
+	font-size:1em;
 }
 
 .player #progress-bar {
@@ -171,6 +175,28 @@ CSS for player
 /*
 End CSS for player
 */
+
+.timeline-wrapper {
+	width:400px;
+	height:200px;
+	border:1px black solid;
+	margin:auto;
+	position:relative;
+	overflow:hidden;
+}
+
+.timeline {
+	width:1200px;
+	height:180px;
+	position:relative;
+	top:10px;
+	background-color:limegreen;
+}
+
+.timeline ul.marks {
+	top:0px;
+}
+
 
 #logItemContainer {
     position: relative;
