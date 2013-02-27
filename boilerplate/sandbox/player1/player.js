@@ -21,18 +21,18 @@ FS_Timeline.prototype.initialize = function() {
 	this.$view_box = (this.options.ele)?$(this.options.ele):$('<div class="timeline-window"></div>');
 	this.$timeline = $('<div class="timeline"><div class="time-marks"></div></div>');
 	this.$timeline.children('.time-marks').append(this.createTimeMarks());
-	this.$timeline.css('width',this.options.duration/this.options.time_mark.small_tic_ms*(this.options.time_mark.small_tic_px+1));
+	this.$timeline.css('width',this.options.duration/this.options.time_mark.small_tic_ms*this.options.time_mark.small_tic_px);
 	//add elements into view box
 	this.$view_box.append(this.$timeline,$('<div class="current-time-maker"></div>'));
 	
 }
 
 FS_Timeline.prototype.createTimeMarks = function() {
-	var n_marks = this.options.duration/this.options.time_mark.small_tic_ms;
+	var n_marks = this.options.duration/this.options.time_mark.small_tic_ms+1;
 	console.log(n_marks);
 	var time_marks = [];
 	for(var i=0; i<n_marks; i++) {
-		time_marks.push($('<div style="width:'+this.options.time_mark.small_tic_px+'px"></div>'));
+		time_marks.push($('<div style="left:'+this.options.time_mark.small_tic_px*i+'px"></div>'));
 	}
 	return time_marks;
 }
@@ -50,12 +50,12 @@ FS_Timeline.prototype.pause = function () {
 
 FS_Timeline.prototype.seekDelta = function(delta_x) {
 	var cur_x = parseFloat(this.$timeline.css('left'));
-	console.log(cur_x,(cur_x+delta_x)+'px');
+	//console.log(cur_x,(cur_x+delta_x)+'px');
 	this.$timeline.css('left',(cur_x+delta_x)+'px');
 }
 
 $(function() {
-	timeline = new FS_Timeline({ele:$('.timeline-window'),duration:10000});
+	timeline = new FS_Timeline({ele:$('.timeline-window'),duration:20000});
 	
 	$('#play').click(function() {
 		$('#play').hide();

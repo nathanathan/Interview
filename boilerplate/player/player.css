@@ -198,16 +198,21 @@ CSS for timeline
 .timeline {
 	height:2em;
 	position:absolute;
-	background-color:limegreen;
+	background-color:rgb(208, 216, 208);
 	left:50%;
 }
 
+.timeline.time-marks {
+	position:absolute;
+	height:100%;
+}
+
 .timeline .time-marks div{
-	border-left:solid 1px gray;
-	width:2.4em;
-	height:2em;
+	width:.1em;
+	height:100%;
 	display:inline-block;
-	float:left;
+	background-color:rgba(95, 95, 95, 0.67);
+	position:absolute;
 }
 
 .timeline-window .current-time-maker {
