@@ -1,9 +1,3 @@
-//TODO: It would be nice to have a way to pass in media files with different offsets.
-//(i.e. pass in a shortened clip from an interview)
-//Also, it would be nice to have a way to use media files with pauses in them.
-//Handling pauses would be really tricky, so I probably won't bother.
-//The popcorn.js movie maker has an interesting way of handling skips that might
-//be applicable.
 define(['config', 'backbone', 'underscore', 'text!player/playerTemplate.html', 'text!player/logItemTemplate.html', 'Popcorn'],
 function(config,   Backbone,   _,            playerTemplate,                    logItemTemplate){
     var compiledPlayerTemplate = _.template(playerTemplate);
@@ -78,6 +72,8 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     //myAudio.currentTime = Math.floor(millis / 1000);
                 }
             };
+            //TODO: Extend with backbone events instead, eg:
+            //_.extend(mediaWrapper, Backbone.Events);
             myAudio.on("stop", function(){
                 if("onStop" in mediaWrapper){
                     mediaWrapper.onStop();
@@ -124,6 +120,11 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     currentClip.media.getCurrentPosition(mediaSuccess, mediaError);
                 },
                 getDuration: function(){
+                    return _.reduce(clips, function(memo, clip){ 
+                         return memo + (clip.end - clip.start); 
+                    }, 0);
+                },
+                getActualDuration: function(){
                     return clips[clips.length - 1].end - clips[0].start;
                 },
                 seekTo: function(offset){
@@ -321,6 +322,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
     });
     
     var create = function(context){
+        //TODO: Add parameter for creating a small player for the explorer.
         var startOffset = context.start || 0;
         var session = context.session;
         if(!session) {

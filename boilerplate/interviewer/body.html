@@ -5,7 +5,9 @@
                 <form class="navbar-form">
                     <div class="input-prepend" id="time-container">
                         <span class="add-on">time:</span>
-                        <span class="uneditable-input" id="time"></span>
+                        <span class="uneditable-input" id="time">
+                            <%- _.formatTime(recorder.getDuration()) %>
+                        </span>
                     </div>
                 </form>
             </li>
@@ -13,29 +15,34 @@
             <li>
                 <form class="navbar-form">
                     <a id="stop" class="btn btn-danger">Stop</a>
-                    <a class="btn btn-warning pauseRecording">Pause</a>
+                    <% if(recorder.paused){ %>
+                        <a class="btn btn-warning resumeRecording">Resume</a>
+                    <% } else { %>
+                        <a class="btn btn-warning pauseRecording">Pause</a>
+                    <% } %>
                 </form>
             </li>
-            <% if("_recording" in session){ %>
-                <li>Recording...</li>
-            <% } %>
         </ul>
     </div>
 </div>
 <div id="alert-area">
-<% if("_warning" in session){ %>
+<% if("warning" in recorder){ %>
     <div class="alert alert-block">
         <button type="button" class="close" data-dismiss="alert">×</button>
         <h4>Warning!</h4>
-        <%- session._warning %>
+        <%- recorder.warning %>
     </div>
 <% } %>
-<% if("_error" in session){ %>
+<% if("error" in recorder){ %>
     <div class="alert alert-block">
         <button type="button" class="close" data-dismiss="alert">×</button>
         <h4>Error!</h4>
-        <%- session._error %>
+        <%- recorder.error %>
     </div>
 <% } %>
 </div>
-<div id="pagecontainer"></div>
+<% if(recorder.paused){ %>
+    Session paused
+<% } else { %>
+    <div id="pagecontainer"></div>
+<% } %>

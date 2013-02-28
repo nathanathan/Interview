@@ -25,6 +25,78 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
     var mySessions = new Sessions();
 
     var myExplorerView;
+    
+    var createRecorder = function(outputPath, recording_id, callback){
+        var currentMedia = null;
+        var currentClip = null;
+        var clips = [];
+        
+        return _.extend(Backbone.Events, {
+            pauseRecord: function(){
+                if(this.paused) return;
+                currentClip.end = new Date();
+                currentMedia.stopRecord();
+                currentMedia.release();
+                this.trigger("stop");
+                this.paused = true;
+            },
+            startRecord: function(){
+                currentClip = {
+                    start: new Date(),
+                    path: sfsf.joinPaths(outputPath, recording_id + "." + clips.length + ".amr")
+                };
+                
+                clips.push(currentClip);
+                
+                if('Media' in window) {
+                    currentMedia = new Media(currentClip.path);
+                    console.log("media created: " + currentClip.path);
+                    currentMedia.startRecord();
+                } else {
+                    currentMedia = {
+                        stopRecord: function(){},
+                        startRecord: function(){},
+                        release: function(){}
+                    };
+                    this.warning = "Audio cannot be recorded on this device.";
+                }
+                this.paused = false;
+                this.trigger("start");
+            },
+            remove: function(){
+                if('Media' in window) {
+                    _.each(clips, function(clip){
+                        var recordingPath = clip.path;
+                        sfsf.cretrieve(recordingPath, function(error, fileEntry){
+                            var errorFun = function(){
+                                alert("Error clearing recoding at: " + recordingPath + "\nIt will need to be manually deleted from the sd card.");
+                            };
+                            if(error){
+                                console.log(error);
+                                errorFun();
+                            }
+                            fileEntry.remove(function(){
+                                console.log("Entry successfully removed.");
+                            }, errorFun);
+                        });
+                    });
+                }
+            },
+            getClips: function(){
+                return clips;
+            },
+            getDuration: function(){
+                if(clips.length === 0) return 0;
+                return _.reduce(clips.slice(0, -1), function(memo, clip){ 
+                     return memo + (clip.end - clip.start); 
+                }, (new Date() - currentClip.start));
+            },
+            getActualDuration: function(){
+                if(clips.length === 0) return 0;
+                return new Date() - clips[0].start;
+            }
+        });
+    };
 
     var SessionView = Backbone.View.extend({
         
@@ -62,58 +134,50 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             var that = this;
             var thisRouter = this.options.router;
             var session = this.options.session;
-            
-            //Start the timer;
-            var timerUpdater = window.setInterval(function() {
-                that.$('#time').text(_.formatTime(new Date() - session.get('startTime')));
-            }, 1000);
-            session.once("end", function() {
-                window.clearInterval(timerUpdater);
+                
+            //Setup the timer:
+            session.recorder.on("start", function(){
+                var timerUpdater = window.setInterval(function() {
+                    that.$('#time').text(_.formatTime(session.recorder.getDuration()));
+                }, 1000);
+                session.recorder.once("stop", function() {
+                    window.clearInterval(timerUpdater);
+                });
             });
             
-            if('Media' in window) {
-                this.mediaRec = new Media(session.get('_recordingPath'));
-                console.log("media created: " + session.get('_recordingPath'));
-                this.mediaRec.startRecord();
-                //set startTime again to try to get as close as possible
-                //to the recording start time.
-                session.set('startTime', new Date());
-                session.set('_recording', false);
-            } else {
-                this.mediaRec = {
-                    startRecord: function(){},
-                    stopRecord: function(){},
-                    release: function(){}
-                };
-                session.set('_recording', false);
-                session.set('_warning', "Audio cannot be recorded on this device.");
-            }
+            session.recorder.startRecord();
             
-            thisRouter.navigate('json/start?' + this.$('form').serialize(), {trigger: true});
+            thisRouter.navigate('json/start?' + this.$('form').serialize(), {
+                trigger: true
+            });
         },
+        pauseRecording: function(evt){
+            var session = this.options.session;
+            session.recorder.pauseRecord();
+            this.render();
+        },
+        resumeRecording: function(evt){
+            var session = this.options.session;
+            session.recorder.startRecord();
+            this.render();
+        },
+        
         endInterview: function(evt){
             if(confirm("Are you sure you want to end the interview?")){
-                this.mediaRec.stopRecord();
-                this.mediaRec.release();
+                this.options.session.recorder.pauseRecord();
                 console.log("Recording stopped.");
                 this.options.router.navigate("interviewEnd", { trigger: true });
             }
         },
-        pauseRecording: function(evt){
-            this.mediaRec.stopRecord();
-            //TODO: What should the pause screen look like.
-            this.$el.css("opacity", .5);
-        },
-        resumeRecording: function(evt){
-            //TODO: Create a new recording and filenames in an ordered list.
-        },
+        
         undo: function(evt){
             console.log("triggering undo");
             this.options.router.trigger("undo");
         },
         
         render: function(){
-            this.$el.html(compiledBodyTemplate({ session: this.options.session.toJSON() }));
+            var recorder = this.options.session.recorder;
+            this.$el.html(compiledBodyTemplate({ recorder: recorder }));
             this.renderPage();
             return this;
         },
@@ -304,13 +368,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             mySessions.fetchFromFS({
                 dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
                 success: function(){
-                    //Add durations for this view.
-                    //Should durations be stored?
-                    mySessions.each(function(session){
-                        if(session.get("endTime")){
-                            session.set("_duration", session.get("endTime") - session.get("startTime"));
-                        }
-                    });
                     $('body').html(compiledSessionsTemplate({sessions: mySessions.toJSON()}));
                 },
                 error: function(){
@@ -333,13 +390,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     mySessions.fetchFromFS({
                         dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
                         success: function(){
-                            //Add durations for this view.
-                            //Should durations be stored?
-                            mySessions.each(function(session){
-                                if(session.get("endTime")){
-                                    session.set("_duration", session.get("endTime") - session.get("startTime"));
-                                }
-                            });
                             myExplorerView.render();
                         },
                         error: function(){
@@ -387,12 +437,11 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 interviewTitle: this.currentInterview
             });
             session.Log = new LogItems();
-            
-            session.set("_recordingPath", sfsf.joinPaths(config.appDir,
-                'interview_data',
-                this.currentInterview,
-                session.get("id") + ".amr"));
-            
+            session.recorder = createRecorder(sfsf.joinPaths(config.appDir,
+                    'interview_data',
+                    this.currentInterview),
+                session.get("id"));
+            console.log(session.recorder);
             this.mySessionView = new SessionView({
                 el: $('body').get(0),
                 router: this,
@@ -414,6 +463,12 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){
+                session.set({
+                    '_clips': session.recorder.getClips(),
+                    '_duration': session.recorder.getDuration(),
+                    '_actualDuration': session.recorder.getActualDuration()
+                });
+
                 session.saveToFS({
                     dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
                     success: function(){
@@ -429,20 +484,8 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 });
             });
             $('#discard').click(function(){
-                var recordingPath = session.get('_recordingPath');
                 if(confirm("Are you sure you want to discard this recording?")){
-                    sfsf.cretrieve(recordingPath, function(error, fileEntry){
-                        var errorFun = function(){
-                            alert("Error clearing recoding at: " + recordingPath + "\nIt will need to be manually deleted from the sd card.");
-                        }
-                        if(error){
-                            console.log(error);
-                            errorFun();
-                        }
-                        fileEntry.remove(function(){
-                            console.log("Entry successfully removed.");
-                        }, errorFun);
-                    });
+                    session.recorder.remove();
                     session = null;
                     that.navigate('', {trigger: true, replace: true});
                 }
