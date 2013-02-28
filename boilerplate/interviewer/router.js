@@ -164,8 +164,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
         
         endInterview: function(evt){
             if(confirm("Are you sure you want to end the interview?")){
-                this.options.session.recorder.pauseRecord();
-                console.log("Recording stopped.");
                 this.options.router.navigate("interviewEnd", { trigger: true });
             }
         },
@@ -458,8 +456,8 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 return;
             }
             var that = this;
+            session.recorder.pauseRecord();
             session.set("endTime", new Date());
-            session.trigger("end");
             
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){

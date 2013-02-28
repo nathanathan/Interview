@@ -32,13 +32,22 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
         //To avoid this issue dates can be stringified with the String function.
         //Use .toUTCString instead?
         toJSON: function() {
-            var attrs = _.clone(this.attributes);
-            _.each(attrs, function(attrName, attrValue){
-                if(_.isDate(attrValue)){
-                    attrs[attrName] = String(attrValue);
+            var processAttrs = function(attrs){
+                if(_.isObject(attrs)) {
+                    attrs = _.clone(attrs);
+                    _.each(attrs, function(attrName, attrValue){
+                        if(_.isDate(attrValue)){
+                            attrs[attrName] = String(attrValue);
+                        } else if(_.isArray(attrValue)){
+                            attrs[attrName] = _.map(attrValue, processAttrs);
+                        } else if(_.isObject(attrValue)){
+                            attrs[attrName] = processAttrs(attrValue);
+                        }
+                    });
                 }
-            });
-            return attrs;
+                return attrs;
+            };
+            return processAttrs(this.attributes);
         },
 
         parse: function(attrs) {
@@ -48,6 +57,17 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
             }
             if(attrs.endTime) {
                 attrs.endTime = new Date(attrs.endTime);
+            }
+            if(attrs._clips) {
+                attrs._clips = _.map(attrs._clips, function(clip){
+                    if(clip.start) {
+                        clip.start = new Date(clip.start);
+                    }
+                    if(clip.end) {
+                        clip.end = new Date(clip.end);
+                    }
+                    return clip;
+                });
             }
             return attrs;
         },

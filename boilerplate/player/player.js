@@ -33,15 +33,17 @@ function(config,   Backbone,   _,            playerTemplate,                    
         waitForDuration();
     };
     
-    var getMediaDebug = function(clips, callback) {
-        var $audioContainer = $('<div style="height:400px" id="foo">');
+    var getMediaDebug = function(path, callback) {
+        var $audioContainer = $('<div>');
+        var generatedId = "random-" + (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+        $audioContainer.attr("id", generatedId);
         $('body').append($audioContainer);
         /*
         var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=oozJH6jSr2U&width=0&height=0' );
         */
         
         var myAudio = Popcorn.smart(
-         "#foo",
+         "#" + generatedId,
          'http://cuepoint.org/dartmoor.mp4');
 
         window.audioDbg = myAudio;
@@ -55,7 +57,8 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     myAudio.pause();
                 },
                 stop: function(){
-                    myAudio.stop();
+                    //Seek to the end
+                    myAudio.currentTime(myAudio.duration());
                 },
                 getCurrentPosition: function(mediaSuccess, mediaError){
                     //mediaSuccess(myAudio.currentTime);
@@ -74,7 +77,8 @@ function(config,   Backbone,   _,            playerTemplate,                    
             };
             //TODO: Extend with backbone events instead, eg:
             //_.extend(mediaWrapper, Backbone.Events);
-            myAudio.on("stop", function(){
+            myAudio.on("ended", function(){
+                console.log("Media file ended");
                 if("onStop" in mediaWrapper){
                     mediaWrapper.onStop();
                 }
@@ -93,6 +97,11 @@ function(config,   Backbone,   _,            playerTemplate,                    
         }
     };
     
+    /**
+     * create a special media object for playing a sequence of clips
+     * the clips are specified in an array like this
+     * [{start: timestamp, end: timestamp, path: pathToClipMediaFile }]
+     **/
     var createClipPlayer = function(clips, callback) {
         //Clips must be sorted
         var clipLoaded = _.after(clips.length, function(){
@@ -101,11 +110,13 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 play: function(){
                     if(currentClip.idx < clips.length - 1){
                         currentClip.media.onStop = _.once(function(){
-                            currentClip = clips[currentClip.idx];
+                            currentClip = clips[currentClip.idx + 1];
                             clipSequencePlayer.play();
+                            console.log("starting clip idx:", currentClip.idx + 1);
                         });
                     }
                     currentClip.media.play();
+                    console.log("Playing: ", currentClip.path);
                 },
                 pause: function(){
                     currentClip.media.pause();
@@ -137,11 +148,15 @@ function(config,   Backbone,   _,            playerTemplate,                    
                             remainingOffset -= clipDuration; 
                         } else {
                             if(currentClip != clip){
+                                currentClip.media.onStop = _.once(function(){
+                                    currentClip = clip;
+                                    clip.media.seekTo(remainingOffset);
+                                    clipSequencePlayer.play();
+                                });
                                 clipSequencePlayer.stop();
-                                currentClip = clip;
-                                clipSequencePlayer.play();
                             }
                             clip.media.seekTo(remainingOffset);
+                            break;
                         }
                     }
                 },
@@ -285,12 +300,12 @@ function(config,   Backbone,   _,            playerTemplate,                    
             this.updater = setInterval(function(){
                 //TODO: Add failure function that pauses and goes to start/end
                 that.options.media.getCurrentPosition(function(positionSeconds){
-                    console.log(positionSeconds);
                     if(playerModel.get('time') === positionSeconds){
                         that.$('#progressBar').addClass('halted');
                     } else {
                         playerModel.setTime(positionSeconds);
                     }
+                    console.log("currentPostion", positionSeconds);
                 });
             }, 1000);
             return this;
@@ -334,12 +349,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
         }
         var logItems = session.Log;
         
-        createClipPlayer([{
-            path: session.get('_recordingPath'),
-            start: session.get('startTime'),
-            end: session.get('endTime')
-        }], function(media){
-            
+        createClipPlayer(session.get('_clips'), function(media){
             //Note:
             //The timeline shows the session duration rather than the recording duration.
             //This means that we need to be careful when seeking as these might have some discrepancies...
