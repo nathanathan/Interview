@@ -15,6 +15,12 @@ function(config,   Backbone,   _,            playerTemplate,                    
         function(err){
             console.error("Media error:");
             console.error(err);
+        }, function(status){
+            if(status === Media.MEDIA_STOPPED) {
+                if("onStop" in media) {
+                    media.onStop();
+                }
+            }
         });
         media.seekTo(0);
         var attempts = 10;
@@ -33,22 +39,21 @@ function(config,   Backbone,   _,            playerTemplate,                    
         waitForDuration();
     };
     
-    var getMediaDebug = function(path, callback) {
-        var $audioContainer = $('<div style="height:400px" id="dbgAudioContainer">');
+    var getMediaDebug = function(clips, callback) {
+        var $audioContainer = $('<div style="height:400px" id="foo">');
         $('body').append($audioContainer);
         /*
         var myAudio = Popcorn.youtube($audioContainer.get(0), 'http://www.youtube.com/watch?v=oozJH6jSr2U&width=0&height=0' );
         */
         
         var myAudio = Popcorn.smart(
-         "#dbgAudioContainer",
+         "#foo",
          'http://cuepoint.org/dartmoor.mp4');
-         
-        
+
         window.audioDbg = myAudio;
         myAudio.on("loadedmetadata", function() {
             myAudio.off("loadedmetadata");
-            callback({
+            var mediaWrapper = {
                 play: function(){
                     myAudio.play();
                 },
@@ -72,7 +77,13 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     myAudio.currentTime(Math.floor(millis / 1000));
                     //myAudio.currentTime = Math.floor(millis / 1000);
                 }
+            };
+            myAudio.on("stop", function(){
+                if("onStop" in mediaWrapper){
+                    mediaWrapper.onStop();
+                }
             });
+            callback(mediaWrapper);
         });
     };
     
@@ -86,6 +97,90 @@ function(config,   Backbone,   _,            playerTemplate,                    
         }
     };
     
+    var createClipPlayer = function(clips, callback) {
+        //Clips must be sorted
+        var clipLoaded = _.after(clips.length, function(){
+            var currentClip = clips[0];
+            var clipSequencePlayer = {
+                play: function(){
+                    if(currentClip.idx < clips.length - 1){
+                        currentClip.media.onStop = _.once(function(){
+                            currentClip = clips[currentClip.idx];
+                            clipSequencePlayer.play();
+                        });
+                    }
+                    currentClip.media.play();
+                },
+                pause: function(){
+                    currentClip.media.pause();
+                },
+                stop: function(){
+                    currentClip.media.onStop = _.once(function(){
+                        currentClip = clips[0];
+                    });
+                    currentClip.media.stop();
+                },
+                getCurrentPosition: function(mediaSuccess, mediaError){
+                    currentClip.media.getCurrentPosition(mediaSuccess, mediaError);
+                },
+                getDuration: function(){
+                    return clips[clips.length - 1].end - clips[0].start;
+                },
+                seekTo: function(offset){
+                    var remainingOffset = offset;
+                    var tempClips = _.clone(clips);
+                    while(tempClips.length > 0){
+                        var clip = tempClips.pop();
+                        var clipDuration = Number(clip.end) - Number(clip.start);
+                        if(remainingOffset > clipDuration){
+                            remainingOffset -= clipDuration; 
+                        } else {
+                            if(currentClip != clip){
+                                clipSequencePlayer.stop();
+                                currentClip = clip;
+                                clipSequencePlayer.play();
+                            }
+                            clip.media.seekTo(remainingOffset);
+                        }
+                    }
+                },
+                offsetToTimestamp: function(offset){
+                    var remainingOffset = offset;
+                    var tempClips = _.clone(clips);
+                    while(tempClips.length > 0){
+                        var clip = tempClips.pop();
+                        var clipDuration = Number(clip.end) - Number(clip.start);
+                        if(remainingOffset > clipDuration){
+                            remainingOffset -= clipDuration; 
+                        } else {
+                            return new Date(Number(clip.start) + remainingOffset);
+                        }
+                    }
+                },
+                timestampToOffset: function(timestamp){
+                    var offset = 0;
+                    var tempClips = _.clone(clips);
+                    while(tempClips.length > 0){
+                        var clip = tempClips.pop();
+                        if(timestamp > clip.end){
+                            offset += Number(clip.end) - Number(clip.start);
+                        } else {
+                            return offset + (Number(timestamp) - Number(clip.start));
+                        }
+                    }
+                }
+            };
+            callback(clipSequencePlayer);
+        });
+        //We could probably lazy load clips if this takes too long.
+        _.each(clips, function(clip, idx){
+            clip.idx = idx;
+            getMedia(clip.path, function(media){
+                clip.media = media;
+                clipLoaded();
+            });
+        });
+    };
     
     var PlayerModel = Backbone.Model.extend({
         validate: function(attrs) {
@@ -127,10 +222,32 @@ function(config,   Backbone,   _,            playerTemplate,                    
             'click #pause' : 'pause',
             'click #stop' : 'stop',
             'click .seek-offset' : 'goback',
-            'click #nextLogItem' : 'nextLogItem'
+            'click #previous-marker' : 'seekToPrevLogItem',
+            'click #next-marker' : 'seekToNextLogItem'
         },
-        nextLogItem: function(evt){
-            this.model.setTime(this.options.logItems.getNextLogItem(this.model.get('time')));
+        seekToPrevLogItem: function(evt){
+            var curTimestamp = this.options.media.offsetToTimestamp(this.model.get('time') * 1000);
+            var closestLogItem = this.options.logItems.at(0);
+            this.options.logItems.each(function(logItem){
+                if(logItem.get('_timestamp') < curTimestamp){
+                    if(logItem.get('_timestamp') > closestLogItem.get('_timestamp')){
+                        closestLogItem = logItem;
+                    }
+                }
+            });
+            this.options.media.seekTo(this.options.media.timestampToOffset(closestLogItem.get('_timestamp')));
+        },
+        seekToNextLogItem: function(evt){
+            var curTimestamp = this.options.media.offsetToTimestamp(this.model.get('time') * 1000);
+            var closestLogItem = this.options.logItems.at(this.options.logItems.length - 1);
+            this.options.logItems.each(function(logItem){
+                if(logItem.get('_timestamp') > curTimestamp){
+                    if(logItem.get('_timestamp') < closestLogItem.get('_timestamp')){
+                        closestLogItem = logItem;
+                    }
+                }
+            });
+            this.options.media.seekTo(this.options.media.timestampToOffset(closestLogItem.get('_timestamp')));
         },
         goback: function(evt){
             var $button = $(evt.target).closest(".seek-offset");
@@ -204,7 +321,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
     });
     
     var create = function(context){
-        var startTime = context.startTime || 0;
+        var startOffset = context.start || 0;
         var session = context.session;
         if(!session) {
             alert("No session id. Debug mode.");
@@ -215,7 +332,12 @@ function(config,   Backbone,   _,            playerTemplate,                    
         }
         var logItems = session.Log;
         
-        getMedia(session.get('_recordingPath'), function(media){
+        createClipPlayer([{
+            path: session.get('_recordingPath'),
+            start: session.get('startTime'),
+            end: session.get('endTime')
+        }], function(media){
+            
             //Note:
             //The timeline shows the session duration rather than the recording duration.
             //This means that we need to be careful when seeking as these might have some discrepancies...
@@ -239,10 +361,10 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 playing: false
             });
             
-            console.log("Start time: " + startTime);
+            console.log("Start time: " + startOffset);
             //Setting the start time is a bit inelegant right now.
-            player.setTime(startTime / 1000);
-            media.seekTo(startTime);
+            player.setTime(startOffset / 1000);
+            media.seekTo(startOffset);
             
             var $playerControls = $('<div class="player">');
             var $markers = $('<div id="logItemContainer">');
@@ -308,6 +430,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     console.log("Tag Layers:", session.tagLayers);
                 }
             });
+            
         });
 
         return this;
