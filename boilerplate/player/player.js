@@ -128,7 +128,13 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     currentClip.media.stop();
                 },
                 getCurrentPosition: function(mediaSuccess, mediaError){
-                    currentClip.media.getCurrentPosition(mediaSuccess, mediaError);
+                    currentClip.media.getCurrentPosition(function(position){
+                        var priorClipDuration = _.reduce(clips.slice(0, currentClip.idx),
+                            function(memo, clip){ 
+                                return memo + (clip.end - clip.start); 
+                            }, 0);
+                        mediaSuccess(position + priorClipDuration);
+                    }, mediaError);
                 },
                 getDuration: function(){
                     return _.reduce(clips, function(memo, clip){ 
@@ -149,11 +155,12 @@ function(config,   Backbone,   _,            playerTemplate,                    
                         } else {
                             if(currentClip != clip){
                                 currentClip.media.onStop = _.once(function(){
+                                    console.log("starting clip:", clip);
                                     currentClip = clip;
                                     clip.media.seekTo(remainingOffset);
                                     clipSequencePlayer.play();
                                 });
-                                clipSequencePlayer.stop();
+                                currentClip.stop();
                             }
                             clip.media.seekTo(remainingOffset);
                             break;

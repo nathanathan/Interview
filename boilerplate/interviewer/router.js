@@ -7,16 +7,16 @@ define([
     'Sessions',
     'sfsf',
     'text!interviewer/opening.html',
-    'text!interviewer/body.html',
+    'text!interviewer/guideLayout.html',
     'text!interviewer/interviewEnd.html',
     'text!interviewer/sessions.html',
     'text!interviewer/JSONQuestionTemplate.html',
     'backboneqp'],
 function(config, $, Backbone, _, LogItems, Sessions, sfsf,
-         openingTemplate, bodyTemplate, interviewEndTemplate, sessionsTemplate, JSONQuestionTemplate){
+         openingTemplate, guideTemplate, interviewEndTemplate, sessionsTemplate, JSONQuestionTemplate){
     console.log("Compiling templates...");
     var compiledOpeningTemplate = _.template(openingTemplate);
-    var compiledBodyTemplate = _.template(bodyTemplate);
+    var compiledGuideTemplate = _.template(guideTemplate);
     var compiledInterviewEndTemplate = _.template(interviewEndTemplate);
     var compiledSessionsTemplate = _.template(sessionsTemplate);
     var compiledJSONQuestionTemplate = _.template(JSONQuestionTemplate);
@@ -175,7 +175,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
         
         render: function(){
             var recorder = this.options.session.recorder;
-            this.$el.html(compiledBodyTemplate({ recorder: recorder }));
+            this.$el.html(compiledGuideTemplate({ recorder: recorder }));
             this.renderPage();
             return this;
         },
@@ -440,6 +440,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     this.currentInterview),
                 session.get("id"));
             console.log(session.recorder);
+            
             this.mySessionView = new SessionView({
                 el: $('body').get(0),
                 router: this,
@@ -456,6 +457,14 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 return;
             }
             var that = this;
+            
+            var cleanupSession = function(){
+                session.recorder.remove();
+                that.mySessionView.undelegateEvents();
+                that.mySessionView = null;
+                session = null;
+            };
+            
             session.recorder.pauseRecord();
             session.set("endTime", new Date());
             
@@ -470,7 +479,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 session.saveToFS({
                     dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
                     success: function(){
-                        session = null;
+                        cleanupSession();
                         that.navigate('', {trigger: true, replace: true});
                     },
                     error: function(err) {
@@ -483,8 +492,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             });
             $('#discard').click(function(){
                 if(confirm("Are you sure you want to discard this recording?")){
-                    session.recorder.remove();
-                    session = null;
+                    cleanupSession();
                     that.navigate('', {trigger: true, replace: true});
                 }
             });

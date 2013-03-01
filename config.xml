@@ -16,7 +16,8 @@
 
     <icon src="boilerplate/cassette.png" />
     
-    <gap:splash src="splash.png" width="310" height="300" />
+    <!-- <gap:splash src="splash.png" width="310" height="300" /> -->
+    <preference name="show-splash-screen-spinner" value="true" />
     
     <gap:plugin name="ChildBrowser" />
 </widget>
