@@ -461,7 +461,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             var that = this;
             
             var cleanupSession = function(){
-                session.recorder.remove();
                 that.mySessionView.undelegateEvents();
                 that.mySessionView = null;
                 session = null;
@@ -494,6 +493,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             });
             $('#discard').click(function(){
                 if(confirm("Are you sure you want to discard this recording?")){
+                    session.recorder.remove();
                     cleanupSession();
                     that.navigate('', {trigger: true, replace: true});
                 }
