@@ -296,9 +296,12 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
                         });
                     }, function(error) {
                         alert("Failed to list directory contents: " + error.code);
+                        options.error();
+                        
                     });
                 }, function(error) {
                     alert("Unable to access directory: " + error.code);
+                    options.error();
                 });
             });
             return this;
