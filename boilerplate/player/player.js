@@ -114,7 +114,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
         //Clips must be sorted
         //TODO: Separate paused state from playing...
         var clipLoaded = _.after(clips.length, function(){
-            var tickInterval = 500;
+            var tickInterval = 200;
             var currentClip = clips[0];
             var clipSequencePlayer = _.extend(Backbone.Events, {
                 cachedState : {
@@ -132,6 +132,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
                         currentClip.media.onStop = _.once(function(){
                             console.log("starting clip idx:", currentClip.idx + 1);
                             currentClip = clips[currentClip.idx + 1];
+                            currentClip.media.seekTo(0);
                             clipSequencePlayer.play();
                         });
                     } else {
@@ -153,13 +154,9 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 },
                 stop: function(){
                     console.log("Stopping clip player...");
-                    
-                    currentClip.media.onStop = _.once(function(){
-                        currentClip = clips[0];
-                        currentClip.seekTo(0);
-                    });
                     currentClip.media.stop();
-                    
+                    currentClip = clips[0];
+                    currentClip.media.seekTo(0);
                     clearInterval(this.ticker);
                     clipSequencePlayer.trigger('tick');
                     clipSequencePlayer.trigger('tick');
@@ -201,31 +198,19 @@ function(config,   Backbone,   _,            playerTemplate,                    
                             remainingOffset -= clipDuration; 
                         } else {
                             if(currentClip !== clip){
-                                currentClip.media.onStop = _.once(function(){
-                                    console.log("starting clip:", clip);
-                                    currentClip = clip;
-                                    clip.media.seekTo(remainingOffset);
-                                    if(isPlaying){
-                                        clipSequencePlayer.play();
-                                    }
-                                });
-                                currentClip.media.stop();
-                                
-                                _.defer(function(){
-                                    //Ticks are triggered for faster UI feedback.
-                                    //This is delayed so that it happens after the
-                                    //stop event.
-                                    clipSequencePlayer.trigger('tick');
-                                });
+                                currentClip.media.pause();
+                                console.log("starting clip:", clip);
+                                currentClip = clip;
+                                clip.media.seekTo(remainingOffset);
+                                if(isPlaying){
+                                    clipSequencePlayer.play();
+                                }
+                                //Ticks are triggered for faster UI feedback.
+                                clipSequencePlayer.trigger('tick');
                             } else {
                                 clip.media.seekTo(remainingOffset);
-                                
-                                _.defer(function(){
-                                    //Ticks are triggered for faster UI feedback.
-                                    //This is delayed so that it happens after the
-                                    //stop event.
-                                    clipSequencePlayer.trigger('tick');
-                                });
+                                //Ticks are triggered for faster UI feedback.
+                                clipSequencePlayer.trigger('tick');
                             }
                             return;
                         }
