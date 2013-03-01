@@ -41,6 +41,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 this.paused = true;
             },
             startRecord: function(){
+                console.log("recorder.startRecord");
                 currentClip = {
                     start: new Date(),
                     path: sfsf.joinPaths(outputPath, recording_id + "." + clips.length + ".amr")
@@ -138,6 +139,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 
             //Setup the timer:
             session.recorder.on("start", function(){
+                console.log("Starting timer updater");
                 var timerUpdater = window.setInterval(function() {
                     that.$('#time').text(_.formatTime(session.recorder.getDuration()));
                 }, 1000);

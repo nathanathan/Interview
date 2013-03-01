@@ -65,6 +65,8 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     console.log("Stopping audio:", path);
                     //Seek to the end
                     myAudio.currentTime(myAudio.duration());
+                    //myAudio.pause();
+                    //myAudio.trigger("ended");
                 },
                 getCurrentPosition: function(mediaSuccess, mediaError){
                     //mediaSuccess(myAudio.currentTime);
@@ -110,9 +112,9 @@ function(config,   Backbone,   _,            playerTemplate,                    
      **/
     var createClipPlayer = function(clips, callback) {
         //Clips must be sorted
-        
+        //TODO: Separate paused state from playing...
         var clipLoaded = _.after(clips.length, function(){
-            var tickInterval = 1000;
+            var tickInterval = 500;
             var currentClip = clips[0];
             var clipSequencePlayer = _.extend(Backbone.Events, {
                 cachedState : {
@@ -154,6 +156,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     
                     currentClip.media.onStop = _.once(function(){
                         currentClip = clips[0];
+                        currentClip.seekTo(0);
                     });
                     currentClip.media.stop();
                     
@@ -185,6 +188,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 },
                 seekTo: function(offsetMillis){
                     console.log("Seeking: " + offsetMillis);
+                    var isPlaying = clipSequencePlayer.cachedState.playing;
                     var remainingOffset = offsetMillis;
                     var clipIdx = 0;
                     var clip, clipDuration;
@@ -201,11 +205,27 @@ function(config,   Backbone,   _,            playerTemplate,                    
                                     console.log("starting clip:", clip);
                                     currentClip = clip;
                                     clip.media.seekTo(remainingOffset);
-                                    clipSequencePlayer.play();
+                                    if(isPlaying){
+                                        clipSequencePlayer.play();
+                                    }
                                 });
                                 currentClip.media.stop();
+                                
+                                _.defer(function(){
+                                    //Ticks are triggered for faster UI feedback.
+                                    //This is delayed so that it happens after the
+                                    //stop event.
+                                    clipSequencePlayer.trigger('tick');
+                                });
                             } else {
                                 clip.media.seekTo(remainingOffset);
+                                
+                                _.defer(function(){
+                                    //Ticks are triggered for faster UI feedback.
+                                    //This is delayed so that it happens after the
+                                    //stop event.
+                                    clipSequencePlayer.trigger('tick');
+                                });
                             }
                             return;
                         }
@@ -242,16 +262,23 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 }
             });
             
-            var lastOffset;
+            var lastOffset = 0;
             clipSequencePlayer.on('tick', function(){
                 //This is for updating the cached state.
                 clipSequencePlayer.getCurrentPosition(function(offsetSeconds){
                     var offsetMillis = offsetSeconds * 1000;
+                    var isPlaying = offsetMillis !== lastOffset;
                     clipSequencePlayer.cachedState = {
                         timeMillis: offsetMillis,
                         progressPercent: offsetMillis / clipSequencePlayer.getDuration(),
-                        playing: (offsetMillis !== lastOffset)
+                        playing: isPlaying
                     };
+                    /*
+                    if(!isPlaying){
+                        clipSequencePlayer.pause();
+                    }
+                    */
+                    
                     lastOffset = offsetMillis;
                 }, function(){
                     console.log("ERROR: cound not get current position");
@@ -260,7 +287,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
             clipSequencePlayer.on('tick', function(){
                 //This is needed if the clip's timestamps are shorter than the clip.
                 currentClip.media.getCurrentPosition(function(offsetSeconds){
-                    if((offsetSeconds * 1000) > (currentClip.start - currentClip.end)){
+                    if((offsetSeconds * 1000) > (currentClip.end - currentClip.start)){
                         currentClip.media.stop();
                     }
                 }, function(){
