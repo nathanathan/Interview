@@ -62,6 +62,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     myAudio.pause();
                 },
                 stop: function(){
+                    console.log("Stopping audio:", path);
                     //Seek to the end
                     myAudio.currentTime(myAudio.duration());
                 },
@@ -109,28 +110,56 @@ function(config,   Backbone,   _,            playerTemplate,                    
      **/
     var createClipPlayer = function(clips, callback) {
         //Clips must be sorted
+        
         var clipLoaded = _.after(clips.length, function(){
+            var tickInterval = 1000;
             var currentClip = clips[0];
-            var clipSequencePlayer = {
+            var clipSequencePlayer = _.extend(Backbone.Events, {
+                cachedState : {
+                    timeMillis: 0,
+                    progressPercent: 0,
+                    playing: false
+                },
                 play: function(){
+                    clearInterval(this.ticker);
+                    this.ticker = setInterval(function(){
+                        clipSequencePlayer.trigger('tick');
+                    }, tickInterval);
+                    
                     if(currentClip.idx < clips.length - 1){
                         currentClip.media.onStop = _.once(function(){
+                            console.log("starting clip idx:", currentClip.idx + 1);
                             currentClip = clips[currentClip.idx + 1];
                             clipSequencePlayer.play();
-                            console.log("starting clip idx:", currentClip.idx + 1);
+                        });
+                    } else {
+                        currentClip.media.onStop = _.once(function(){
+                            clipSequencePlayer.stop();
                         });
                     }
                     currentClip.media.play();
                     console.log("Playing: ", currentClip.path);
                 },
                 pause: function(){
+                    console.log("Pausing clip player...");
+                    
                     currentClip.media.pause();
+                    
+                    clearInterval(this.ticker);
+                    clipSequencePlayer.trigger('tick');
+                    clipSequencePlayer.trigger('tick');
                 },
                 stop: function(){
+                    console.log("Stopping clip player...");
+                    
                     currentClip.media.onStop = _.once(function(){
                         currentClip = clips[0];
                     });
                     currentClip.media.stop();
+                    
+                    clearInterval(this.ticker);
+                    clipSequencePlayer.trigger('tick');
+                    clipSequencePlayer.trigger('tick');
                 },
                 getCurrentPosition: function(mediaSuccess, mediaError){
                     currentClip.media.getCurrentPosition(function(positionSeconds){
@@ -142,9 +171,14 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     }, mediaError);
                 },
                 getDuration: function(){
-                    return _.reduce(clips, function(memo, clip){ 
+                    var audioDuration = _.reduce(clips, function(memo, clip){ 
+                         return memo + clip.media.getDuration(); 
+                    }, 0);
+                    var timestampDuration = _.reduce(clips, function(memo, clip){ 
                          return memo + (clip.end - clip.start); 
                     }, 0);
+                    console.log("Duration delta: ", timestampDuration - audioDuration);
+                    return timestampDuration;
                 },
                 getActualDuration: function(){
                     return clips[clips.length - 1].end - clips[0].start;
@@ -153,10 +187,12 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     console.log("Seeking: " + offsetMillis);
                     var remainingOffset = offsetMillis;
                     var clipIdx = 0;
+                    var clip, clipDuration;
                     while(clipIdx < clips.length){
-                        var clip = clips[clipIdx];
-                        var clipDuration = Number(clip.end) - Number(clip.start);
-                        console.log("clipDuration:", clipDuration);
+                        clip = clips[clipIdx];
+                        clipIdx++;
+                        clipDuration = Number(clip.end) - Number(clip.start);
+                        console.log("current clip duration:", clipDuration);
                         if(remainingOffset > clipDuration){
                             remainingOffset -= clipDuration; 
                         } else {
@@ -177,10 +213,12 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 },
                 offsetToTimestamp: function(offset){
                     var remainingOffset = offset;
-                    var tempClips = _.clone(clips);
-                    while(tempClips.length > 0){
-                        var clip = tempClips.pop();
-                        var clipDuration = Number(clip.end) - Number(clip.start);
+                    var clipIdx = 0;
+                    var clip, clipDuration;
+                    while(clipIdx < clips.length){
+                        clip = clips[clipIdx];
+                        clipIdx++;
+                        clipDuration = Number(clip.end) - Number(clip.start);
                         if(remainingOffset > clipDuration){
                             remainingOffset -= clipDuration; 
                         } else {
@@ -190,9 +228,11 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 },
                 timestampToOffset: function(timestamp){
                     var offset = 0;
-                    var tempClips = _.clone(clips);
-                    while(tempClips.length > 0){
-                        var clip = tempClips.pop();
+                    var clipIdx = 0;
+                    var clip;
+                    while(clipIdx < clips.length){
+                        clip = clips[clipIdx];
+                        clipIdx++;
                         if(timestamp > clip.end){
                             offset += Number(clip.end) - Number(clip.start);
                         } else {
@@ -200,7 +240,35 @@ function(config,   Backbone,   _,            playerTemplate,                    
                         }
                     }
                 }
-            };
+            });
+            
+            var lastOffset;
+            clipSequencePlayer.on('tick', function(){
+                //This is for updating the cached state.
+                clipSequencePlayer.getCurrentPosition(function(offsetSeconds){
+                    var offsetMillis = offsetSeconds * 1000;
+                    clipSequencePlayer.cachedState = {
+                        timeMillis: offsetMillis,
+                        progressPercent: offsetMillis / clipSequencePlayer.getDuration(),
+                        playing: (offsetMillis !== lastOffset)
+                    };
+                    lastOffset = offsetMillis;
+                }, function(){
+                    console.log("ERROR: cound not get current position");
+                });
+            });
+            clipSequencePlayer.on('tick', function(){
+                //This is needed if the clip's timestamps are shorter than the clip.
+                currentClip.media.getCurrentPosition(function(offsetSeconds){
+                    if((offsetSeconds * 1000) > (currentClip.start - currentClip.end)){
+                        currentClip.media.stop();
+                    }
+                }, function(){
+                    console.log("ERROR: cound not get current position");
+                });
+
+            });
+
             callback(clipSequencePlayer);
         });
         //We could probably lazy load clips if this takes too long.
@@ -213,38 +281,12 @@ function(config,   Backbone,   _,            playerTemplate,                    
         });
     };
     
-    var PlayerModel = Backbone.Model.extend({
-        validate: function(attrs) {
-            if (attrs.time >= this.get("duration") || attrs.time < 0) {
-                console.error("Time out of bounds");
-                console.error(attrs.time);
-                return "Time out of bounds";
-            }
-        },
-        setProgress: function(progressPercentage){
-            this.set({
-                "progress": progressPercentage,
-                "time": ((progressPercentage / 100) * this.get("duration"))
-            });
-            return this;
-        },
-        setTime: function(timeSeconds) {
-            this.set({
-                "progress": (timeSeconds / this.get("duration")) * 100,
-                "time": timeSeconds
-            });
-            return this;
-        }
-    });
-    
     var PlayerView = Backbone.View.extend({
         //updater tracks the setInterval() id.
         updater: null,
         template: compiledPlayerTemplate,
         render: function() {
-            console.log('PlayerView:render');
-            var context = this.model.toJSON();
-            this.$el.html(this.template(context));
+            this.$el.html(this.template(this.options.media.cachedState));
             return this;
         },
         events: {
@@ -257,7 +299,8 @@ function(config,   Backbone,   _,            playerTemplate,                    
             'click #next-marker' : 'seekToNextLogItem'
         },
         seekToPrevLogItem: function(evt){
-            var curTimestamp = this.options.media.offsetToTimestamp(this.model.get('time') * 1000);
+            var media = this.options.media;
+            var curTimestamp = media.offsetToTimestamp(media.cachedState.offsetMillis);
             var closestLogItem = this.options.logItems.at(0);
             this.options.logItems.each(function(logItem){
                 if(logItem.get('_timestamp') < curTimestamp){
@@ -269,7 +312,8 @@ function(config,   Backbone,   _,            playerTemplate,                    
             this.options.media.seekTo(this.options.media.timestampToOffset(closestLogItem.get('_timestamp')));
         },
         seekToNextLogItem: function(evt){
-            var curTimestamp = this.options.media.offsetToTimestamp(this.model.get('time') * 1000);
+            var media = this.options.media;
+            var curTimestamp = media.offsetToTimestamp(media.cachedState.offsetMillis);
             var closestLogItem = this.options.logItems.at(this.options.logItems.length - 1);
             this.options.logItems.each(function(logItem){
                 if(logItem.get('_timestamp') > curTimestamp){
@@ -282,71 +326,38 @@ function(config,   Backbone,   _,            playerTemplate,                    
         },
         goback: function(evt){
             var $button = $(evt.target).closest(".seek-offset");
-            var offest = $button.data('offset');
-            var newTime = Math.max(0, this.model.get('time') + parseInt(offest, 10));
+            var offsetSeconds = $button.data('offset');
+            var media = this.options.media;
+            var positionSeconds = media.cachedState.offsetMillis / 1000;
+            var newTime = Math.max(0, positionSeconds + parseInt(offsetSeconds, 10));
             if(_.isNaN(newTime)) return;
-            console.log("newTime", newTime, offest);
-            this.model.setTime(newTime);
-            console.log('seeking media to: ' + newTime * 1000);
-            this.options.media.seekTo(newTime * 1000);
+            console.log("goback time:", newTime, offsetSeconds);
+            media.seekTo(newTime * 1000);
             return this;
         },
         seek: function(evt){
             console.log('seek');
             if(window.chrome) console.log(evt);
             var $seeker = $(evt.currentTarget);
+            var media = this.options.media;
             //Problem: firefox doesn't have offsetX
-            var progressPercentage = (evt.offsetX * 100 / $seeker.width());
-            this.model.setProgress(progressPercentage);
-            console.log('seeking media to: ' + this.model.get('time') * 1000);
-            this.options.media.seekTo(this.model.get('time') * 1000);
+            var progressPercentage = (evt.offsetX / $seeker.width());
+            media.seekTo(progressPercentage * media.getDuration());
             return this;
         },
         play: function(evt){
             console.log('play');
-            if(window.chrome) console.log(evt);
-            var that = this;
-            var playerModel = this.model;
-            if(playerModel.get('playing')){
-                return;
-            }
-            playerModel.set('playing', true);
             this.options.media.play();
-            this.updater = setInterval(function(){
-                //TODO: Add failure function that pauses and goes to start/end
-                that.options.media.getCurrentPosition(function(positionSeconds){
-                    if(playerModel.get('time') === positionSeconds){
-                        that.$('#progressBar').addClass('halted');
-                    } else {
-                        playerModel.setTime(positionSeconds);
-                    }
-                    console.log("currentPostion", positionSeconds);
-                });
-            }, 1000);
             return this;
         },
         pause: function(evt){
             console.log('pause');
-            if(window.chrome) console.log(evt);
-            if(!this.model.get('playing')){
-                console.log("not playing");
-                return;
-            }
-            clearInterval(this.updater);
-            this.model.set('playing', false);
             this.options.media.pause();
             return this;
         },
         stop: function(evt){
             console.log('stop');
-            if(window.chrome) console.log(evt);
-            if(!this.model.get('playing')){
-                return;
-            }
-            clearInterval(this.updater);
             this.options.media.stop();
-            this.model.set('playing', false);
-            this.model.setTime(0);
             return this;
         }
     });
@@ -365,12 +376,6 @@ function(config,   Backbone,   _,            playerTemplate,                    
         var logItems = session.Log;
         
         createClipPlayer(session.get('_clips'), function(media){
-            //Note:
-            //The timeline shows the session duration rather than the recording duration.
-            //This means that we need to be careful when seeking as these might have some discrepancies...
-            var sessionDuration = session.get('endTime') - session.get('startTime');
-            console.log("session duration:" + sessionDuration);
-            
             if(!(media.getDuration() > 0)){
                 alert("Could not get media duration, be sure it is loaded before passing it to player.create()");
             }
@@ -378,19 +383,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 alert("Media is infinately long?");
             }
             
-            var player = new PlayerModel({
-                //Progress as a percentage:
-                progress: 0,
-                //Time in seconds
-                //(note that this lags behind the actual media object's time)
-                time: 0,
-                duration: sessionDuration / 1000,
-                playing: false
-            });
-            
             console.log("Start time: " + startOffset);
-            //Setting the start time is a bit inelegant right now.
-            player.setTime(startOffset / 1000);
             media.seekTo(startOffset);
             
             var $playerControls = $('<div class="player">');
@@ -409,11 +402,10 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 $markers.empty();
                 //Track current log item in url for navigation?
                 logItems.each(function(logItem){
-                    var millisOffset = logItem.get('_timestamp') - session.get('startTime');
-                    var logItemProgress = (millisOffset / 1000) / player.get("duration");
+                    var millisOffset = media.timestampToOffset(logItem.get('_timestamp'));
+                    var logItemProgress = millisOffset / media.getDuration();
                     var $marker = $('<div class="logItemMarker">');
                     $marker.css("left", logItemProgress * 100 + '%');
-                    window.x = logItem.get('_timestamp'); window.y = session.get('startTime');
                     $markers.append($marker);
                     $marker.click(function(){
                         selectedLogItem = logItem;
@@ -429,7 +421,6 @@ function(config,   Backbone,   _,            playerTemplate,                    
                             return;
                         }
                         $info.find('.playhere').click(function(evt){
-                            player.setTime(millisOffset / 1000);
                             media.seekTo(millisOffset);
                         });
                     }
@@ -437,18 +428,18 @@ function(config,   Backbone,   _,            playerTemplate,                    
             };
             
             var playerView = new PlayerView({
-                model: player,
                 media: media,
                 logItems: logItems
             });
-            player.on("change", playerView.render, playerView);
             
             updateMarkers();
             
-            player.on("error", playerView.pause, playerView);
-            
             playerView.setElement($playerControls.get(0));
             playerView.render();
+            
+            media.on('tick' ,function(){
+                playerView.render();
+            });
             
             //It might be a good idea to lazy load the tag layers.
             session.fetchTagLayers({

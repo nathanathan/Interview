@@ -12,7 +12,7 @@
 </div>
  
 <div class="progress <% if(!playing) { %>progress-striped<% } %>" id="seeker">
-    <div class="time-display" id="elapsed-time"><%- _.formatTime( time * 1000 ) %></div>
+    <div class="time-display" id="elapsed-time"><%- _.formatTime( timeMillis ) %></div>
     <ul class="mark-holder"></ul>
-    <div class="bar" style="width:<%- Math.floor(progress) %>%;"></div>
+    <div class="bar" style="width:<%- Math.floor(Math.min(progressPercent * 100, 100)) %>%;"></div>
 </div>
