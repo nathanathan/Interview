@@ -187,19 +187,18 @@ CSS for timeline
 
 .timeline-window {
 	width:400px;
-	height:2em;
 	border:1px black solid;
 	margin:auto;
 	position:relative;
 	overflow:hidden;
-	font-size:20px;
 }
 
 .timeline {
-	height:2em;
-	position:absolute;
+	min-height:40px;
+	position:relative;
 	background-color:rgb(208, 216, 208);
-	left:50%;
+	margin-left:50%;
+	left:0px;
 }
 
 .timeline.time-marks {
@@ -208,7 +207,7 @@ CSS for timeline
 }
 
 .timeline .time-marks div{
-	width:.1em;
+	width:2px;
 	height:100%;
 	display:inline-block;
 	background-color:rgba(95, 95, 95, 0.67);
@@ -218,11 +217,11 @@ CSS for timeline
 .timeline-window .current-time-maker {
 	background-color:blue;
 	position:absolute;
-	width:.25em;
+	width:4px;
 	top:0px;
 	left:50%;
-	margin-left:-.125em;
-	height:2em;
+	margin-left:-2px;
+	height:100%;
 	display:inline;
 	opacity:0.5;
 }
