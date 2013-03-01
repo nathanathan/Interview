@@ -149,16 +149,18 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 getActualDuration: function(){
                     return clips[clips.length - 1].end - clips[0].start;
                 },
-                seekTo: function(offset){
-                    var remainingOffset = offset;
+                seekTo: function(offsetMillis){
+                    console.log("Seeking: " + offsetMillis);
+                    var remainingOffset = offsetMillis;
                     var clipIdx = 0;
                     while(clipIdx < clips.length){
                         var clip = clips[clipIdx];
                         var clipDuration = Number(clip.end) - Number(clip.start);
+                        console.log("clipDuration:", clipDuration);
                         if(remainingOffset > clipDuration){
                             remainingOffset -= clipDuration; 
                         } else {
-                            if(currentClip != clip){
+                            if(currentClip !== clip){
                                 currentClip.media.onStop = _.once(function(){
                                     console.log("starting clip:", clip);
                                     currentClip = clip;
@@ -166,9 +168,10 @@ function(config,   Backbone,   _,            playerTemplate,                    
                                     clipSequencePlayer.play();
                                 });
                                 currentClip.media.stop();
+                            } else {
+                                clip.media.seekTo(remainingOffset);
                             }
-                            clip.media.seekTo(remainingOffset);
-                            break;
+                            return;
                         }
                     }
                 },
