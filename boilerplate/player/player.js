@@ -151,9 +151,9 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 },
                 seekTo: function(offset){
                     var remainingOffset = offset;
-                    var tempClips = _.clone(clips);
-                    while(tempClips.length > 0){
-                        var clip = tempClips.pop();
+                    var clipIdx = 0;
+                    while(clipIdx < clips.length){
+                        var clip = clips[clipIdx];
                         var clipDuration = Number(clip.end) - Number(clip.start);
                         if(remainingOffset > clipDuration){
                             remainingOffset -= clipDuration; 

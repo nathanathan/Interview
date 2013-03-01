@@ -467,7 +467,13 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             };
             
             session.recorder.pauseRecord();
+            
             session.set("endTime", new Date());
+            var lastLogItem = session.Log.at(session.Log.length - 1);
+            lastLogItem.set({
+                '_duration': (new Date()) - lastLogItem.get('_timestamp'),
+                'nextPage': null
+            });
             
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){
