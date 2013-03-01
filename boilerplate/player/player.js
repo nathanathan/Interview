@@ -20,7 +20,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
         var attempts = 10;
         function waitForDuration(){
             if(attempts === 0) {
-                alert("Could not get media duration");
+                alert("Could not get media duration for:\n" + path);
                 return;
             }
             attempts--;

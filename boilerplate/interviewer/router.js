@@ -49,8 +49,9 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 clips.push(currentClip);
                 
                 if('Media' in window) {
+                    console.log("Media path: " + currentClip.path);
                     currentMedia = new Media(currentClip.path);
-                    console.log("media created: " + currentClip.path);
+                    console.log("media created!");
                     currentMedia.startRecord();
                 } else {
                     currentMedia = {
@@ -439,6 +440,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     'interview_data',
                     this.currentInterview),
                 session.get("id"));
+            
             console.log(session.recorder);
             
             this.mySessionView = new SessionView({
