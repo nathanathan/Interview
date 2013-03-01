@@ -32,7 +32,12 @@ function(config,   Backbone,   _,            playerTemplate,                    
         }
         waitForDuration();
     };
-    
+    var testVideos = [
+        'http://cuepoint.org/dartmoor.mp4',
+        "http://clips.vorwaerts-gmbh.de/VfE_html5.mp4",
+        'http://cuepoint.org/dartmoor.mp4',
+        "http://clips.vorwaerts-gmbh.de/VfE_html5.mp4"];
+        
     var getMediaDebug = function(path, callback) {
         var $audioContainer = $('<div>');
         var generatedId = "random-" + (((1+Math.random())*0x10000)|0).toString(16).substring(1);
@@ -44,7 +49,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
         
         var myAudio = Popcorn.smart(
          "#" + generatedId,
-         'http://cuepoint.org/dartmoor.mp4');
+         testVideos.pop());
 
         window.audioDbg = myAudio;
         myAudio.on("loadedmetadata", function() {
@@ -128,12 +133,12 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     currentClip.media.stop();
                 },
                 getCurrentPosition: function(mediaSuccess, mediaError){
-                    currentClip.media.getCurrentPosition(function(position){
-                        var priorClipDuration = _.reduce(clips.slice(0, currentClip.idx),
+                    currentClip.media.getCurrentPosition(function(positionSeconds){
+                        var priorClipDurationMillis = _.reduce(clips.slice(0, currentClip.idx),
                             function(memo, clip){ 
                                 return memo + (clip.end - clip.start); 
                             }, 0);
-                        mediaSuccess(position + priorClipDuration);
+                        mediaSuccess(positionSeconds + (priorClipDurationMillis / 1000));
                     }, mediaError);
                 },
                 getDuration: function(){
@@ -160,7 +165,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
                                     clip.media.seekTo(remainingOffset);
                                     clipSequencePlayer.play();
                                 });
-                                currentClip.stop();
+                                currentClip.media.stop();
                             }
                             clip.media.seekTo(remainingOffset);
                             break;
