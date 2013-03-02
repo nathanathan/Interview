@@ -1,6 +1,6 @@
-define(['config', 'backbone', 'underscore', 'text!player/playerTemplate.html', 'text!player/logItemTemplate.html', 'Popcorn'],
-function(config,   Backbone,   _,            playerTemplate,                    logItemTemplate){
-    var compiledPlayerTemplate = _.template(playerTemplate);
+define(['config', 'backbone', 'underscore', 'text!player/playerLayout.html', 'text!player/logItemTemplate.html', 'text!player/controlsTemplate.html', 'Popcorn'],
+function(config,   Backbone,   _,            playerLayout,                    logItemTemplate, controlsTemplate){
+
     var compiledLogItemTemplate  = _.template(logItemTemplate);
     
     var getMediaPhonegap = function(path, callback) {
@@ -118,7 +118,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
             var currentClip = clips[0];
             var clipSequencePlayer = _.extend(Backbone.Events, {
                 cachedState : {
-                    timeMillis: 0,
+                    offsetMillis: 0,
                     progressPercent: 0,
                     playing: false
                 },
@@ -254,7 +254,7 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     var offsetMillis = offsetSeconds * 1000;
                     var isPlaying = offsetMillis !== lastOffset;
                     clipSequencePlayer.cachedState = {
-                        timeMillis: offsetMillis,
+                        offsetMillis: offsetMillis,
                         progressPercent: offsetMillis / clipSequencePlayer.getDuration(),
                         playing: isPlaying
                     };
@@ -293,16 +293,13 @@ function(config,   Backbone,   _,            playerTemplate,                    
         });
     };
     
-    var PlayerView = Backbone.View.extend({
-        //updater tracks the setInterval() id.
-        updater: null,
-        template: compiledPlayerTemplate,
+    var ControlsView = Backbone.View.extend({
+        template: _.template(controlsTemplate),
         render: function() {
             this.$el.html(this.template(this.options.media.cachedState));
             return this;
         },
         events: {
-            'click #seeker' : 'seek',
             'click #play' : 'play',
             'click #pause' : 'pause',
             'click #stop' : 'stop',
@@ -321,7 +318,8 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     }
                 }
             });
-            this.options.media.seekTo(this.options.media.timestampToOffset(closestLogItem.get('_timestamp')));
+            console.log("closestLogItem:", closestLogItem);
+            media.seekTo(media.timestampToOffset(closestLogItem.get('_timestamp')));
         },
         seekToNextLogItem: function(evt){
             var media = this.options.media;
@@ -334,7 +332,8 @@ function(config,   Backbone,   _,            playerTemplate,                    
                     }
                 }
             });
-            this.options.media.seekTo(this.options.media.timestampToOffset(closestLogItem.get('_timestamp')));
+            console.log("closestLogItem:", closestLogItem);
+            media.seekTo(media.timestampToOffset(closestLogItem.get('_timestamp')));
         },
         goback: function(evt){
             var $button = $(evt.target).closest(".seek-offset");
@@ -342,19 +341,9 @@ function(config,   Backbone,   _,            playerTemplate,                    
             var media = this.options.media;
             var positionSeconds = media.cachedState.offsetMillis / 1000;
             var newTime = Math.max(0, positionSeconds + parseInt(offsetSeconds, 10));
-            if(_.isNaN(newTime)) return;
             console.log("goback time:", newTime, offsetSeconds);
+            if(_.isNaN(newTime)) return;
             media.seekTo(newTime * 1000);
-            return this;
-        },
-        seek: function(evt){
-            console.log('seek');
-            if(window.chrome) console.log(evt);
-            var $seeker = $(evt.currentTarget);
-            var media = this.options.media;
-            //Problem: firefox doesn't have offsetX
-            var progressPercentage = (evt.offsetX / $seeker.width());
-            media.seekTo(progressPercentage * media.getDuration());
             return this;
         },
         play: function(evt){
@@ -398,19 +387,34 @@ function(config,   Backbone,   _,            playerTemplate,                    
             console.log("Start time: " + startOffset);
             media.seekTo(startOffset);
             
-            var $playerControls = $('<div class="player">');
-            var $markers = $('<div id="logItemContainer">');
-            var $info = $('<div id="logItemInfo">');
+
             
-            $(context.el)
-                .empty()
-                .append($playerControls)
-                .append($markers)
-                .append($info);
+            $(context.el).html(playerLayout);
+            
+            var $timeline = $('#timeline');
+            var $progress = $('<div class="progress">');
+            var $bar = $('<div class="bar">');
+            $progress.append($bar);
+            $timeline.append($progress);
+            $progress.click(function(evt){
+                console.log('seek');
+                if(window.chrome) console.log(evt);
+                var $seeker = $(evt.currentTarget);
+                //Problem: firefox doesn't have offsetX
+                var progressPercentage = (evt.offsetX / $seeker.width());
+                media.seekTo(progressPercentage * media.getDuration());
+                return this;
+            });
+            var updateTimeline = function(){
+                var progressPercent = media.cachedState.progressPercent;
+                $bar.css('width', Math.floor(Math.min(progressPercent * 100, 100)) + "%");
+            };
             
             var selectedLogItem = null;
             var updateMarkers = function(){
                 console.log("updateMarkers");
+                var $markers = $('#logItemContainer');
+                var $info = $('#logItemInfo');
                 $markers.empty();
                 //Track current log item in url for navigation?
                 logItems.each(function(logItem){
@@ -439,19 +443,24 @@ function(config,   Backbone,   _,            playerTemplate,                    
                 });
             };
             
-            var playerView = new PlayerView({
+            var controls = new ControlsView({
                 media: media,
-                logItems: logItems
+                logItems: logItems,
+                el: $('#controls').get(0)
             });
             
             updateMarkers();
-            
-            playerView.setElement($playerControls.get(0));
-            playerView.render();
-            
+
+            var wasPlaying;
+
             media.on('tick' ,function(){
-                playerView.render();
+                updateTimeline();
+                if(media.cachedState.playing !== wasPlaying){
+                    controls.render();
+                }
+                wasPlaying = media.cachedState.playing;
             });
+            media.trigger('tick');
             
             //It might be a good idea to lazy load the tag layers.
             session.fetchTagLayers({
