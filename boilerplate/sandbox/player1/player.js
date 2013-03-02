@@ -63,7 +63,8 @@ function FS_Timeline(options) {
 	
 }
 
-FS_Timeline.prototype.defaults = {
+FS_Timeline.prototype = {
+    defaults: {
 	ele:null,
 	duration:60000, // in ms
 	grid: {
@@ -73,83 +74,84 @@ FS_Timeline.prototype.defaults = {
 		em:5
 	},
 	delta_t:200, //ms
-}
+    },
 
-FS_Timeline.prototype.create = function() {
-	this.$ele = (this.options.ele)?(this.options.ele):$('<div class="timeline-holder">\
-<div class="timeline-overview"><div class="timeline-active"><div></div></div></div>\
-<div class="timeline-window"><div class="timeline"><div class="time-marks"></div></div><div class="current-time-maker"></div></div>\
-</div>');
-	this.$view_box = this.$ele.find('.timeline-window');
-	this.$active = this.$ele.find('.timeline-active');
-	this.$timeline = this.$ele.find('.timeline');
-	
-	this.$timeline.children('.time-marks').append(this.createTimeMarks());
-	this.$timeline.css('font-size',this.options.grid.sm_tic_px/this.options.grid.em+"px");
-	this.$timeline.css('width',this.options.duration/this.options.grid.sm_tic_ms*this.options.grid.em+"em");
-	//add elements into view box
-	this.setActiveWidth();
-}
+    create : function() {
+        this.$ele = (this.options.ele)?(this.options.ele):$('<div class="timeline-holder">\
+    <div class="timeline-overview"><div class="timeline-active"><div></div></div></div>\
+    <div class="timeline-window"><div class="timeline"><div class="time-marks"></div></div><div class="current-time-maker"></div></div>\
+    </div>');
+        this.$view_box = this.$ele.find('.timeline-window');
+        this.$active = this.$ele.find('.timeline-active');
+        this.$timeline = this.$ele.find('.timeline');
+        
+        this.$timeline.children('.time-marks').append(this.createTimeMarks());
+        this.$timeline.css('font-size',this.options.grid.sm_tic_px/this.options.grid.em+"px");
+        this.$timeline.css('width',this.options.duration/this.options.grid.sm_tic_ms*this.options.grid.em+"em");
+        //add elements into view box
+        this.setActiveWidth();
+    },
+    
+    createTimeMarks : function() {
+        var n_marks = this.options.duration/this.options.grid.sm_tic_ms;
+        //console.log(n_marks);
+        var grids = [], times = [];
+        for(var i=0; i<n_marks; i++) {
+            grids.push($('<div class="grid" style="left:'+this.options.grid.em*i+'em"></div>'));
+            times.push($('<div class="time-mark" style="left:'+(this.options.grid.em*i+.5)+'em">'+(this.options.grid.em*i)%60+'</div>'));
+        }
+        return $('<div></div>').append(grids,times);
+    },
+    
+    setActiveWidth : function() {
+        var px_per_tic = parseInt(this.$timeline.css('font-size'))*this.options.grid.em;
+        var view_ms = parseInt(this.$view_box.css('width'))*this.options.grid.sm_tic_ms/px_per_tic;
+        this.$active.css('font-size',view_ms*parseInt(this.$view_box.css('width'))/this.options.duration+'px')
+        console.log(this.options.duration,this.$view_box.css('width'),this.$active.css('font-size'));
+    },
+    
+    
+    /*
+     * 
+     */
+    seekDelta : function(delta_x,units) {
+        var cur_ms = this.getOffset().ms;
+        delta_x = FS_Timeline.toMS(delta_x,units);
+        var px_to_ms = (units=='px')?this.options.grid.sm_tic_ms/(parseInt(this.$timeline.css('font-size'))*this.options.grid.em):1;
+        this.seekTo(cur_ms+px_to_ms*delta_x);
+    },
+    
+    seekTo : function(delta_t,conversion_str) {
 
-FS_Timeline.prototype.createTimeMarks = function() {
-	var n_marks = this.options.duration/this.options.grid.sm_tic_ms;
-	//console.log(n_marks);
-	var grids = [], times = [];
-	for(var i=0; i<n_marks; i++) {
-		grids.push($('<div class="grid" style="left:'+this.options.grid.em*i+'em"></div>'));
-		times.push($('<div class="time-mark" style="left:'+(this.options.grid.em*i+.5)+'em">'+(this.options.grid.em*i)%60+'</div>'));
-	}
-	return $('<div></div>').append(grids,times);
-}
-
-FS_Timeline.prototype.setActiveWidth = function() {
-	var px_per_tic = parseInt(this.$timeline.css('font-size'))*this.options.grid.em;
-	var view_ms = parseInt(this.$view_box.css('width'))*this.options.grid.sm_tic_ms/px_per_tic;
-	this.$active.css('font-size',view_ms*parseInt(this.$view_box.css('width'))/this.options.duration+'px')
-	console.log(this.options.duration,this.$view_box.css('width'),this.$active.css('font-size'));
-}
-
-
-/*
- * 
- */
-FS_Timeline.prototype.seekDelta = function(delta_x,units) {
-	var cur_ms = this.getOffset().ms;
-	delta_x = FS_Timeline.toMS(delta_x,units);
-	var px_to_ms = (units=='px')?this.options.grid.sm_tic_ms/(parseInt(this.$timeline.css('font-size'))*this.options.grid.em):1;
-	this.seekTo(cur_ms+px_to_ms*delta_x);
-}
-
-FS_Timeline.prototype.seekTo = function(delta_t,conversion_str) {
-	
-	var ms_2_em = this.options.grid.em/this.options.grid.sm_tic_ms;
-	var ms_2_px = parseInt(this.$active.parent().css('width'))/this.options.duration;
-	if (typeof delta_t == 'string') { //assume precentage if string
-		delta_t = parseInt(delta_t,10);
-		if (delta_t < 0) delta_t=0;
-		if (delta_t > 100) delta_t=100;
-		this.$timeline.css('left',ms_2_em*this.options.duration*-delta_t/100+'em')
-	}
-	else { // assume ms
-		delta_t = FS_Timeline.toMS(delta_t,conversion_str);
-		if(delta_t < 0) delta_t=0;
-		if(delta_t > this.options.duration) delta_t=this.options.duration;
-		this.$timeline.css('left',ms_2_em*-delta_t+'em');
-		this.$active.css('left',ms_2_px*delta_t);
-	}
-}
-
-FS_Timeline.prototype.getOffset = function() {
-	var left_px = parseFloat(this.$timeline.css('left'));
-	var px_to_ms = this.options.grid.sm_tic_ms/(parseInt(this.$timeline.css('font-size'))*this.options.grid.em);
-	var ms = -left_px*px_to_ms;
-	var percent = ms/this.options.duration;
-	return {ms:ms,perecent:percent}
+        var ms_2_em = this.options.grid.em/this.options.grid.sm_tic_ms;
+        var ms_2_px = parseInt(this.$active.parent().css('width'))/this.options.duration;
+        if (typeof delta_t == 'string') { //assume precentage if string
+            delta_t = parseInt(delta_t,10);
+            if (delta_t < 0) delta_t=0;
+            if (delta_t > 100) delta_t=100;
+            this.$timeline.css('left',ms_2_em*this.options.duration*-delta_t/100+'em');
+        }
+        else { // assume ms
+            delta_t = FS_Timeline.toMS(delta_t,conversion_str);
+            if(delta_t < 0) delta_t=0;
+            if(delta_t > this.options.duration) delta_t=this.options.duration;
+            this.$timeline.css('left',ms_2_em*-delta_t+'em');
+            this.$active.css('left',ms_2_px*delta_t);
+        }
+    },
+    
+    getOffset : function() {
+        var left_px = parseFloat(this.$timeline.css('left'));
+        var px_to_ms = this.options.grid.sm_tic_ms/(parseInt(this.$timeline.css('font-size'))*this.options.grid.em);
+        var ms = -left_px*px_to_ms;
+        var percent = ms/this.options.duration;
+        return {ms:ms,perecent:percent}
+    }
 }
 
 /*
  *  Returns tm converted to milliseconds
- * 		units in ['min','sec','hr']
+ *    units in ['min','sec','hr']
  */
 FS_Timeline.toMS = function(tm,unit) {
 	if (typeof unit != "number") {
@@ -160,7 +162,7 @@ FS_Timeline.toMS = function(tm,unit) {
 }
 
 FS_Timeline.track = function (event) {
-	that = event.data.that;
+	var that = event.data.that;
 	that.interval_timer = window.setInterval(function(){
 		that.seekTo(that.options.media.currentTime,'sec');
 		// console.log(that.options.media.currentTime);
@@ -170,27 +172,3 @@ FS_Timeline.track = function (event) {
 FS_Timeline.untrack = function (event) {
 	window.clearInterval(event.data.that.interval_timer);
 }
-
-
-$(function() {
-	
-	tmp_video = $('#test-video')[0];
-	$('#play').click(function() {
-		$('#play').hide();
-		$('#pause').show();
-		tmp_video.play();
-	});
-	
-	$('#pause').click(function() {
-		$('#play').show();
-		$('#pause').hide();
-		tmp_video.pause();
-	});
-	
-	tmp_video.addEventListener('loadedmetadata',function() {
-		timeline = new FS_Timeline({duration:435138.48876953125,media:tmp_video});
-		$('.player').append(timeline.$ele);
-		timeline.setActiveWidth();
-	});
-});
-

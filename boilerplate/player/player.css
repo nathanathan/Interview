@@ -6,14 +6,14 @@ CSS for player
     text-align:center;
 }
 
-.player .player-controls {
+.player #controls {
 	background-color:lightsteelblue;
     display:inline-block;
 	border-radius: 4em 4em 0em 0em;
 	font-size:20px;
 	position:relative;
 	padding:5px 10px 5px 10px;
-	width:80%;
+	width:100%;
 	border: 1px solid black;
 	border-bottom:none;
 	margin-top:10px;
@@ -118,12 +118,12 @@ End CSS for player
 CSS for timeline
 */
 
-.timeline-holder {
+#timeline {
 	background-color:lightsteelblue;
     display:inline-block;
 	border-radius:0em 0em 1.5em 1.5em;
 	padding:0px 10px 10px 10px;
-	width:80%;
+	width:100%;
 	border:1px solid black;
 	border-top:none;
 }
@@ -174,7 +174,7 @@ CSS for timeline
 	left:0px;
 }
 
-.timeline.time-marks {
+.timeline .time-marks {
 	position:absolute;
 	height:100%;
 }
@@ -192,6 +192,29 @@ CSS for timeline
 	position:absolute;
 	line-height:10px;
 	font-size:10px;
+}
+
+.timeline .log-mark {
+    display:inline-block;
+    position:absolute;
+    width:2px;
+    height:100%;
+    background-color:blue;
+}
+
+.timeline .log-mark .top, .timeline .log-mark .bottom {
+    display:inline-block;
+    position:absolute;
+    width:6px;
+    margin-left:-3px;
+    height:6px;
+    background-color:black;
+    border-radius:0px 0px 20px 20px;
+}
+
+.timeline .log-mark .bottom {
+    border-radius:20px 20px 0px 0px;
+    bottom:0px;
 }
 
 .timeline-window .current-time-maker {
