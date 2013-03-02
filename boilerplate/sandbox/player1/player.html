@@ -24,43 +24,39 @@
             </ul>
         </div>
     </div>
-
-		<video id='test-video' width="320" height="240" style="position:absolute;left:0;top:0;">
-			<source src="http://shapeshed.com/examples/HTML5-video-element/video/320x240.ogg" type="video/mp4">
-		</video>
+	
+		
 		
 		<div class="player" id="player">
     	
-			<div class="row-fluid player-controls">
+			<div class="player-controls">
 				
-				<div class="span4">
-					<div class="btn-player btn-player-large" id="play"><i class="icon-play"></i></div>
-					<div class="btn-player btn-player-large" id="pause" style="display:none"><i class="icon-pause"></i></div>
+				<div class="btn-player btn-player-large" id="play"><i class="icon-play"></i></div>
+				<div class="btn-player btn-player-large" id="pause" style="display:none"><i class="icon-pause"></i></div>
+				
+				<div class="control-group">
+					<span>Skip Back (sec)</span>
+					<div data-offeset="-5" class="btn-player"><i class="step-backward" style="background-image:url('../images/go-back-5.png')"></i></div>
+					<div data-offeset="-15" class="btn-player "><i class="step-backward" style="background-image:url('../images/go-back-15.png')"></i></div>
+					<div data-offeset="-30" class="btn-player"><i class="step-backward" style="background-image:url('../images/go-back-30.png')"></i></div>
 				</div>
-					
-				<div class="span8">
-					<div class="span12 control-group">
-						<span>Skip Back (sec)</span>
-						<div class="row-fluid">
-							<div class="span4"><div class="btn-player"><i data-offeset="-5" class="icon-step-backward"></i></div></div>
-							<div class="span4"><div class="btn-player "><i data-offeset="-10" class="icon-step-backward"></i></div></div>
-							<div class="span4"><div class="btn-player"><i data-offeset="-30" class="icon-fast-backward"></i></div></div>
-						</div>
-						<div class="row-fluid labels">
-							<div class="span4">5</div>
-							<div class="span4">10</div>
-							<div class="span4">30</div>
-						</div>
-					</div>
-					<br>
+				
+				<div class="control-group">
+				
 					<div class="btn-player"><i class="icon-fast-backward"></i></div>
 					<div class="btn-player"><i class="icon-fast-forward"></i></div>
-					
+				
 				</div>
+				
 			</div>
+		</div>
 			
 			<div class="timeline-window"></div>
 		</div>
+		
+		<audio id='test-video' controls style="position:absolute;left:50px;top:50px;">
+			<source src="../audio/Symphonie_5-1-small.ogg" type="audio/ogg">
+		</audio>
 		
 
      </body>

@@ -1,11 +1,66 @@
 function FS_Timeline(options) {
 	this.options = $.extend(this.defaults,options);
+	//if(this.options.media) this.options.duration = parseFloat(this.options.media.duration)*1000;
 	console.log(this.options);
-	this.initialize();
+	this.create();
 	
 	this.interval_timer = null;
-	$(this.options.media).on('play',{that:this},this.track);
-	$(this.options.media).on('pause',{that:this},this.untrack);
+	$(this.options.media).on('play',{that:this},FS_Timeline.track);
+	$(this.options.media).on('pause',{that:this},FS_Timeline.untrack);
+	
+	that = this;
+	// setup dragable timeline
+	this.$timeline.on('mousedown touchstart', function (event) {
+		if(event.type=="touchstart") {
+			event.preventDefault();
+			event = event.originalEvent.touches[0];
+		}
+		var orgX = event.pageX;
+		var orgMS = that.getOffset().ms;
+		var px_to_ms = that.options.grid.sm_tic_ms/(parseInt(that.$timeline.css('font-size'))*that.options.grid.em);
+		$(window).on('mousemove touchmove', function (event) {
+			if(event.type=="touchmove") {
+				event.preventDefault();
+				event = event.originalEvent.touches[0];
+			}
+			var delta_px = orgX-event.pageX;
+			that.seekTo(delta_px*px_to_ms+orgMS);
+			// console.log(delta_px,orgMS);
+		});
+		$(window).on('mouseup touchend', function (event) {
+			if(event.type=="touchend") {
+				event.preventDefault();
+				console.log(event);
+				event = event.originalEvent.changedTouches[0];
+			}
+			var delta_px = orgX-event.pageX;
+			console.log(delta_px,px_to_ms,delta_px*px_to_ms+orgMS);
+			that.options.media.currentTime = (delta_px*px_to_ms+orgMS)/1000; 
+			$(window).off('mousemove mouseup touchmove touchend');
+		});
+	});
+	
+	this.$active.parent().on('click touchstart', function (event) {
+		if(event.type=="touchstart") {
+			event.preventDefault();
+			var touch = event.originalEvent.touches[0];
+			event.offsetX = touch.pageX-parseInt($(touch.target).offset().left);
+			console.log('touch',touch.pageX,$(touch.target).offset());
+		}
+		var px_to_ms = that.options.duration/parseInt(that.$active.parent().css('width'));
+		var offset = event.offsetX;
+		//console.log(offset,event.srcElement);
+		if(!$(event.srcElement).hasClass('timeline-overview')){
+			console.log(event.offsetX,$(this).children('.timeline-active').css('left'))
+			
+			offset = event.offsetX + parseInt(that.$active.css('left')) - parseInt(that.$active.css('width'))/2;
+		}			
+		console.log(that.$active.parent().css('width'),px_to_ms,that.options.duration,offset,offset*px_to_ms/1000);
+		that.seekTo(offset*px_to_ms);
+		that.options.media.currentTime = offset*px_to_ms/1000;
+	});
+	
+	
 }
 
 FS_Timeline.prototype.defaults = {
@@ -20,20 +75,23 @@ FS_Timeline.prototype.defaults = {
 	delta_t:200, //ms
 }
 
-FS_Timeline.prototype.initialize = function() {
+FS_Timeline.prototype.create = function() {
 	this.$view_box = (this.options.ele)?$(this.options.ele):$('<div class="timeline-window"></div>');
 	this.$timeline = $('<div class="timeline"><div class="time-marks"></div></div>');
 	this.$timeline.children('.time-marks').append(this.createTimeMarks());
 	this.$timeline.css('font-size',this.options.grid.sm_tic_px/this.options.grid.em+"px");
 	this.$timeline.css('width',this.options.duration/this.options.grid.sm_tic_ms*this.options.grid.em+"em");
 	//add elements into view box
-	this.$view_box.append(this.$timeline,$('<div class="current-time-maker"></div>'));
-	
+	this.$view_box.append($('<div class="timeline-overview"><div class="timeline-active"><div></div></div></div>'),
+		this.$timeline,
+		$('<div class="current-time-maker"></div>'));
+	this.$active = this.$view_box.find('.timeline-active');
+	this.setActiveWidth();
 }
 
 FS_Timeline.prototype.createTimeMarks = function() {
 	var n_marks = this.options.duration/this.options.grid.sm_tic_ms+1;
-	console.log(n_marks);
+	//console.log(n_marks);
 	var grids = [];
 	for(var i=0; i<n_marks; i++) {
 		grids.push($('<div style="left:'+this.options.grid.em*i+'em"></div>'));
@@ -41,16 +99,14 @@ FS_Timeline.prototype.createTimeMarks = function() {
 	return grids;
 }
 
-FS_Timeline.prototype.track = function (event) {
-	that = event.data.that;
-	that.interval_timer = window.setInterval(function(){
-		console.log(that.options.media.currentTime);
-	},that.options.delta_t);
+FS_Timeline.prototype.setActiveWidth = function() {
+	var px_per_tic = parseInt(this.$timeline.css('font-size'))*this.options.grid.em;
+	var view_ms = parseInt(this.$view_box.css('width'))*this.options.grid.sm_tic_ms/px_per_tic;
+	this.$active.css('font-size',view_ms*parseInt(this.$view_box.css('width'))/this.options.duration+'px')
+	//console.log(this.options.duration,parseInt(this.$view_box.css('width')),this.$active.css('font-size'));
 }
 
-FS_Timeline.prototype.untrack = function (event) {
-	window.clearInterval(event.data.that.interval_timer);
-}
+
 /*
  * 
  */
@@ -59,13 +115,12 @@ FS_Timeline.prototype.seekDelta = function(delta_x,units) {
 	delta_x = FS_Timeline.toMS(delta_x,units);
 	var px_to_ms = (units=='px')?this.options.grid.sm_tic_ms/(parseInt(this.$timeline.css('font-size'))*this.options.grid.em):1;
 	this.seekTo(cur_ms+px_to_ms*delta_x);
-	//console.log(cur_ms,(cur_ms+delta_xx);
-	//this.$timeline.css('left',(cur_+delta_x)+'px');
 }
 
 FS_Timeline.prototype.seekTo = function(delta_t,conversion_str) {
 	
 	var ms_2_em = this.options.grid.em/this.options.grid.sm_tic_ms;
+	var ms_2_px = parseInt(this.$active.parent().css('width'))/this.options.duration;
 	if (typeof delta_t == 'string') { //assume precentage if string
 		delta_t = parseInt(delta_t,10);
 		if (delta_t < 0) delta_t=0;
@@ -74,13 +129,16 @@ FS_Timeline.prototype.seekTo = function(delta_t,conversion_str) {
 	}
 	else { // assume ms
 		delta_t = FS_Timeline.toMS(delta_t,conversion_str);
+		if(delta_t < 0) delta_t=0;
+		if(delta_t > this.options.duration) delta_t=this.options.duration;
 		this.$timeline.css('left',ms_2_em*-delta_t+'em');
+		this.$active.css('left',ms_2_px*delta_t);
 	}
 }
 
 FS_Timeline.prototype.getOffset = function() {
 	var left_px = parseFloat(this.$timeline.css('left'));
-	var px_to_ms = this.options.grid.sm_tic_ms/(parseInt(this.$timeline.css('font-size'))*this.options.grid.em)
+	var px_to_ms = this.options.grid.sm_tic_ms/(parseInt(this.$timeline.css('font-size'))*this.options.grid.em);
 	var ms = -left_px*px_to_ms;
 	var percent = ms/this.options.duration;
 	return {ms:ms,perecent:percent}
@@ -98,6 +156,19 @@ FS_Timeline.toMS = function(tm,unit) {
 	return tm*unit;
 }
 
+FS_Timeline.track = function (event) {
+	that = event.data.that;
+	that.interval_timer = window.setInterval(function(){
+		that.seekTo(that.options.media.currentTime,'sec');
+		// console.log(that.options.media.currentTime);
+	},that.options.delta_t);
+}
+
+FS_Timeline.untrack = function (event) {
+	window.clearInterval(event.data.that.interval_timer);
+}
+
+
 $(function() {
 	
 	tmp_video = $('#test-video')[0];
@@ -114,7 +185,7 @@ $(function() {
 	});
 	
 	tmp_video.addEventListener('loadedmetadata',function() {
-		timeline = new FS_Timeline({ele:$('.timeline-window'),duration:parseFloat(tmp_video.duration)*1000,media:tmp_video});
+		timeline = new FS_Timeline({ele:$('.timeline-window'),duration:47892.608642578125,media:tmp_video});
 	});
 });
 
