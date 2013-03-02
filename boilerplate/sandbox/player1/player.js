@@ -1,7 +1,7 @@
 function FS_Timeline(options) {
 	this.options = $.extend(this.defaults,options);
 	//if(this.options.media) this.options.duration = parseFloat(this.options.media.duration)*1000;
-	console.log(this.options);
+	//console.log(this.options);
 	this.create();
 	
 	this.interval_timer = null;
@@ -34,7 +34,7 @@ function FS_Timeline(options) {
 				event = event.originalEvent.changedTouches[0];
 			}
 			var delta_px = orgX-event.pageX;
-			console.log(delta_px,px_to_ms,delta_px*px_to_ms+orgMS);
+			//console.log(delta_px,px_to_ms,delta_px*px_to_ms+orgMS);
 			that.options.media.currentTime = (delta_px*px_to_ms+orgMS)/1000; 
 			$(window).off('mousemove mouseup touchmove touchend');
 		});
@@ -76,34 +76,37 @@ FS_Timeline.prototype.defaults = {
 }
 
 FS_Timeline.prototype.create = function() {
-	this.$view_box = (this.options.ele)?$(this.options.ele):$('<div class="timeline-window"></div>');
-	this.$timeline = $('<div class="timeline"><div class="time-marks"></div></div>');
+	this.$ele = (this.options.ele)?(this.options.ele):$('<div class="timeline-holder">\
+<div class="timeline-overview"><div class="timeline-active"><div></div></div></div>\
+<div class="timeline-window"><div class="timeline"><div class="time-marks"></div></div><div class="current-time-maker"></div></div>\
+</div>');
+	this.$view_box = this.$ele.find('.timeline-window');
+	this.$active = this.$ele.find('.timeline-active');
+	this.$timeline = this.$ele.find('.timeline');
+	
 	this.$timeline.children('.time-marks').append(this.createTimeMarks());
 	this.$timeline.css('font-size',this.options.grid.sm_tic_px/this.options.grid.em+"px");
 	this.$timeline.css('width',this.options.duration/this.options.grid.sm_tic_ms*this.options.grid.em+"em");
 	//add elements into view box
-	this.$view_box.append($('<div class="timeline-overview"><div class="timeline-active"><div></div></div></div>'),
-		this.$timeline,
-		$('<div class="current-time-maker"></div>'));
-	this.$active = this.$view_box.find('.timeline-active');
 	this.setActiveWidth();
 }
 
 FS_Timeline.prototype.createTimeMarks = function() {
-	var n_marks = this.options.duration/this.options.grid.sm_tic_ms+1;
+	var n_marks = this.options.duration/this.options.grid.sm_tic_ms;
 	//console.log(n_marks);
-	var grids = [];
+	var grids = [], times = [];
 	for(var i=0; i<n_marks; i++) {
-		grids.push($('<div style="left:'+this.options.grid.em*i+'em"></div>'));
+		grids.push($('<div class="grid" style="left:'+this.options.grid.em*i+'em"></div>'));
+		times.push($('<div class="time-mark" style="left:'+(this.options.grid.em*i+.5)+'em">'+(this.options.grid.em*i)%60+'</div>'));
 	}
-	return grids;
+	return $('<div></div>').append(grids,times);
 }
 
 FS_Timeline.prototype.setActiveWidth = function() {
 	var px_per_tic = parseInt(this.$timeline.css('font-size'))*this.options.grid.em;
 	var view_ms = parseInt(this.$view_box.css('width'))*this.options.grid.sm_tic_ms/px_per_tic;
 	this.$active.css('font-size',view_ms*parseInt(this.$view_box.css('width'))/this.options.duration+'px')
-	//console.log(this.options.duration,parseInt(this.$view_box.css('width')),this.$active.css('font-size'));
+	console.log(this.options.duration,this.$view_box.css('width'),this.$active.css('font-size'));
 }
 
 
@@ -185,7 +188,9 @@ $(function() {
 	});
 	
 	tmp_video.addEventListener('loadedmetadata',function() {
-		timeline = new FS_Timeline({ele:$('.timeline-window'),duration:47892.608642578125,media:tmp_video});
+		timeline = new FS_Timeline({duration:435138.48876953125,media:tmp_video});
+		$('.player').append(timeline.$ele);
+		timeline.setActiveWidth();
 	});
 });
 
