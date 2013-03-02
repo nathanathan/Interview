@@ -5,8 +5,7 @@
                 <%-  currentQuestion.label %>
             </p>
             <ul class="nav nav-pills">
-            <% _.forEach(currentQuestion.__tags, function(tag) { %>
-    
+            <% _.forEach(_.filter(currentQuestion.__tags, function(tag){ return ("icon" in tag) }), function(tag) { %>
                 <li>
                     <a class="add-tag" data-tag="<%- tag.name %>">
                         <% if("imagePath" in tag) { %>
@@ -15,37 +14,87 @@
                         <% if("label" in tag) { %>
                             <%- tag.label %>
                         <% } %>
+                        <% if("icon" in tag) { %>
+                            <i class="<%- tag.icon %>"
+                                <% if("iconColor" in tag) { %>
+                                    style="color:<%- tag.iconColor %>;"
+                                <% } %>
+                            >
+                            </i>
+                        <% } %>
+                        
+                    </a>
+                </li>
+            <% }); %>
+            </ul>
+            
+            
+        <div class="btn-group dropup float_object_right" id="tag_btn">
+            <a class="btn btn-info dropdown-toggle" data-toggle="dropdown"
+                onclick="$('#tag_btn').toggleClass('open');">
+            <i class="icon-tags icon-white"></i> More Tags
+            <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu pull-right">
+            <% _.forEach(_.filter(currentQuestion.__tags, function(tag){ return !("icon" in tag) }), function(tag) { %>
+                <li>
+                    <a class="add-tag" data-tag="<%- tag.name %>">
+                        <% if("imagePath" in tag) { %>
+                            <img src="<%- formDir %><%- tag.imagePath %>"></img>
+                        <% } %>
+                        <% if("label" in tag) { %>
+                            <%- tag.label %>
+                        <% } %>
+                        <% if("icon" in tag) { %>
+                            <i class="<%- tag.icon %>"
+                                <% if("iconColor" in tag) { %>
+                                    style="color:<%- tag.iconColor %>;"
+                                <% } %>
+                            >
+                            </i>
+                        <% } %>
+                        
                     </a>
                 </li>
             <% }); %>
             </ul>
         </div>
+        </div>
 
         <div class="span6">
             <ul class="nav nav-tabs nav-stacked">
             <% if(currentQuestion.__branches.length > 0) { %>
-                <% _.forEach(currentQuestion.__branches, function(branch) { %>
-                    <li>
-                    <% if(branch.__nextQuestions.length > 0) { %>
-                        <a href="#json/<%- branch.__nextQuestions[0].name  %>">
-                            <i class="icon-chevron-right"></i>
-                            <%- branch.label %>
-                        </a>
-                    <% } else { %>
-                        <a href="#interviewEnd">
-                            <i class="icon-chevron-right"></i>
-                            <%- branch.label %>
-                        </a>
-                    <% } %>
-                    </li>
-                <% }); %>
+                <div class="next_button">
+                    <a onclick="$('#next_ques_btn').toggleClass('open');">
+                        <i class="icon-circle-arrow-right icon-3x" style="color:green;"></i>
+                    </a>
+                </div>
+                <div class="btn-group dropup" id="next_ques_btn">
+                    <ul class="dropdown-menu">
+                    <% _.forEach(currentQuestion.__branches, function(branch) { %>
+                    
+                        <% if(branch.__nextQuestions.length > 0) { %>
+                           <li class="dropdown-submenu">
+                                <a href="#json/<%- branch.__nextQuestions[0].name  %>">
+                                 <%- branch.label %>
+                                </a>
+                            </li>
+                        <% } else { %>
+                        <li class="dropdown-submenu">
+                            <a href="#interviewEnd">
+                                <%- branch.label %>
+                            </a></li>
+                        <% } %>
+                    
+                    <% }); %>
+                    </ul>
+                </div>
             <% } else if(currentQuestion.__nextQuestions.length > 0) { %>
-                <li>
-                <a href="#json/<%- currentQuestion.__nextQuestions[0].name %>">
-                    <i class="icon-chevron-right"></i>
-                    Next Question
-                </a>
-                </li>
+                <div class="next_button">
+                    <a href="#json/<%- currentQuestion.__nextQuestions[0].name %>">
+                        <i class="icon-circle-arrow-right icon-3x" style="color:green;"></i>
+                    </a>
+                </div>
             <% } else  { %>
                 <li>
                 <a href="#interviewEnd">

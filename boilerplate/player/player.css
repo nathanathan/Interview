@@ -1,57 +1,96 @@
 /*
 CSS for player
 */
-.player .progress {
-    overflow:visible;
+.player {
     position:relative;
-    margin:20px 0px 0px 0px;
-    height: 3em;
+    height: 50%;
+	padding:10px;
+    text-align:center;
 }
-.player .handle {
+
+.player #controls {
+	background-color:lightsteelblue;
+    display:inline-block;
+	border-radius: 1.25em;
+	font-size:20px;
 	position:relative;
-	background-color:#e5e5e5;
-	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
-	background: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
-	height:100%;
-	width:10px;
-	/* border-radius: 10px; */
-	outline:solid 1px black;
-    
-} 
- 
-.player  ul.marks {
+	padding:10px;
+}
+
+.player .btn-player {
+	font-size:1em;
+
+	display:inline-block;
 	position:relative;
-	margin:0px;
-	left:-5px;
-	top:-20px;
-}
- 
-.player  ul.marks li {
-	display:inline;
-	list-style-type:none;
-	position:absolute;
-	width:10px;
-	height:10px;
-	border-radius: 0px 0px 5px 5px / 0px 0px 10px 10px;
-	top:-5px;
-	border: solid 1px black;
+	height:1.333em;
+	width:1.333em;
+
+	cursor: pointer;
+
+	border-radius:1.5em;
 	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
-	background: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
+	background-image: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
+	border: 1px solid #cccccc;
+	border-bottom-color:#bfbfbf;
 }
- 
-.player  ul.marks li div {
-	width:1px;
-	background-color:black;
-	height:15px;
-	position:absolute;
-	left:4px;
-	top:10px;
+
+.player .btn-player .step-backward {
+	background-size:contain;
+	background-repeat:no-repeat;
+	display:inline-block;
+	width:20px;
+	height:20px;
 }
- 
-.player .controls {
-	text-align:center;
+
+.player .control-group {
+	position:relative;
+	display:inline-block;
+	background-color:lightgray;
+	border-radius:2em;
+	vertical-align:middle;
+	border:1px solid darkgray;
+	margin:0px 5px 0px 10px;
+	padding: 5px 10px;
+	float:right;
+	clear:both;
 }
- 
+
+.control-group:last-child {
+	margin: -20px 25px 0px 0px;
+}
+
+.player .control-group span{
+	position:relative;
+	display:block;
+	line-height:1.2em;
+	font-weight:bold;
+	font-size:.5em;
+}
+
+.player .btn-player:hover {
+	background-image:linear-gradient(to top, #ffffff 0%,#e5e5e5 100%);
+	background-image: -webkit-linear-gradient(bottom, #ffffff 0%,#e5e5e5 100%);
+}
+.player .btn-player:hover i {
+	font-weight:bold;
+}
+
+.player .btn-player i {
+	position:relative;
+	top:.166em;
+	left:.083em;
+	font-size:.8em;
+}
+
+.player .btn-player-large {
+	font-size:3em;
+}
+
+.player .btn-player-large i {
+	font-size:1em;
+	margin-left:-10px;
+}
+
 .player .time-display {
 	position: absolute;
 	display:inline-block;
@@ -61,40 +100,92 @@ CSS for player
 	line-height:9pt;
 	top:-12px;
 }
- 
+
 .player #elapsed-time {
 	left:5px;
 }
- 
+
 .player #total-time {
 	right:5px;
 }
- 
-.player .controls .btn 
-{
-	font-size:9pt;
-	line-height:0;
-}
- 
-.player ul.tags {
+/*
+End CSS for player
+*/
+
+/*
+CSS for timeline
+*/
+
+
+.timeline-overview {
+	width:400px;
+	height:15px;
+	background-color:darkgray;
+	border-bottom:1px black solid;
+	margin:auto;
 	position:relative;
-	margin-top:10px;
-	z-index:-1;
+	overflow:hidden;
 }
- 
-.player ul.tags li {
+
+.timeline-overview  .timeline-active {
+	position:absolute;
+	height:100%;
+	width:1em;
+	margin-left:-.5em;
+	background-color:burlywood;
+}
+
+.timeline-overview .timeline-active div {
+	width:2px;
+	height:100%;
+	display:inline-block;
+	background-color:rgba(95, 95, 95, 0.67);
+	position:absolute;
+	left:50%;
+	margin-left:-1px;
+}
+
+.timeline-window {
+	width:400px;
+	border:1px black solid;
+	margin:auto;
+	position:relative;
+	overflow:hidden;
+}
+
+.timeline {
+	min-height:100px;
+	position:relative;
+	background-color:rgb(208, 216, 208);
+	margin-left:50%;
+	left:0px;
+}
+
+.timeline.time-marks {
+	position:absolute;
+	height:100%;
+}
+
+.timeline .time-marks div{
+	width:2px;
+	height:100%;
+	display:inline-block;
+	background-color:rgba(95, 95, 95, 0.67);
+	position:absolute;
+}
+
+.timeline-window .current-time-maker {
+	background-color:blue;
+	position:absolute;
+	width:4px;
+	top:16px;
+	left:50%;
+	margin-left:-2px;
+	height:100%;
 	display:inline;
-	list-style-type:none;
-	position:absolute;
+	opacity:0.5;
 }
- 
-.player ul.tags li div{
-	position:absolute;
-	top:-10px;
-	width:1px;
-	background-color:black;
-	height:10px;
-}
+
 /*
 End CSS for player
 */
