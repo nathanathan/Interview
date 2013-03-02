@@ -4,7 +4,8 @@ require.config({
 		"backbone": "libs/backbone-min",
         "backboneqp": "libs/backbone.queryparams",
         "backbonels": "libs/backbone-localstorage",
-        "sfsf": "libs/sfsf/sfsf"
+        "sfsf": "libs/sfsf/sfsf",
+        "Popcorn": "libs/popcorn-complete.min"
 	},
 	'shim': 
 	{

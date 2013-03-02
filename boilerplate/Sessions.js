@@ -32,13 +32,22 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
         //To avoid this issue dates can be stringified with the String function.
         //Use .toUTCString instead?
         toJSON: function() {
-            var attrs = _.clone(this.attributes);
-            _.each(attrs, function(attrName, attrValue){
-                if(_.isDate(attrValue)){
-                    attrs[attrName] = String(attrValue);
+            var processAttrs = function(attrs){
+                if(_.isObject(attrs)) {
+                    attrs = _.clone(attrs);
+                    _.each(attrs, function(attrName, attrValue){
+                        if(_.isDate(attrValue)){
+                            attrs[attrName] = String(attrValue);
+                        } else if(_.isArray(attrValue)){
+                            attrs[attrName] = _.map(attrValue, processAttrs);
+                        } else if(_.isObject(attrValue)){
+                            attrs[attrName] = processAttrs(attrValue);
+                        }
+                    });
                 }
-            });
-            return attrs;
+                return attrs;
+            };
+            return processAttrs(this.attributes);
         },
 
         parse: function(attrs) {
@@ -48,6 +57,17 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
             }
             if(attrs.endTime) {
                 attrs.endTime = new Date(attrs.endTime);
+            }
+            if(attrs._clips) {
+                attrs._clips = _.map(attrs._clips, function(clip){
+                    if(clip.start) {
+                        clip.start = new Date(clip.start);
+                    }
+                    if(clip.end) {
+                        clip.end = new Date(clip.end);
+                    }
+                    return clip;
+                });
             }
             return attrs;
         },
@@ -177,7 +197,37 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
             });
             return this;
             
-        }
+        },
+        
+        logPage: function(pageContext){
+            var that = this;
+            
+            if(pageContext.params.__nolog) {
+                console.log("A log item is not created when the __nolog flag is passed.");
+                return;
+            }
+            
+            var curLogItem = new this.Log.model(_.extend({}, pageContext.params, {
+                page: pageContext.page,
+                _sessionId: this.get('id'),
+                //This is duplicate information but it is convenient to have available on the model.
+                _recordingStart: this.get('startTime')
+            }));
+            
+            this.Log.add(curLogItem);
+            
+            //Save the params that do not begin with an underscore into the session.
+            //TODO: To avoid collisions the backend session vars should begin
+            //with an underscore.
+            this.set(_.omitUnderscored(pageContext.params));
+            
+            this.Log.on('add', function(newLogItem){
+                curLogItem.set({
+                    '_duration': (new Date()) - curLogItem.get('_timestamp'),
+                    'nextPage': newLogItem.page
+                });
+            });
+        },
     });
     
     return Backbone.Collection.extend({
@@ -246,9 +296,12 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
                         });
                     }, function(error) {
                         alert("Failed to list directory contents: " + error.code);
+                        options.error();
+                        
                     });
                 }, function(error) {
                     alert("Unable to access directory: " + error.code);
+                    options.error();
                 });
             });
             return this;
