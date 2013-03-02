@@ -5,19 +5,16 @@ CSS for player
     position:relative;
 	height: 50%;
 	padding:10px;
-	top:50px;
     text-align:center;
 }
 
 .player .player-controls {
 	background-color:lightsteelblue;
     display:inline-block;
-    width:auto;
 	border-radius: 1.25em;
 	font-size:20px;
 	position:relative;
 	padding:10px;
-
 }
 
 .player .btn-player {
@@ -35,27 +32,31 @@ CSS for player
 	background-image: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
 	border: 1px solid #cccccc;
 	border-bottom-color:#bfbfbf;
-
 }
 
-.player .btn-player-large {
-	font-size:3em;
+.player .btn-player .step-backward {
+	background-size:contain;
+	background-repeat:no-repeat;
+	display:inline-block;
+	width:20px;
+	height:20px;
 }
 
 .player .control-group {
 	position:relative;
 	display:inline-block;
 	background-color:lightgray;
-	padding: 5px 30px 10px 30px;
 	border-radius:2em;
 	vertical-align:middle;
 	border:1px solid darkgray;
+	margin:0px 5px 0px 10px;
+	padding: 5px 10px;
+	float:right;
+	clear:both;
 }
 
-.player .control-group .btn-player label {
-	font-size:.6em;
-	top:.35em;
-	position:relative;
+.control-group:last-child {
+	margin: -20px 25px 0px 0px;
 }
 
 .player .control-group span{
@@ -65,8 +66,6 @@ CSS for player
 	font-weight:bold;
 	font-size:.5em;
 }
-
-
 
 .player .btn-player:hover {
 	background-image:linear-gradient(to top, #ffffff 0%,#e5e5e5 100%);
@@ -80,56 +79,17 @@ CSS for player
 	position:relative;
 	top:.166em;
 	left:.083em;
+	font-size:.8em;
 }
 
-.player #progress-bar {
-	overflow:visible;
-	position:relative;
-	margin:20px 0px 0px 0px;
-	height:3em;
+.player .btn-player-large {
+	font-size:3em;
 }
 
-.player .handle {
-	position:relative;
-	background-color:#e5e5e5;
-	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
-	background-image: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
-	height:24px;
-	width:10px;
-	border-radius: 10px;
-	top:-2px;
-	border:solid 1px black;
-} 
-
-.player  ul.marks {
-	position:relative;
-	margin:0px;
-	left:-5px;
-	top:-3em;
+.player .btn-player-large i {
+	font-size:1em;
+	margin-left:-10px;
 }
-
-.player  ul.marks li {
-	display:inline;
-	list-style-type:none;
-	position:absolute;
-	width:1em;
-	height:1em;
-	border-radius: 0px 0px .5em .5em / 0px 0px 1em 1em;
-	top:-.5em;
-	border: solid 1px black;
-	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
-	background-image: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
-}
-
-.player  ul.marks li div {
-	width:1px;
-	background-color:black;
-	height:2.5em;
-	position:absolute;
-	left:.45em;
-	top:1em;
-}
-
 
 .player .time-display {
 	position: absolute;
@@ -148,26 +108,84 @@ CSS for player
 .player #total-time {
 	right:5px;
 }
+/*
+End CSS for player
+*/
 
-.player ul.tags {
+/*
+CSS for timeline
+*/
+
+
+.timeline-overview {
+	width:400px;
+	height:15px;
+	background-color:darkgray;
+	border-bottom:1px black solid;
+	margin:auto;
 	position:relative;
-	margin-top:10px;
-	z-index:-1;
+	overflow:hidden;
 }
 
-.player ul.tags li {
+.timeline-overview  .timeline-active {
+	position:absolute;
+	height:100%;
+	width:1em;
+	margin-left:-.5em;
+	background-color:burlywood;
+}
+
+.timeline-overview .timeline-active div {
+	width:2px;
+	height:100%;
+	display:inline-block;
+	background-color:rgba(95, 95, 95, 0.67);
+	position:absolute;
+	left:50%;
+	margin-left:-1px;
+}
+
+.timeline-window {
+	width:400px;
+	border:1px black solid;
+	margin:auto;
+	position:relative;
+	overflow:hidden;
+}
+
+.timeline {
+	min-height:100px;
+	position:relative;
+	background-color:rgb(208, 216, 208);
+	margin-left:50%;
+	left:0px;
+}
+
+.timeline.time-marks {
+	position:absolute;
+	height:100%;
+}
+
+.timeline .time-marks div{
+	width:2px;
+	height:100%;
+	display:inline-block;
+	background-color:rgba(95, 95, 95, 0.67);
+	position:absolute;
+}
+
+.timeline-window .current-time-maker {
+	background-color:blue;
+	position:absolute;
+	width:4px;
+	top:16px;
+	left:50%;
+	margin-left:-2px;
+	height:100%;
 	display:inline;
-	list-style-type:none;
-	position:absolute;
+	opacity:0.5;
 }
 
-.player ul.tags li div{
-	position:absolute;
-	top:-10px;
-	width:1px;
-	background-color:black;
-	height:10px;
-}
 /*
 End CSS for player
 */
