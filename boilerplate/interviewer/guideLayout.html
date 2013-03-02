@@ -1,6 +1,14 @@
 <div class="navbar navbar-static-top">
+    <div>
+        <span class="nav_header">
+            <a href="../../index.html#sandbox">
+                <img class="nav_header_quit" src="http://cdn1.iconfinder.com/data/icons/super-mono-reflection/blue/button-cross_blue.png">
+            </a>
+        </span>
+    </div>
     <div class="navbar-inner">
         <ul class="nav">
+            <!--
             <li class="active">
                 <form class="navbar-form">
                     <div class="input-prepend" id="time-container">
@@ -12,6 +20,7 @@
                 </form>
             </li>
             <li class="divider-vertical"></li>
+            
             <li>
                 <form class="navbar-form">
                     <a id="stop" class="btn btn-danger">Stop</a>
@@ -22,6 +31,19 @@
                     <% } %>
                 </form>
             </li>
+            -->
+            
+            <div class="nav_record_status">
+                <% if(recorder.paused){ %>
+                    <img class="nav_button_button resumeRecording" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_play.png">
+                    <span id="time" class="nav_record_timer"><%- _.formatTime(recorder.getDuration()) %></span>
+                    <span id="time_status">Paused.....</span>
+                <% } else { %>
+                    <img class="nav_button_button pauseRecording" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png">
+                    <span id="time" class="nav_record_timer"><%- _.formatTime(recorder.getDuration()) %></span>
+                    <span id="time_status">Recording.....</span>
+                <% } %>
+            </div>
         </ul>
     </div>
 </div>

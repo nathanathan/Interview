@@ -1,0 +1,31 @@
+.nav_header {width:100%}
+.nav_header_quit {height:30px; float:right;}
+.nav_header_title {text-align:center; width:100%; font-weight:bold; margin-bottom:5px; position:absolute; top:5px;}
+.nav_record_status {margin-bottom:5px;}
+.nav_record_button {height:30px;}
+.nav_record_timer {margin:10px;}
+.bookmark_tags {margin-left:10px; height:24px;}
+.bookmark_tags_icon {margin-left:10px;}
+.bookmark_tags_icon_sm {margin-left:5px;}
+.float_object_right {float:right; margin-right:10px;}
+.top_bottom_spc_15 {margin:15px 0 15px 0;}
+.margin_15 {margin:15px;}
+.bookmark_button {text-align:center; margin:30px 0 15px 0;}
+.bookmark_button_text {padding-left:30px;position: relative; left:16px;}
+.bookmark_button_img {position: relative; left:-134px;}
+.progress_status {float:left;padding-top:8px;}
+.progress_curr {float:left;}
+.progress_total {margin-top:11px;float:left;}
+.progress_img {margin-top:5px;float:left;}
+.progress_bar{float:left;padding-top:8px;width:143px;}
+.next_button {float:right;}
+.next_button_img {height:45px;}
+.no_margin{margin:0px;}
+#footer {position:absolute;bottom:0px;width:100%;min-width:340px;}
+#curr_ques{overflow-y:auto;}
+@media (max-width: 767px) {
+    #footer {
+      margin-left: -20px;
+      margin-right: -20px;
+    }
+}
