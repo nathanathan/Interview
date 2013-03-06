@@ -116,7 +116,7 @@ function(config,   Backbone,   _,            playerLayout,                    lo
         var clipLoaded = _.after(clips.length, function(){
             var tickInterval = 200;
             var currentClip = clips[0];
-            var clipSequencePlayer = _.extend(Backbone.Events, {
+            var clipSequencePlayer = _.extend({
                 cachedState : {
                     offsetMillis: 0,
                     progressPercent: 0,
@@ -245,7 +245,7 @@ function(config,   Backbone,   _,            playerLayout,                    lo
                         }
                     }
                 }
-            });
+            }, Backbone.Events);
             
             var lastOffset = 0;
             clipSequencePlayer.on('tick', function(){

@@ -26,14 +26,15 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
 
     var myExplorerView;
     
-    var createRecorder = function(outputPath, recording_id, callback){
+    var createRecorder = function(outputPath, recording_id){
         var currentMedia = null;
         var currentClip = null;
         var clips = [];
         
-        return _.extend(Backbone.Events, {
+        return _.extend({
             pauseRecord: function(){
                 if(this.paused) return;
+                console.log("stoping recording...");
                 currentClip.end = new Date();
                 currentMedia.stopRecord();
                 currentMedia.release();
@@ -56,9 +57,15 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     currentMedia.startRecord();
                 } else {
                     currentMedia = {
-                        stopRecord: function(){},
-                        startRecord: function(){},
-                        release: function(){}
+                        stopRecord: function(){
+                            console.log("stopRecoding facade");
+                        },
+                        startRecord: function(){
+                            console.log("startRecoding facade");
+                        },
+                        release: function(){
+                            console.log("release facade");
+                        }
                     };
                     this.warning = "Audio cannot be recorded on this device.";
                 }
@@ -97,7 +104,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 if(clips.length === 0) return 0;
                 return new Date() - clips[0].start;
             }
-        });
+        }, Backbone.Events);
     };
 
     var SessionView = Backbone.View.extend({
