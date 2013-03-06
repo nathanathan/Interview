@@ -73,28 +73,15 @@ Animation for tags
     background-color: white !important;
 }
 
-/*
-Animation for undo button
-
-@-webkit-keyframes fadeOut {
-  from {
-    opacity: 1.0;
-    top: 0;
-  }
-  80% {
-    opacity: 1.0;
-    top: 0; 
-  }
-  to {
-    opacity: 0;
-    top: -30px;
-  }
+body {
+    /*
+    This is to disable accidental highlighting of text.
+    We will likely need to make some exceptions for desktop usage.
+    */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
-.fade-out {
-    position: relative;
-    top: -30px;
-    -webkit-animation-duration: 3s;
-    -webkit-animation-iteration-count: 1;
-    -webkit-animation-name: fadeOut;
-}
-*/

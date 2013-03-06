@@ -177,7 +177,10 @@ function(config,   Backbone,   _,            playerLayout,                    lo
                     var timestampDuration = _.reduce(clips, function(memo, clip){ 
                          return memo + (clip.end - clip.start); 
                     }, 0);
+                    
                     console.log("Duration delta: ", timestampDuration - audioDuration);
+                    console.log(audioDuration, timestampDuration);
+                    
                     return timestampDuration;
                 },
                 getActualDuration: function(){

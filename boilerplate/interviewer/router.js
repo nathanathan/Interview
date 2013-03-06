@@ -51,10 +51,12 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 clips.push(currentClip);
                 
                 if('Media' in window) {
+                    var createMedaStart = new Date();
                     console.log("Media path: " + currentClip.path);
                     currentMedia = new Media(currentClip.path);
-                    console.log("media created!");
+                    console.log("Media init delay", new Date() - createMedaStart);
                     currentMedia.startRecord();
+                    console.log("Total recording delay", new Date() - createMedaStart);
                 } else {
                     currentMedia = {
                         stopRecord: function(){
@@ -69,8 +71,12 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     };
                     this.warning = "Audio cannot be recorded on this device.";
                 }
+                
                 this.paused = false;
                 this.trigger("start");
+            },
+            hasStarted: function(){
+                return clips.length > 0;
             },
             remove: function(){
                 if('Media' in window) {
