@@ -1,45 +1,52 @@
 /*
 CSS for player
 */
+
 .player {
-    position:relative;
-    height: 50%;
-	padding:10px;
     text-align:center;
 }
 
 .player #controls {
 	background-color:lightsteelblue;
     display:inline-block;
-	border-radius: 1.25em;
+	border-radius: 4em 4em 0em 0em;
 	font-size:20px;
 	position:relative;
-	padding:10px;
+	padding:5px 10px 5px 10px;
+	width:100%;
+	border: 1px solid black;
+	border-bottom:none;
+	margin-top:10px;
 }
 
 .player .btn-player {
-	font-size:1em;
-
+	font-size:1.75em;
+	
 	display:inline-block;
 	position:relative;
 	height:1.333em;
 	width:1.333em;
-
+	
 	cursor: pointer;
-
+	
 	border-radius:1.5em;
 	background-image:linear-gradient(to bottom, #ffffff 0%,#e5e5e5 100%);
 	background-image: -webkit-linear-gradient(top, #ffffff 0%,#e5e5e5 100%);
 	border: 1px solid #cccccc;
 	border-bottom-color:#bfbfbf;
+	vertical-align:middle;
+
 }
 
 .player .btn-player .step-backward {
 	background-size:contain;
 	background-repeat:no-repeat;
 	display:inline-block;
-	width:20px;
-	height:20px;
+	width:1.2em;
+	height:1.2em;
+	position:relative;
+	top:.15em;
+	left:.08em;
 }
 
 .player .control-group {
@@ -51,12 +58,6 @@ CSS for player
 	border:1px solid darkgray;
 	margin:0px 5px 0px 10px;
 	padding: 5px 10px;
-	float:right;
-	clear:both;
-}
-
-.control-group:last-child {
-	margin: -20px 25px 0px 0px;
 }
 
 .player .control-group span{
@@ -64,7 +65,9 @@ CSS for player
 	display:block;
 	line-height:1.2em;
 	font-weight:bold;
-	font-size:.5em;
+	font-size:.6em;
+	font-family:Verdana, Geneva, sans-serif;
+	letter-spacing:.1em;
 }
 
 .player .btn-player:hover {
@@ -77,8 +80,7 @@ CSS for player
 
 .player .btn-player i {
 	position:relative;
-	top:.166em;
-	left:.083em;
+	top:.25em;
 	font-size:.8em;
 }
 
@@ -88,7 +90,7 @@ CSS for player
 
 .player .btn-player-large i {
 	font-size:1em;
-	margin-left:-10px;
+	top:.166em;
 }
 
 .player .time-display {
@@ -116,15 +118,25 @@ End CSS for player
 CSS for timeline
 */
 
+#timeline {
+	background-color:lightsteelblue;
+    display:inline-block;
+	border-radius:0em 0em 1.5em 1.5em;
+	padding:0px 10px 10px 10px;
+	width:100%;
+	border:1px solid black;
+	border-top:none;
+}
 
 .timeline-overview {
-	width:400px;
+	width:100%px;
 	height:15px;
 	background-color:darkgray;
 	border-bottom:1px black solid;
-	margin:auto;
+	margin:auto auto 5px auto;
 	position:relative;
 	overflow:hidden;
+	border:1px solid black;
 }
 
 .timeline-overview  .timeline-active {
@@ -146,27 +158,28 @@ CSS for timeline
 }
 
 .timeline-window {
-	width:400px;
+	width:100%;
 	border:1px black solid;
 	margin:auto;
 	position:relative;
 	overflow:hidden;
+	background-color:lightgray;
 }
 
 .timeline {
-	min-height:100px;
+	min-height:40px;
 	position:relative;
 	background-color:rgb(208, 216, 208);
 	margin-left:50%;
 	left:0px;
 }
 
-.timeline.time-marks {
+.timeline .time-marks {
 	position:absolute;
 	height:100%;
 }
 
-.timeline .time-marks div{
+.timeline .time-marks div.grid{
 	width:2px;
 	height:100%;
 	display:inline-block;
@@ -174,11 +187,41 @@ CSS for timeline
 	position:absolute;
 }
 
+.timeline .time-marks div.time-mark {
+	display:inline-block;
+	position:absolute;
+	line-height:10px;
+	font-size:10px;
+}
+
+.timeline .log-mark {
+    display:inline-block;
+    position:absolute;
+    width:2px;
+    height:100%;
+    background-color:blue;
+}
+
+.timeline .log-mark .top, .timeline .log-mark .bottom {
+    display:inline-block;
+    position:absolute;
+    width:6px;
+    margin-left:-3px;
+    height:6px;
+    background-color:black;
+    border-radius:0px 0px 20px 20px;
+}
+
+.timeline .log-mark .bottom {
+    border-radius:20px 20px 0px 0px;
+    bottom:0px;
+}
+
 .timeline-window .current-time-maker {
 	background-color:blue;
 	position:absolute;
 	width:4px;
-	top:16px;
+	top:0px;
 	left:50%;
 	margin-left:-2px;
 	height:100%;

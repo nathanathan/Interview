@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Player</title>
+    <!--<script type="text/javascript" charset="utf-8" src="../cordova-2.2.0.js"></script>-->
+    <link href="../libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../libs/bootstrap/css/font-awesome.css" rel="stylesheet">
+    <link href="../libs/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <!--<link href="player/player.css" rel="stylesheet">-->
+    <link href="interview_style.css" rel="stylesheet">
+    <script type="text/javascript">
+        function hasClass(ele,cls) {
+            return ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
+        }
+        function addClass(ele,cls) {
+            if (!this.hasClass(ele,cls)) ele.className += " "+cls;
+        }
+        function removeClass(ele,cls) {
+            if (hasClass(ele,cls)) {
+                var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
+                ele.className=ele.className.replace(reg,'');
+            }
+        }
+        function tag_menu(){
+            var menu_tag=document.getElementById("tag_btn");
+            if(hasClass(menu_tag,"open"))
+                removeClass(menu_tag,"open");
+            else
+                addClass(menu_tag,"open");
+        }
+        function start_pause_interview(){
+            var btn=document.getElementById("start_stop_btn");
+            var status=document.getElementById("time_status");
+            if(btn.src=="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png"){
+                btn.src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_play.png";
+                status.innerHTML="Paused";
+            }
+            else{
+                btn.src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png"
+                status.innerHTML="Recording.....";
+            }
+        }
+    </script>
+    
+</head>
+<body>
+<div class="navbar navbar-static-top">
+    <div>
+        <span class="nav_header_title">Health Survey</span>
+        <span class="nav_header">
+            <a href="../../index.html#sandbox">
+                <img class="nav_header_quit" src="http://cdn1.iconfinder.com/data/icons/super-mono-reflection/blue/button-cross_blue.png">
+            </a>
+        </span>
+    </div>
+    <div class="navbar-inner">
+        <ul class="nav" style="width:100%;">
+            <div class="nav_record_status">
+                <div style="width:48px; height:48px;"></div>
+                <!--<img onclick="start_pause_interview();" ontouch="alert('touch');" id="start_stop_btn" class="nav_button_button" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png">
+                <!--<span id="timer1" class="nav_record_timer">00:01</span>
+                <span id="time_status">Recording.....</span>-->   
+            </div>
+        </ul>
+    </div>
+</div>
+<div id="curr_ques">
+    <br>
+    
+    <p style="font-variant:small-caps;font-weight:bold;">Interviewee</p>
+    <p style="font-variant:small-caps;font-weight:bold; text-align:center;"><table style="margin-left:auto; margin-right:auto;"><tr><td>Name:</td><td><input type="text" name="interviewee_name"></td></tr><tr><td>Location:</td><td><input type="text" name="location"></td></tr></table></p>
+    <p style="font-variant:small-caps;font-weight:bold;">Interviewer</p>
+    <p style="font-variant:small-caps;font-weight:bold; text-align:center;"><table style="margin-left:auto; margin-right:auto;"><tr><td>Name:&nbsp;&nbsp;&nbsp;&nbsp;</td><td><input type="text" name="interviewer_name"></td></tr><tr><td>Role:</td><td><input type="text" name="role"></td></tr></table></p>
+    <p></p>
+    
+</div>
+<div id="footer">
+    <div class="margin_15">
+        <div class="next_button" style="margin-bottom:15px;"><span class="btn btn-success">Start Interview <i class="icon-arrow-right icon-large" style="color:white"></i></span></div>
+    </div>
+</div>
+<script type="text/javascript" language="JavaScript">
+<!--
+var winW = 630, winH = 460;
+if (document.body && document.body.offsetWidth) {
+ winW = document.body.offsetWidth;
+ winH = document.body.offsetHeight;
+}
+if (document.compatMode=='CSS1Compat' &&
+    document.documentElement &&
+    document.documentElement.offsetWidth ) {
+ winW = document.documentElement.offsetWidth;
+ winH = document.documentElement.offsetHeight;
+}
+if (window.innerWidth && window.innerHeight) {
+ winW = window.innerWidth;
+ winH = window.innerHeight;
+}
+var ht=winH-84-67;
+document.getElementById("curr_ques").style.height=ht+"px";
+
+//-->
+</script>
+</html>
