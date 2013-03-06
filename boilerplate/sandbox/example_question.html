@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Player</title>
+    <!--<script type="text/javascript" charset="utf-8" src="../cordova-2.2.0.js"></script>-->
+    <link href="../libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../libs/bootstrap/css/font-awesome.css" rel="stylesheet">
+    <link href="../libs/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <!--<link href="player/player.css" rel="stylesheet">-->
+    <script type="text/javascript">
+        function hasClass(ele,cls) {
+            return ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
+        }
+        function addClass(ele,cls) {
+            if (!this.hasClass(ele,cls)) ele.className += " "+cls;
+        }
+        function removeClass(ele,cls) {
+            if (hasClass(ele,cls)) {
+                var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
+                ele.className=ele.className.replace(reg,'');
+            }
+        }
+        function tag_menu(){
+            var menu_tag=document.getElementById("tag_btn");
+            if(hasClass(menu_tag,"open"))
+                removeClass(menu_tag,"open");
+            else
+                addClass(menu_tag,"open");
+        }
+    </script>
+    <style>
+        .nav_header {width:100%}
+        .nav_header_quit {height:30px; float:right;}
+        .nav_header_title {text-align:center; width:100%; font-weight:bold; margin-bottom:5px; position:absolute; top:5px;}
+        .nav_record_status {margin-bottom:5px;}
+        .nav_record_button {height:30px;}
+        .nav_record_timer {margin:10px;}
+        .bookmark_tags {margin-left:10px; height:24px;}
+        .float_object_right {float:right; margin-right:10px;}
+        .top_bottom_spc_10 {margin:10px 0 10px 0;}
+        .bookmark_button {text-align:center; margin:50px 0 10px 0;}
+        .bookmark_button_text {padding-left:30px;position: relative; left:16px;}
+        .bookmark_button_img {position: relative; left:-134px;}
+        .progress_status {float:left;padding-top:8px;}
+        .progress_curr {float:left;}
+        .progress_total {margin-top:11px;float:left;}
+        .progress_img {margin-top:5px;float:left;}
+        .next_button {float:right;}
+        .next_button_img {height:45px;}
+    </style>
+</head>
+<body>
+<div id="wrap">
+<div class="navbar navbar-static-top">
+    <div>
+        <span class="nav_header_title">Health Survey</span>
+        <span class="nav_header">
+            <a href="../../index.html#sandbox">
+                <img class="nav_header_quit" src="http://cdn1.iconfinder.com/data/icons/super-mono-reflection/blue/button-cross_blue.png">
+            </a>
+        </span>
+    </div>
+    <div class="navbar-inner">
+        <ul class="nav" style="width:100%;">
+            <div class="nav_record_status">
+                <img class="nav_button_button" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png">
+                <span id="timer1" class="nav_record_timer">00:01</span>
+                <span id="time_status">Recording.....</span>    
+            </div>
+        </ul>
+    </div>
+</div>
+<div>
+    <br>
+    <p>Have you ever used a mobile phone to record an interview?</p>
+</div>
+</div>
+<div id="footer">
+      <div class="container">
+<div style="background-color:red; width:100%;">
+    <div class="top_bottom_spc_10">
+        <img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/icojoy/noshadow/standart/png/24x24/001_15.png">
+        <img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/icojoy/noshadow/standart/gif/24x24/001_30.gif">
+        <img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/august/PNG/Get%20Info.png">
+        <img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/function_icon_set/accepted_48.png">
+        <img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/musthave/24/Help.png">
+        <div class="btn-group float_object_right" id="tag_btn">
+            <a class="btn btn-info dropdown-toggle" data-toggle="dropdown" href="#" onclick="tag_menu();">
+                <i class="icon-tags icon-white"></i> More Tags
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu pull-right">
+                <li><a href="#">Hello</a></li>
+                <li><a href="#">World</a></li>
+            </ul>
+    </div>
+    <br>
+    <div class="bookmark_button">
+        <span class="btn btn-warning bookmark_button_text">Bookmark Point</span>
+        <img class="bookmark_button_img" src="http://cdn1.iconfinder.com/data/icons/duesseldorf/32/bookmark.png">
+    </div>
+
+    <div style="float:left;padding-top:8px;">
+        <div class="progress_curr">1</div>
+        <div class="progress_img"><img src="http://cdn1.iconfinder.com/data/icons/bwpx/icons/symbol_forward_slash.gif"></div>
+        <div class="progress_total">7</div>
+    </div>
+    
+    <div class="next_button"><img class="next_button_img" src="http://cdn1.iconfinder.com/data/icons/musthave/48/Next.png"></div>
+</div>
+</div>
+</div>
+</html>
