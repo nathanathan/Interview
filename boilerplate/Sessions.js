@@ -221,7 +221,7 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
             //with an underscore.
             this.set(_.omitUnderscored(pageContext.params));
             
-            this.Log.on('add', function(newLogItem){
+            this.Log.once('add', function(newLogItem){
                 curLogItem.set({
                     '_duration': (new Date()) - curLogItem.get('_timestamp'),
                     'nextPage': newLogItem.page

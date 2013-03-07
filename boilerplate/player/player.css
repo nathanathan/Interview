@@ -4,17 +4,17 @@ CSS for player
 
 .player {
     text-align:center;
+    -webkit-user-select: none;
 }
 
 .player #controls {
 	background-color:lightsteelblue;
     display:inline-block;
-	border-radius: 4em 4em 0em 0em;
+	/*border-radius: 4em 4em 0em 0em;*/
 	font-size:20px;
 	position:relative;
-	padding:5px 10px 5px 10px;
-	width:100%;
-	border: 1px solid black;
+	padding:5px 2% 0px 2%;
+	width:92%;
 	border-bottom:none;
 	margin-top:10px;
 }
@@ -93,16 +93,6 @@ CSS for player
 	top:.166em;
 }
 
-.player .time-display {
-	position: absolute;
-	display:inline-block;
-	font-size:9pt;
-	padding:0px;
-	margin:0px;
-	line-height:9pt;
-	top:-12px;
-}
-
 .player #elapsed-time {
 	left:5px;
 }
@@ -121,15 +111,14 @@ CSS for timeline
 #timeline {
 	background-color:lightsteelblue;
     display:inline-block;
-	border-radius:0em 0em 1.5em 1.5em;
-	padding:0px 10px 10px 10px;
-	width:100%;
-	border:1px solid black;
+	padding:5px 2% 5px 2%;
+	width:92%;
 	border-top:none;
+    position:relative;
 }
 
 .timeline-overview {
-	width:100%px;
+	width:98%;
 	height:15px;
 	background-color:darkgray;
 	border-bottom:1px black solid;
@@ -137,6 +126,7 @@ CSS for timeline
 	position:relative;
 	overflow:hidden;
 	border:1px solid black;
+    cursor:pointer;
 }
 
 .timeline-overview  .timeline-active {
@@ -157,8 +147,23 @@ CSS for timeline
 	margin-left:-1px;
 }
 
+#timeline .time-display {
+    position:absolute;
+    top:-18px;
+    font-size:10pt;
+    display:inline-block;
+}
+
+#timeline #start-time {
+    left:3%;
+}
+
+#timeline #end-time {
+    right:3%;
+}
+
 .timeline-window {
-	width:100%;
+	width:98%;
 	border:1px black solid;
 	margin:auto;
 	position:relative;
@@ -166,10 +171,14 @@ CSS for timeline
 	background-color:lightgray;
 }
 
+.timeline-window .timeline-drag {
+    cursor:w-resize;
+}
+
 .timeline {
-	min-height:40px;
+	min-height:70px;
 	position:relative;
-	background-color:rgb(208, 216, 208);
+	background-color:rgb(255, 255, 255);
 	margin-left:50%;
 	left:0px;
 }
@@ -199,7 +208,11 @@ CSS for timeline
     position:absolute;
     width:2px;
     height:100%;
-    background-color:blue;
+    background-color:rgba(118,165,168,.5);
+}
+
+.timeline .odd {
+    background-color:rgba(42,73,89,.5);
 }
 
 .timeline .log-mark .top, .timeline .log-mark .bottom {
