@@ -184,11 +184,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             }
         },
         
-        undo: function(evt){
-            console.log("triggering undo");
-            this.options.router.trigger("undo");
-        },
-        
         render: function(){
             var recorder = this.options.session.recorder;
             this.$el.html(compiledGuideTemplate({ recorder: recorder }));
@@ -456,8 +451,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     this.currentInterview),
                 session.get("id"));
             
-            console.log(session.recorder);
-            
             this.mySessionView = new SessionView({
                 el: $('body').get(0),
                 router: this,
@@ -481,6 +474,13 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 session = null;
             };
             
+            if(session.Log.length < 1){
+                //The interview hasn't started yet, just cancel it.
+                cleanupSession();
+                that.navigate('', {trigger: true, replace: true});
+                return;
+            }
+            
             session.recorder.pauseRecord();
             
             session.set("endTime", new Date());
@@ -490,6 +490,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 'nextPage': null
             });
             
+            //TODO: Make a view for this.
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){
                 session.set({

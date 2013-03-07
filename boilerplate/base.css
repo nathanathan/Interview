@@ -73,10 +73,9 @@ Animation for tags
     background-color: white !important;
 }
 
-body {
+.btn {
     /*
-    This is to disable accidental highlighting of text.
-    We will likely need to make some exceptions for desktop usage.
+    This is to disable accidental highlighting of button text.
     */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
