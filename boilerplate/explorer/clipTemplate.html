@@ -2,7 +2,6 @@
     <div class="play-area">
         <% /* Player gets inserted here. */ %>
         <a class="btn btn-success play-btn">Play</a>
-        <% /* <a class="btn btn-success play-btn">Play Full Interview</a> */ %>
     </div>
     <% /* TODO: perserve other filter params? */ %>
     <dl class="dl-horizontal">
@@ -12,7 +11,7 @@
         </dd>
         <dt>session:</dt>
         <dd>
-            <a href="player.html#session?id=<%= data._sessionId %>"><%= data._sessionId %></a>
+            <a href="#session?id=<%= data._sessionId %>"><%= data._sessionId %></a>
         </dd>
         <dt>duration:</dt>
         <dd>
