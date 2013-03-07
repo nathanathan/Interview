@@ -183,5 +183,5 @@ var init = function(_){
 if("define" in window){
     define(['underscore'], init);
 } else {
-    init(_);
+    window.sfsf = init(_);
 }

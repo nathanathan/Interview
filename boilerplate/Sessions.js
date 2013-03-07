@@ -245,12 +245,13 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
                 console.log(fileSystem.name);
                 console.log(fileSystem.root.name);
                 fileSystem.root.getDirectory(options.dirPath, {
-                    exclusive: false
+                    exclusive: false,
+                    create: true
                 }, function(dirEntry) {
                     var directoryReader = dirEntry.createReader();
                     // Get a list of all the entries in the directory
                     directoryReader.readEntries(function(entries) {
-                        var filteredEntries = _.filter(entries, function(entry){
+                        var filteredEntries = _.filter(entries, function(entry) {
                             var nameParse = entry.name.split('.');
                             if(!entry.isFile) return false;
                             if(nameParse.length !== 2) return false;
@@ -258,7 +259,7 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
                             return true;
                         });
                         var successCounter = _.after(filteredEntries.length, options.success);
-                        filteredEntries.forEach(function(entry){
+                        filteredEntries.forEach(function(entry) {
                             var fileReader = new FileReader();
                             entry.file(function(file){
                                 fileReader.onloadend = function(evt) {
