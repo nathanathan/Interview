@@ -1,5 +1,5 @@
-define(['jquery', 'backbone', 'underscore', 'LogItems', 'sfsf', 'TagCollection'],
-function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) {
+define(['config', 'jquery', 'backbone', 'underscore', 'LogItems', 'sfsf', 'TagCollection'],
+function(config,   $,        Backbone,   _,            LogItems,   sfsf,   TagCollection) {
     
     /**
      * From backbone-localstorage:
@@ -128,7 +128,7 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
                     options.error(error);
                     return;
                 }
-                fileSystem.root.getDirectory(options.dirPath, {
+                fileSystem.root.getDirectory(sfsf.joinPaths(config.dataDir, that.get('interviewTitle')), {
                     exclusive: false
                 }, function(dirEntry) {
                     var directoryReader = dirEntry.createReader();
@@ -256,6 +256,7 @@ function($,        Backbone,   _,            LogItems,   sfsf,   TagCollection) 
                             if(!entry.isFile) return false;
                             if(nameParse.length !== 2) return false;
                             if(nameParse[1] !== "json") return false;
+                            if("id" in options && options.id !== nameParse[0]) return false;
                             return true;
                         });
                         var successCounter = _.after(filteredEntries.length, options.success);

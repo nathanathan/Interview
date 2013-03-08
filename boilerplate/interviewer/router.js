@@ -415,7 +415,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             function( player,         playerContainerTemplate){
                 if(qp && qp.id) {
                     mySessions.fetchFromFS({
-                        id: qp.id, //TODO: Make it so this limits us to fetching the mession with the given id.
+                        id: qp.id, 
                         dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
                         success: function(){
                             var sessionToPlay = mySessions.get(qp.id);

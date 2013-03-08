@@ -663,11 +663,11 @@ function(config,   Backbone,   _,            playerLayout,                    lo
             
             //It might be a good idea to lazy load the tag layers.
             session.fetchTagLayers({
-                dirPath: config.appDir,
                 success: function() {
                     console.log("Tag Layers:", session.tagLayers);
                 }
             });
+            window.session = session;
             
         });
 
