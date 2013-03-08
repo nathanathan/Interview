@@ -107,14 +107,14 @@ function(config,   $,        Backbone,   _,            LogItems,   sfsf,   TagCo
             
         },
         
-        addTag: function(layerName, tag, timestamp){
+        addTag: function(layerName, tag){
             if(!(layerName in this.tagLayers)){
                 this.tagLayers[layerName] = new TagCollection([], {
                     id: this.get("id"),
                     layerName: layerName
                 });
             }
-            this.tagLayers[layerName].create({tag : tag, _timestamp : timestamp});
+            this.tagLayers[layerName].create(tag);
         },
         
         fetchTagLayers: function(options){
@@ -217,15 +217,17 @@ function(config,   $,        Backbone,   _,            LogItems,   sfsf,   TagCo
             this.Log.add(curLogItem);
             
             //Save the params that do not begin with an underscore into the session.
-            //TODO: To avoid collisions the backend session vars should begin
+            //TODO: To avoid collisions the back-end session vars should begin
             //with an underscore.
             this.set(_.omitUnderscored(pageContext.params));
             
-            this.Log.once('add', function(newLogItem){
+            curLogItem.listenTo(this.Log, 'add end', function(newLogItem){
+                var page = newLogItem ? newLogItem.page : null;
                 curLogItem.set({
-                    '_duration': (new Date()) - curLogItem.get('_timestamp'),
-                    'nextPage': newLogItem.page
+                    '_endTimestamp': new Date(),
+                    'nextPage': page
                 });
+                curLogItem.stopListening(that.Log);
             });
         },
     });
