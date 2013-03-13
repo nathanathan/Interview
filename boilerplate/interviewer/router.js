@@ -142,7 +142,8 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             console.log("adding tag:", $tagEl.data("tag"));
             //TODO: Get and attach other tag attrs
             session.addTag("base", _.extend({
-                _timestamp: new Date()
+                _timestamp: new Date(),
+                _page: this.currentContext.page
             }, _.where(jsonInterviewDef.tags, {
                 name: $tagEl.data("tag")
             })[0]));
