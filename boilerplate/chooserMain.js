@@ -122,6 +122,8 @@ function(config, _, Backbone, dirListView, sfsf){
     });
     var generateJSON = function(xlsxPath, outPath, callback){
         require(["jszip", "jsxlsx", "XLSInterview"], function(){
+            console.log("xlsxPath", xlsxPath);
+            console.log("outPath", outPath);
             sfsf.cretrieve(xlsxPath, function(err, entry){
                 if(err){
                     callback(err);

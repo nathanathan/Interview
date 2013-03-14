@@ -58,9 +58,9 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     var createMedaStart = new Date();
                     console.log("Media path: " + currentClip.path);
                     currentMedia = new Media(currentClip.path);
-                    console.log("Media init delay", new Date() - createMedaStart);
+                    console.log("Media init delay: " + (new Date() - createMedaStart));
                     currentMedia.startRecord();
-                    console.log("Total recording delay", new Date() - createMedaStart);
+                    console.log("Total recording delay: " + (new Date() - createMedaStart));
                 } else {
                     currentMedia = {
                         stopRecord: function(){
