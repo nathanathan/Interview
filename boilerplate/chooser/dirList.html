@@ -3,7 +3,7 @@
 <a class="menu-item sort-name">Sort | Name</a>
 <a class="menu-item sort-date">Sort | Date</a>
 <a class="menu-item refresh">Refresh</a>
-<% if("chrome" in window){ %>
+<% if(!("cordova" in window)){ %>
     <a class="menu-item " href="boilerplate/libs/filerjs/demos/filer.html">
         Add Interivews
     </a>

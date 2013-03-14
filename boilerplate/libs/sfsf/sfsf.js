@@ -121,14 +121,14 @@ var init = function(_){
                         
                         fileWriter.onerror = callback;
                         
-                        if('chrome' in window){
+                        if('cordova' in window){
+                            fileWriter.write(options.data);
+                        } else {
                             // Blob() takes ArrayBufferView, not ArrayBuffer.
                             if (options.data.__proto__ == ArrayBuffer.prototype) {
                                 options.data = new Uint8Array(options.data);
                             }
                             fileWriter.write(new Blob([options.data], {type: options.type || 'text/plain'}));
-                        } else {
-                            fileWriter.write(options.data);
                         }
                     }, callback);
                 

@@ -65,7 +65,6 @@ function(config, _, Backbone, dirListView, sfsf){
         },
         sortName: function(e) {
             console.log('sortName');
-            console.log(e);
             this.orderVar = -this.orderVar;
             this.collection.comparator = this.genComparator(function(entry) {
                 return entry.get("name");
@@ -75,7 +74,6 @@ function(config, _, Backbone, dirListView, sfsf){
         },
         sortDate: function(e) {
             console.log('sortTime');
-            console.log(e);
             this.orderVar = -this.orderVar;
             this.collection.comparator = this.genComparator(function(entry) {
                 return entry.get("modificationTime");
@@ -85,7 +83,6 @@ function(config, _, Backbone, dirListView, sfsf){
         },
         refresh: function(e) {
             console.log('refresh');
-            console.log(e);
             this.collection.fetchFromFS();
             return this;
         },
@@ -151,6 +148,7 @@ function(config, _, Backbone, dirListView, sfsf){
                                 data: JSON.stringify(XLSInterview.processWorkbook(workbookToJSON(xlsx)), 2, 2)
                             }, callback);
                         } catch(e){
+                            console.log("Error processing XLSX File.");
                             callback(e);
                         }
                     };
@@ -175,8 +173,6 @@ function(config, _, Backbone, dirListView, sfsf){
                         that.trigger("error", error);
                         return;
                     }
-                    //The map function is used to convert the EntryList object into a normal array.
-                    //entries = _.map(entries, function(entry){ return entry; });
                     var remainingEntries = entries.length;
                     that['reset']();
                     _.each(entries, function(entry){
@@ -197,17 +193,20 @@ function(config, _, Backbone, dirListView, sfsf){
                                 if(!jsonEntry && !xlsxEntry){
                                     entryModel.set("error", "No json or xlsx files for interview");
                                 }
-                                var xlsxModTime = xlsxEntry ? xlsxEntry.metadata.modificationTime : new Date(0);
-                                var jsonModTime = jsonEntry ? jsonEntry.metadata.modificationTime : new Date(0);
-                                if(xlsxModTime > jsonModTime) {
-                                    entryModel.set("converting", true);
-                                    generateJSON(xlsxEntry.fullPath, sfsf.joinPaths(entry.fullPath, "interview.json"),
-                                    function(err){
-                                        if(err){
-                                            entryModel.set("error", String(err));
-                                        }
-                                        entryModel.set("converting", false);
-                                    });
+                                if(xlsxEntry) {
+                                    var xlsxModTime = xlsxEntry.metadata.modificationTime;
+                                    var jsonModTime = jsonEntry ? jsonEntry.metadata.modificationTime : new Date(0);
+                                    if(xlsxModTime > jsonModTime) {
+                                        entryModel.set("converting", true);
+                                        generateJSON(xlsxEntry.fullPath, sfsf.joinPaths(entry.fullPath, "interview.json"),
+                                        function(err){
+                                            if(err){
+                                                entryModel.set("error", String(err));
+                                                console.log(err);
+                                            }
+                                            entryModel.set("converting", false);
+                                        });
+                                    }
                                 }
                                 entryModel.on("change", function(){
                                     that.trigger("change");
