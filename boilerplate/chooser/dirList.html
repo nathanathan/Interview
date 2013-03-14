@@ -23,10 +23,15 @@
     </div>
 <% } %>
 
-<% if(status.fetching){ %>
+<% if(status.interviewsToFetch > 0){ %>
     <div class="alert alert-info">
-        <p>Fetching interviews...</p>
+        <p>Fetching interviews... (<%- status.interviewsToFetch %> remaining)</p>
     </div>
+<% } %>
+
+<% if(interviews.length === 0){ %>
+    <p>No entries found</p>
+    <a class="install-example btn">Install example interview</a>
 <% } %>
 
 <ul class="navlist">
@@ -34,13 +39,26 @@
 _.each(interviews, function(interview){ 
 %>
     <li>
-        <a href="boilerplate/interview.html?interview=<%- interview.name %>/">
-            <h2><%- interview.name %></h2>
-            <p>
-                <strong>Last Modified:</strong><br />
-                <%- interview.metadata.modificationTime %>
-            </p>
-        </a>
+        <h2><%- interview.name %></h2>
+        <% if(!interview.converting && !interview.error){ %>
+            <a href="boilerplate/interview.html?interview=<%- interview.name %>/" class="btn open">
+                Open
+            </a>
+        <% } %>
+        <p>
+            <strong>Last Modified:</strong><br />
+            <%- interview.modificationTime %>
+        </p>
+        <% if(interview.converting){ %>
+            <div class="alert alert-info">
+                <p>Converting xlsx...</p>
+            </div>
+        <% } %>
+        <% if(interview.error){ %>
+            <div class="alert alert-error">
+                <p><%- interview.error %></p>
+            </div>
+        <% } %>
     </li>
 <%
 });

@@ -136,6 +136,10 @@ var init = function(_){
             }
             console.log("FileSystemName:", fileSystem.name);
             var dirArray = path.split('/');
+            if(dirArray && dirArray[0] === ''){
+                //Ignore the leading slash
+                dirArray.shift();
+            }
             var curPath = '';
             var getDirectoryHelper = function(dirEntry) {
                 var pathSegment = dirArray.shift();
@@ -169,7 +173,8 @@ var init = function(_){
                     getDirectoryHelper,
                     callback);
                 } else if(dirArray.length !== 0) {
-                    callback("Error creating path: " + path);
+                    callback("Error cretrieving path: " + path);
+                    console.log(dirArray);
                 } else {
                     callback(null, dirEntry);
                 }
