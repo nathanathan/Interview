@@ -121,14 +121,14 @@ var init = function(_){
                         
                         fileWriter.onerror = callback;
                         
-                        if('chrome' in window){
+                        if('cordova' in window){
+                            fileWriter.write(options.data);
+                        } else {
                             // Blob() takes ArrayBufferView, not ArrayBuffer.
                             if (options.data.__proto__ == ArrayBuffer.prototype) {
                                 options.data = new Uint8Array(options.data);
                             }
                             fileWriter.write(new Blob([options.data], {type: options.type || 'text/plain'}));
-                        } else {
-                            fileWriter.write(options.data);
                         }
                     }, callback);
                 
@@ -136,6 +136,10 @@ var init = function(_){
             }
             console.log("FileSystemName:", fileSystem.name);
             var dirArray = path.split('/');
+            if(dirArray && dirArray[0] === ''){
+                //Ignore the leading slash
+                dirArray.shift();
+            }
             var curPath = '';
             var getDirectoryHelper = function(dirEntry) {
                 var pathSegment = dirArray.shift();
@@ -169,7 +173,8 @@ var init = function(_){
                     getDirectoryHelper,
                     callback);
                 } else if(dirArray.length !== 0) {
-                    callback("Error creating path: " + path);
+                    callback("Error cretrieving path: " + path);
+                    console.log(dirArray);
                 } else {
                     callback(null, dirEntry);
                 }

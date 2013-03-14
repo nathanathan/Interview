@@ -88,8 +88,7 @@ function(config,   $,        Backbone,   _,            LogItems,   sfsf,   TagCo
             var filePath = sfsf.joinPaths(options.dirPath, that.get('id') + '.json');
             console.log("saving " + filePath);
             sfsf.cretrieve(filePath, {
-                data: content,
-                type: 'text/plain'
+                data: content
             }, function(error) {
                 if(error){
                     options.error(error);

@@ -4,7 +4,10 @@ require.config({
 		"backbone": "libs/backbone-min",
         "backboneqp": "libs/backbone.queryparams",
         "backbonels": "libs/backbone-localstorage",
-        "sfsf": "libs/sfsf/sfsf"
+        "sfsf": "libs/sfsf/sfsf",
+        "jszip" : "libs/XLSInterview/js-xlsx/jszip",
+        "jsxlsx" : "libs/XLSInterview/js-xlsx/xlsx",
+        "XLSInterview" : "libs/XLSInterview/XLSInterview"
 	},
 	'shim': 
 	{
@@ -14,7 +17,9 @@ require.config({
 		backbone: {
 			'deps': ['jquery', 'underscore'],
 			'exports': 'Backbone'
-		}
+		},
+        jsxlsx: ['jszip'],
+        jszip: []
 	}	
 });
 
@@ -43,7 +48,8 @@ function(config, _, Backbone, dirListView, sfsf){
         events: {
             'click .sort-name' : 'sortName',
             'click .sort-date' : 'sortDate',
-            'click .refresh' : 'refresh'
+            'click .refresh' : 'refresh',
+            'click .install-example' : 'installExample'
         },
         genComparator : function(cfunc, incr) {
             if(!incr) {
@@ -59,7 +65,6 @@ function(config, _, Backbone, dirListView, sfsf){
         },
         sortName: function(e) {
             console.log('sortName');
-            console.log(e);
             this.orderVar = -this.orderVar;
             this.collection.comparator = this.genComparator(function(entry) {
                 return entry.get("name");
@@ -69,7 +74,6 @@ function(config, _, Backbone, dirListView, sfsf){
         },
         sortDate: function(e) {
             console.log('sortTime');
-            console.log(e);
             this.orderVar = -this.orderVar;
             this.collection.comparator = this.genComparator(function(entry) {
                 return entry.get("modificationTime");
@@ -79,98 +83,146 @@ function(config, _, Backbone, dirListView, sfsf){
         },
         refresh: function(e) {
             console.log('refresh');
-            console.log(e);
+            this.collection.fetchFromFS();
+            return this;
+        },
+        installExample: function(){
             var that = this;
             var status = this.options.status;
-            status.set("fetching", true);
-            this.collection.fetchFromFS({
-                success: function(myInterviewDefs){
-                    status.set("fetching", false);
-                    console.log("Success!");
-                    if(myInterviewDefs.length === 0){
-                        if(confirm("No interviews found. Install the example interview?")){
-                            status.set("installing", true);
-                            installDefaultInterview(function(err){
-                                status.set("installing", false);
-                                if(err) {
-                                    status.set("error", String(err));
-                                    console.error(err);
-                                }
-                                that.refresh();
-                            });
-                        }
-                    }
-                },
-                fail: function(err){
-                    status.set({
-                        fetching: false,
-                        error: String(err)
-                    });
-                    console.error(err);
-                }
+            status.set("installing", true);
+            var files = [
+                'example/start.html',
+                'example/interview.json',
+                'example/star.png' //TODO: This isn't working...
+            ];
+            var afterInstall = _.after(files.length, function(err){
+                status.set("installing", false);
+                that.refresh();
             });
-            return this;
+            _.each(files, function(file){
+                require(['text!../' + file],
+                function(fileContent) {
+                    var type = 'text/plain';
+                    if (file.slice(-3) === 'png') {
+                        type = 'image/png';
+                    }
+                    sfsf.cretrieve(sfsf.joinPaths(config.appDir, 'interviews', file), {
+                        data: fileContent,
+                        type: type
+                    }, function(err){
+                        if(err) {
+                            status.set("error", String(err));
+                            console.error(err);
+                        }
+                        afterInstall();
+                    });
+                });
+            });
         }
     });
-    
+    var generateJSON = function(xlsxPath, outPath, callback){
+        require(["jszip", "jsxlsx", "XLSInterview"], function(){
+            sfsf.cretrieve(xlsxPath, function(err, entry){
+                if(err){
+                    callback(err);
+                    console.log(err);
+                    return;
+                }
+                var reader = new FileReader();
+                entry.file(function(file){
+                    reader.onload = function(e) {
+                        var data = e.target.result;
+                        var xlsx = XLSX.read(data, {type: 'binary'});
+                        var workbookToJSON = function(workbook) {
+                            var result = {};
+                            workbook.SheetNames.forEach(function(sheetName) {
+                                var rObjArr = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+                                if(rObjArr.length > 0){
+                                    result[sheetName] = rObjArr;
+                                }
+                            });
+                            return result;
+                        }
+                        try {
+                            sfsf.cretrieve(outPath, {
+                                data: JSON.stringify(XLSInterview.processWorkbook(workbookToJSON(xlsx)), 2, 2)
+                            }, callback);
+                        } catch(e){
+                            console.log("Error processing XLSX File.");
+                            callback(e);
+                        }
+                    };
+                    reader.readAsBinaryString(file);
+                        
+                });
+            });
+        });
+    };
     var InterviewDefs = Backbone.Collection.extend({
-        fetchFromFS: function(options){
+        fetchFromFS: function(){
+            //There is a potential bug here if this function gets called again
+            //before the previous fetch finishes.
             var that = this;
-            if(!options){
-                options = {};
-            }
-            options = _.extend({
-                success: function(){},
-                fail: function(){}
-            }, options);
-            
             sfsf.cretrieve(sfsf.joinPaths(config.appDir, 'interviews'), function(error, dirEntry) {
                 if(error){
-                    options.fail(error);
+                    that.trigger("error", error);
                     return;
                 }
                 sfsf.readEntriesWithMetadata(dirEntry, function (error, entries){
                     if(error){
-                        options.fail(error);
+                        that.trigger("error", error);
                         return;
                     }
-                    console.log('resetting entries');
-                    console.log(entries);
-                    //The map function is used to convert the EntryList object into a normal array.
-                    that['reset'](_(entries).filter(function(entry) {
-                        return entry.isDirectory;
-                    }).map(function(entry) {
-                        //Attach interview data?
-                        return entry;
-                    }));
-                    options.success(that);
+                    var remainingEntries = entries.length;
+                    that['reset']();
+                    _.each(entries, function(entry){
+                        if(entry.isDirectory){
+                            sfsf.readEntriesWithMetadata(entry, function (error, entries){
+                                that.trigger("error", "No json or xlsx interview");
+                                //The map function is used to convert the EntryList object into a normal array.
+                                var jsonEntry = _.find(entries, function(entry) {
+                                    return entry.name === "interview.json";
+                                });
+                                var xlsxEntry = _.find(entries, function(entry) {
+                                    return entry.name === "interview.xlsx";
+                                });
+                                var entryModel = new Backbone.Model({
+                                    name: entry.name,
+                                    modificationTime: entry.metadata.modificationTime
+                                });
+                                if(!jsonEntry && !xlsxEntry){
+                                    entryModel.set("error", "No json or xlsx files for interview");
+                                }
+                                if(xlsxEntry) {
+                                    var xlsxModTime = xlsxEntry.metadata.modificationTime;
+                                    var jsonModTime = jsonEntry ? jsonEntry.metadata.modificationTime : new Date(0);
+                                    if(xlsxModTime > jsonModTime) {
+                                        entryModel.set("converting", true);
+                                        generateJSON(xlsxEntry.fullPath, sfsf.joinPaths(entry.fullPath, "interview.json"),
+                                        function(err){
+                                            if(err){
+                                                entryModel.set("error", String(err));
+                                                console.log(err);
+                                            }
+                                            entryModel.set("converting", false);
+                                        });
+                                    }
+                                }
+                                entryModel.on("change", function(){
+                                    that.trigger("change");
+                                });
+                                that.add(entryModel);
+                                remainingEntries--;
+                                that.trigger("fetchUpdate", remainingEntries);
+                            });
+                        }
+                    });                    
                 });
             });
             return this;
         }
     });
-    
-    var installDefaultInterview = function(callback){
-        var files = [
-            'example/start.html',
-            'example/interview.json',
-            'example/star.png' //TODO: This isn't working...
-        ];
-        _.each(files, function(file){
-            require(['text!../' + file],
-            function(fileContent) {
-                var type = 'text/plain';
-                if (file.slice(-3) === 'png') {
-                    type = 'image/png';
-                }
-                sfsf.cretrieve(sfsf.joinPaths(config.appDir, 'interviews', file), {
-                    data: fileContent,
-                    type: type
-                }, callback);
-            });
-        });
-    };
-    
+
     var onReady = function() {
         $(function() {
             //This is a patch to make it so form submission puts the params after
@@ -179,17 +231,24 @@ function(config, _, Backbone, dirListView, sfsf){
                 e.preventDefault();
                 window.location = $(e.target).attr('action') + '?' + $(e.target).serialize();
             });
-                    
-            document.addEventListener("backbutton", function() {
-                //disable back presses.
-            }, false);
             
-            var myInterviewDefs = new InterviewDefs();
             var status = new Backbone.Model({
-                fetching: false,
+                interviewsToFetch: 0,
                 error: null,
-                installing: false
+                installing: false,
+                converting: ""
             });
+            var myInterviewDefs = new InterviewDefs();
+            myInterviewDefs.on("fetchUpdate", function(remainingEntries){
+                status.set("interviewsToFetch", remainingEntries);
+                if(remainingEntries === 0){
+                    status.set("converting", "");
+                }
+            });
+            myInterviewDefs.on("fetchError", function(error){
+                status.set("error", error);
+            });
+            
             var myInterviewList = new InterviewListView({
                 collection: myInterviewDefs,
                 el: $(".container").get(0),
@@ -197,8 +256,8 @@ function(config, _, Backbone, dirListView, sfsf){
             });
             myInterviewList.render();
 
-            myInterviewDefs.on('all', myInterviewList.render, myInterviewList);
-            status.on('change', myInterviewList.render, myInterviewList);
+            myInterviewDefs.on('all', _.debounce(myInterviewList.render, 100), myInterviewList);
+            status.on('change', _.debounce(myInterviewList.render, 100), myInterviewList);
             myInterviewList.refresh();
         });
     };
