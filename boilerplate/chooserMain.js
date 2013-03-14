@@ -132,6 +132,7 @@ function(config, _, Backbone, dirListView, sfsf){
                 entry.file(function(file){
                     reader.onload = function(e) {
                         var data = e.target.result;
+                        console.log("Reading XLSX data...");
                         var xlsx = XLSX.read(data, {type: 'binary'});
                         var workbookToJSON = function(workbook) {
                             var result = {};
@@ -143,6 +144,7 @@ function(config, _, Backbone, dirListView, sfsf){
                             });
                             return result;
                         }
+                        console.log("Writing JSON def...");
                         try {
                             sfsf.cretrieve(outPath, {
                                 data: JSON.stringify(XLSInterview.processWorkbook(workbookToJSON(xlsx)), 2, 2)
@@ -152,8 +154,8 @@ function(config, _, Backbone, dirListView, sfsf){
                             callback(e);
                         }
                     };
+                    console.log("Reading XLSX file...");
                     reader.readAsBinaryString(file);
-                        
                 });
             });
         });

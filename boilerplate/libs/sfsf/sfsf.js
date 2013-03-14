@@ -99,7 +99,8 @@ var init = function(_){
         }
         options = _.extend({
             //Treat as file by default if last segment contains a dot
-            isFile: path.split('/').pop().match('\\.')
+            isFile: path.split('/').pop().match('\\.'),
+            type: 'text/plain'
         }, options);
         sfsf.politelyRequestFileSystem({}, function(error, fileSystem) {
             if(error){
@@ -128,7 +129,7 @@ var init = function(_){
                             if (options.data.__proto__ == ArrayBuffer.prototype) {
                                 options.data = new Uint8Array(options.data);
                             }
-                            fileWriter.write(new Blob([options.data], {type: options.type || 'text/plain'}));
+                            fileWriter.write(new Blob([options.data], {type: options.type }));
                         }
                     }, callback);
                 
