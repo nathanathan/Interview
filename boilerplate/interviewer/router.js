@@ -437,7 +437,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                             }
                             $('body').html(_.template(playerContainerTemplate));
                             player.create({
-                                el:  document.getElementById("player-container"),
+                                el:  $(".player"),
                                 session: sessionToPlay
                             });
                         },

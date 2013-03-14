@@ -1,5 +1,47 @@
-<div class="player">
-    <div id="controls"></div>
-    <div id="timeline"></div>
-    <div id="logItemInfo"></div>
+ <div id="controls">
+    
+    
+    <div class="control-group">
+    	<span>Zoom</span>
+		<div class="btn-player zoom" data-zoom="-1"><i class="icon-zoom-out"></i></div>
+		<div class="btn-player zoom"  data-zoom="1"><i class="icon-zoom-in"></i></div>
+	</div>
+    
+    
+    <div class="control-group">
+		<span>Bookmarks</span>
+		<div class="btn-player" id="previous-marker"><i class="icon-fast-backward"></i></div>
+		<div class="btn-player" id="next-marker"><i class="icon-fast-forward"></i></div>
+	</div>
+
+	<div class="btn-player btn-player-large" id="pause"><i class="icon-pause"></i></div>
+	<div class="btn-player btn-player-large" id="play"><i class="icon-play"></i></div>
+
+	<div class="control-group">
+		<span>Skip Back (sec)</span>
+		<div data-offeset="-5" class="btn-player seek-offset" data-offset="-5"><i class="step-backward" style="background-image:url('images/go-back-5.png')"></i></div>
+		<div data-offeset="-15" class="btn-player seek-offset" data-offset="-15"><i class="step-backward" style="background-image:url('images/go-back-15.png')"></i></div>
+		<div data-offeset="-30" class="btn-player seek-offset" data-offset="-30"><i class="step-backward" style="background-image:url('images/go-back-30.png')"></i></div>
+	</div>
+
+ </div>
+
+ 
+ <div id="timeline">
+    <div class="time-display" id="start-time"></div>
+    <div class="time-display" id="end-time"></div>
+
+    <div class="timeline-overview"><div class="current-time"></div></div>
+
+    <div class="timeline-window">
+	    <div class="timeline-drag">
+	    	<div class="timeline">
+		       	<div class="log-marks"></div>
+		    	<div class="time-marks"></div>
+		    </div>
+	    	<div class="current-time"></div>
+		</div>
+	</div>
+    <div class="log-item"></div>
 </div>
+ 

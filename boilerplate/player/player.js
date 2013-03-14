@@ -1,5 +1,5 @@
-define(['config', 'backbone', 'underscore','player/timeline.js', 'text!player/playerLayout.html', 'text!player/logItemTemplate.html', 'text!player/controlsTemplate.html', 'Popcorn'],
-function(config,   Backbone,   _,FS_Timeline,          playerLayout,                    logItemTemplate, controlsTemplate){
+define(['config', 'backbone', 'underscore','player/timeline', 'text!player/playerLayout.html', 'text!player/logItemTemplate.html', 'text!player/controlsTemplate.html', 'Popcorn'],
+function(config,   Backbone,   _,FS_PlayerView,          playerLayout,                    logItemTemplate, controlsTemplate){
 
     var compiledLogItemTemplate  = _.template(logItemTemplate);
     
@@ -80,7 +80,7 @@ function(config,   Backbone,   _,FS_Timeline,          playerLayout,            
                 seekTo: function(millis){
                     console.log("seeking to: " + millis);
                     //myAudio.currentTime = timeSeconds;
-                    myAudio.currentTime(Math.floor(millis / 1000));
+                    myAudio.currentTime(millis/1000);
                     //myAudio.currentTime = Math.floor(millis / 1000);
                 }
             };
@@ -296,77 +296,7 @@ function(config,   Backbone,   _,FS_Timeline,          playerLayout,            
             });
         });
     };
-    
-    var ControlsView = Backbone.View.extend({
-        template: _.template(controlsTemplate),
-        render: function() {
-            this.$el.html(this.template(this.options.media.cachedState));
-            return this;
-        },
-        events: {
-            'click #play' : 'play',
-            'click #pause' : 'pause',
-            'click #stop' : 'stop',
-            'click .seek-offset' : 'goback',
-            'click #previous-marker' : 'seekToPrevLogItem',
-            'click #next-marker' : 'seekToNextLogItem'
-        },
-        seekToPrevLogItem: function(evt){
-            var media = this.options.media;
-            var curTimestamp = media.offsetToTimestamp(media.cachedState.offsetMillis);
-            var closestLogItem = this.options.logItems.at(0);
-            this.options.logItems.each(function(logItem){
-                if(logItem.get('_timestamp') < curTimestamp){
-                    if(logItem.get('_timestamp') > closestLogItem.get('_timestamp')){
-                        closestLogItem = logItem;
-                    }
-                }
-            });
-            console.log("closestLogItem:", closestLogItem);
-            media.seekTo(media.timestampToOffset(closestLogItem.get('_timestamp')));
-        },
-        seekToNextLogItem: function(evt){
-            var media = this.options.media;
-            var curTimestamp = media.offsetToTimestamp(media.cachedState.offsetMillis);
-            var closestLogItem = this.options.logItems.at(this.options.logItems.length - 1);
-            this.options.logItems.each(function(logItem){
-                if(logItem.get('_timestamp') > curTimestamp){
-                    if(logItem.get('_timestamp') < closestLogItem.get('_timestamp')){
-                        closestLogItem = logItem;
-                    }
-                }
-            });
-            console.log("closestLogItem:", closestLogItem);
-            media.seekTo(media.timestampToOffset(closestLogItem.get('_timestamp')));
-        },
-        goback: function(evt){
-            var $button = $(evt.target).closest(".seek-offset");
-            var offsetSeconds = $button.data('offset');
-            var media = this.options.media;
-            var positionSeconds = media.cachedState.offsetMillis / 1000;
-            var newTime = Math.max(0, positionSeconds + parseInt(offsetSeconds, 10));
-            console.log("goback time:", newTime, offsetSeconds);
-            if(_.isNaN(newTime)) return;
-            media.seekTo(newTime * 1000);
-            return this;
-        },
-        play: function(evt){
-            console.log('play');
-            this.options.media.play();
-            return this;
-        },
-        pause: function(evt){
-            console.log('pause');
-            this.options.media.pause();
-            return this;
-        },
-        stop: function(evt){
-            console.log('stop');
-            this.options.media.stop();
-            return this;
-        }
-    });
-            
+           
     var create = function(context){
         //TODO: Add parameter for creating a small player for the explorer.
         var startOffset = context.start || 0;
@@ -391,41 +321,20 @@ function(config,   Backbone,   _,FS_Timeline,          playerLayout,            
             console.log("Start time: " + startOffset);
             media.seekTo(startOffset);
             
-            $(context.el).html(playerLayout);
-            
-            var controls = new ControlsView({
-                media: media,
-                logItems: logItems,
-                el: $('#controls').get(0)
-            });
-            
-           
-
-            var wasPlaying;
-
-            media.on('tick' ,function(){
-               //updateTimeline();
-                if(media.cachedState.playing !== wasPlaying){
-                    controls.render();
-                }
-                wasPlaying = media.cachedState.playing;
-            });
-            media.trigger('tick');
-            
             //It might be a good idea to lazy load the tag layers.
             session.fetchTagLayers({
+                dirPath: config.appDir,
                 success: function() {
                     console.log("Tag Layers:", session.tagLayers);
                 }
             });
-            window.session = session;
             
-            timeline = new FS_Timeline({el:$('#timeline'),media:media,session:session})
+            timeline = new FS_PlayerView({el:$('.player'),media:media,session:session})
             
         });
 
         return this;
-	};
+    };
     
 	return {
         create: create

@@ -5,6 +5,7 @@ CSS for player
 .player {
     text-align:center;
     -webkit-user-select: none;
+    margin-top:50px;
 }
 
 .player #controls {
@@ -259,6 +260,22 @@ CSS for timeline
     display:inline-block;
     top:20px;
     font-size:2em;
+}
+
+#timeline .log-item {
+    width:80%;
+    margin:10px auto 0px auto;
+    text-align:left;
+    font-size:12pt;
+    background-color:white;
+    padding:5px 10px;
+    border-radius:10px;
+    border:1px solid black;
+}
+
+video {
+    width:300px;
+    height:300px;
 }
 
 
