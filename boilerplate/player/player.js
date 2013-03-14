@@ -1,7 +1,8 @@
-define(['config', 'backbone', 'underscore', 'text!player/playerLayout.html', 'text!player/logItemTemplate.html', 'text!player/controlsTemplate.html', 'Popcorn','player/timeline.js'],
-function(config,   Backbone,   _,            playerLayout,                    logItemTemplate, controlsTemplate){
+define(['config', 'backbone', 'underscore','player/timeline.js', 'text!player/playerLayout.html', 'text!player/logItemTemplate.html', 'text!player/controlsTemplate.html', 'Popcorn'],
+function(config,   Backbone,   _,FS_Timeline,          playerLayout,                    logItemTemplate, controlsTemplate){
 
     var compiledLogItemTemplate  = _.template(logItemTemplate);
+    
     
     var getMediaPhonegap = function(path, callback) {
         var media = new Media(path,
@@ -36,7 +37,7 @@ function(config,   Backbone,   _,            playerLayout,                    lo
         'http://cuepoint.org/dartmoor.mp4',
         "http://clips.vorwaerts-gmbh.de/VfE_html5.mp4",
         'http://cuepoint.org/dartmoor.mp4',
-        "http://clips.vorwaerts-gmbh.de/VfE_html5.mp4"];
+        "http://archive.org/download/KA-converted-c_8QQbVQKU0/c_8QQbVQKU0.mp4"];
         
     var getMediaDebug = function(path, callback) {
         var $audioContainer = $('<div>');
@@ -395,7 +396,7 @@ function(config,   Backbone,   _,            playerLayout,                    lo
                 el: $('#controls').get(0)
             });
             
-            var timeline = new FS_Timeline({el:$('#timeline'),media:media,session:session})
+           
 
             var wasPlaying;
 
@@ -415,6 +416,8 @@ function(config,   Backbone,   _,            playerLayout,                    lo
                     console.log("Tag Layers:", session.tagLayers);
                 }
             });
+            
+            timeline = new FS_Timeline({el:$('#timeline'),media:media,session:session})
             
         });
 

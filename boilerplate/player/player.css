@@ -117,39 +117,9 @@ CSS for timeline
     position:relative;
 }
 
-.timeline-overview {
-	width:98%;
-	height:15px;
-	background-color:darkgray;
-	border-bottom:1px black solid;
-	margin:auto auto 5px auto;
-	position:relative;
-	overflow:hidden;
-	border:1px solid black;
-    cursor:pointer;
-}
-
-.timeline-overview  .timeline-active {
-	position:absolute;
-	height:100%;
-	width:1em;
-	margin-left:-.5em;
-	background-color:burlywood;
-}
-
-.timeline-overview .timeline-active div {
-	width:2px;
-	height:100%;
-	display:inline-block;
-	background-color:rgba(95, 95, 95, 0.67);
-	position:absolute;
-	left:50%;
-	margin-left:-1px;
-}
-
 #timeline .time-display {
     position:absolute;
-    top:-18px;
+    top:-15px;
     font-size:10pt;
     display:inline-block;
 }
@@ -162,6 +132,75 @@ CSS for timeline
     right:3%;
 }
 
+#timeline .current-time {
+    background-color:blue;
+    height:100%;
+    display:inline-block;
+    position:absolute;
+   
+}
+
+.log-mark {
+    display:inline-block;
+    position:absolute;
+    height:100%;
+    background-color:rgba(118,165,168,.5);
+    overflow:hidden;
+}
+
+.timeline-overview  .log-mark {
+    overflow:hidden;
+    text-align:left;
+    font-size:10px;
+}
+
+.log-mark.odd {
+    background-color:rgba(42,73,89,.5);
+}
+
+.log-mark span {
+    position:absolute;
+    bottom:0px;
+    left:1px;
+    font-size:15px;
+    background-color:lightgray;
+    z-index:5;
+}
+
+.timeline-overview {
+	width:98%;
+	height:15px;
+	background-color:white;
+	border-bottom:1px black solid;
+	margin:auto auto 5px auto;
+	position:relative;
+	overflow:hidden;
+	border:1px solid black;
+    cursor:pointer;
+}
+
+.timeline-overview .time-mark {
+    position:absolute;
+    display:inline-block;
+    height:5px;
+    width:2px;
+    background-color:black;
+}
+
+.timeline-overview .current-time {
+	width:2px;
+    left:0px;
+	margin-left:-1px;
+}
+
+.timeline-window .current-time {
+	width:4px;
+	top:0px;
+	left:50%;
+	margin-left:-2px;
+    opacity:0.5;
+}
+
 .timeline-window {
 	width:98%;
 	border:1px black solid;
@@ -172,7 +211,7 @@ CSS for timeline
 }
 
 .timeline-window .timeline-drag {
-    cursor:w-resize;
+    cursor:pointer;
 }
 
 .timeline {
@@ -188,7 +227,7 @@ CSS for timeline
 	height:100%;
 }
 
-.timeline .time-marks div.grid{
+.timeline .time-marks .grid{
 	width:2px;
 	height:100%;
 	display:inline-block;
@@ -196,79 +235,33 @@ CSS for timeline
 	position:absolute;
 }
 
-.timeline .time-marks div.time-mark {
+.timeline .time-marks .grid.large {
+    background-color:#333333;
+}
+
+.timeline .time-marks .grid .time-mark {
 	display:inline-block;
 	position:absolute;
 	line-height:10px;
 	font-size:10px;
+    top:0px;
+    left:5px;
 }
 
-.timeline .log-mark {
-    display:inline-block;
+.timeline .time-marks .grid.large .time-mark {
+    font-weight:bolder;
+    font-size:15px;
+    top:2px;
+}
+
+.timeline .tag {
     position:absolute;
-    width:2px;
-    height:100%;
-    background-color:rgba(118,165,168,.5);
-}
-
-.timeline .odd {
-    background-color:rgba(42,73,89,.5);
-}
-
-.timeline .log-mark .top, .timeline .log-mark .bottom {
     display:inline-block;
-    position:absolute;
-    width:6px;
-    margin-left:-3px;
-    height:6px;
-    background-color:black;
-    border-radius:0px 0px 20px 20px;
+    top:20px;
+    font-size:2em;
 }
 
-.timeline .log-mark .bottom {
-    border-radius:20px 20px 0px 0px;
-    bottom:0px;
-}
-
-.timeline-window .current-time-maker {
-	background-color:blue;
-	position:absolute;
-	width:4px;
-	top:0px;
-	left:50%;
-	margin-left:-2px;
-	height:100%;
-	display:inline;
-	opacity:0.5;
-}
 
 /*
 End CSS for player
 */
-
-#logItemContainer {
-    position: relative;
-}
-.logItemMarker {
-    position: absolute;
-    width: 0px;
-    height: 0px;
-    border-style: solid;
-    border-color: transparent transparent transparent inherit;
-    border-width: 40px 0 0 80px;
-}
-.logItemMarker:hover {
-    border-color: transparent transparent transparent #007bff;
-}
-.logItemMarker.selected {
-    border-color: transparent transparent transparent #007bff;
-    z-index: 10;
-}
-#logItemInfo {
-    padding: 5px;
-    margin-top: 40px;
-    border-top: 2px solid #007bff;
-}
-.logItemBtn {
-    height: 40px;
-}
