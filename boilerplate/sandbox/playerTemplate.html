@@ -1,0 +1,35 @@
+<div class="player" id="player">
+    	
+	<div class="controls">
+		<div class="btn" id="previous-marker"><i class="icon-fast-backward"></i></div>
+		<div class="btn seek-offset"><i data-offeset="-30" class="icon-step-backward"></i>30</div>
+		<div class="btn seek-offset"><i data-offeset="-10" class="icon-step-backward"></i>10</div>
+		<div class="btn seek-offset"><i data-offeset="-5" class="icon-step-backward"></i>5</div>
+		<% if (playing) { %>
+        <div class="btn"><i id="play" class="icon-play"></i></div>
+        <% } else { %>
+        <div class="btn"><i id="pause" class="icon-pause"></i></div>
+        <% } %>
+		<div class="btn" id="next-marker"><i class="icon-fast-forward"></i></div>
+	</div>
+
+	<div class="progress <% if(!playing) { %>progress-striped<% } %>" id="progress-bar">
+		    <div class="time-display" id="elapsed-time"><% _.formatTime( time ) </div>
+		<ul class="mark-holder"></ul>
+		<div class="bar" style="width:<%- progress %>%"></div>
+		<div class="handle" style="left:<%- progress %>%"></div>
+		    <div class="time-display" id="total-time">_.formatTime( total_time ) </div>
+	</div>
+	
+	<ul class="tags"></ul>
+	
+</div>
+
+<!--
+Tag and Marker code:
+
+ var $marker = $('<li><div></div><li>');
+
+ var $tag = $('<li class="icon-tag"><div></div><li>');
+-->
+

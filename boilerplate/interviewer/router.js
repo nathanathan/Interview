@@ -26,14 +26,19 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
 
     var myExplorerView;
     
-    var createRecorder = function(outputPath, recording_id, callback){
+    //jsonInterviewDef is global for convenience,
+    //we should probably refactor it.
+    window.jsonInterviewDef;
+    
+    var createRecorder = function(outputPath, recording_id){
         var currentMedia = null;
         var currentClip = null;
         var clips = [];
         
-        return _.extend(Backbone.Events, {
+        return _.extend({
             pauseRecord: function(){
                 if(this.paused) return;
+                console.log("stoping recording...");
                 currentClip.end = new Date();
                 currentMedia.stopRecord();
                 currentMedia.release();
@@ -50,20 +55,32 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 clips.push(currentClip);
                 
                 if('Media' in window) {
+                    var createMedaStart = new Date();
                     console.log("Media path: " + currentClip.path);
                     currentMedia = new Media(currentClip.path);
-                    console.log("media created!");
+                    console.log("Media init delay", new Date() - createMedaStart);
                     currentMedia.startRecord();
+                    console.log("Total recording delay", new Date() - createMedaStart);
                 } else {
                     currentMedia = {
-                        stopRecord: function(){},
-                        startRecord: function(){},
-                        release: function(){}
+                        stopRecord: function(){
+                            console.log("stopRecoding facade");
+                        },
+                        startRecord: function(){
+                            console.log("startRecoding facade");
+                        },
+                        release: function(){
+                            console.log("release facade");
+                        }
                     };
                     this.warning = "Audio cannot be recorded on this device.";
                 }
+                
                 this.paused = false;
                 this.trigger("start");
+            },
+            hasStarted: function(){
+                return clips.length > 0;
             },
             remove: function(){
                 if('Media' in window) {
@@ -89,15 +106,16 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             },
             getDuration: function(){
                 if(clips.length === 0) return 0;
+                var currentClipEnd = currentClip.end ? currentClip.end : new Date();
                 return _.reduce(clips.slice(0, -1), function(memo, clip){ 
                      return memo + (clip.end - clip.start); 
-                }, (new Date() - currentClip.start));
+                }, (currentClipEnd - currentClip.start));
             },
             getActualDuration: function(){
                 if(clips.length === 0) return 0;
                 return new Date() - clips[0].start;
             }
-        });
+        }, Backbone.Events);
     };
 
     var SessionView = Backbone.View.extend({
@@ -122,7 +140,13 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             var session = this.options.session;
             var $tagEl = $(evt.target).closest(".add-tag");
             console.log("adding tag:", $tagEl.data("tag"));
-            session.addTag("base", $tagEl.data("tag"), new Date());
+            //TODO: Get and attach other tag attrs
+            session.addTag("base", _.extend({
+                _timestamp: new Date(),
+                _page: this.currentContext.page
+            }, _.where(jsonInterviewDef.tags, {
+                name: $tagEl.data("tag")
+            })[0]));
             //Temporariliy disable the tag...
             $tagEl.removeClass('add-tag');
             $tagEl.addClass('add-tag-disabled');
@@ -171,11 +195,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             }
         },
         
-        undo: function(evt){
-            console.log("triggering undo");
-            this.options.router.trigger("undo");
-        },
-        
         render: function(){
             var recorder = this.options.session.recorder;
             this.$el.html(compiledGuideTemplate({ recorder: recorder }));
@@ -221,6 +240,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
         renderJSONPage: function(questionName, params){
             var that = this;
             var myRouter = this.options.router;
+            var session = this.options.session;
             var renderQuestion = function(annotatedFlatInterview){
                 var renderedHtml;
                 
@@ -247,54 +267,10 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     alert("Error rendering page.");
                 }
             };
-            if(that.__annotatedFlatInterview__){
-                renderQuestion(that.__annotatedFlatInterview__);
+            if(jsonInterviewDef && jsonInterviewDef.annotatedFlatInterview){
+                renderQuestion(jsonInterviewDef.annotatedFlatInterview);
             } else {
-                //TODO: Eventually, I think the name of the interview should be
-                //a prefix on all the routes. We will need to use that prefix
-                //here to construct the appropriate path.
-                console.log(myRouter.currentInterviewPath, 'interview.json');
-                $.getJSON(sfsf.joinPaths(myRouter.pathPrefix, myRouter.currentInterviewPath, 'interview.json'),
-                function(jsonInterviewDef){
-                    //Here we create a flat array with all the questions, and where each 
-                    //question has annotations indicating the next questions and branches.
-                    that.__annotatedFlatInterview__ = [];
-                    var annotateAndFlatten = function(nextQuestions){
-                        var currentQuestion, followingQuestions;
-                        if(nextQuestions.length > 0) {
-                            currentQuestion = nextQuestions[0];
-                            if("__nextQuestions" in currentQuestion){
-                                //We've already handled this question
-                                return;
-                            }
-                            currentQuestion.__tags = _.where(jsonInterviewDef.tags, {
-                                group: ("tags" in currentQuestion) ? currentQuestion.tags : "default"
-                            });
-                            
-                            followingQuestions = nextQuestions.slice(1);
-                            currentQuestion.__branches = [];
-                            while(followingQuestions.length > 0 &&
-                                    "type" in followingQuestions[0] &&
-                                    followingQuestions[0].type === "branch"){
-                                currentQuestion.__branches.push(followingQuestions[0]);
-                                followingQuestions = followingQuestions.slice(1);
-                            }
-                            _.each(currentQuestion.__branches, function(branch){
-                                if("children" in branch && branch.children.length > 0) {
-                                    annotateAndFlatten(branch.children.concat(followingQuestions));
-                                    branch.__nextQuestions = branch.children.concat(followingQuestions);
-                                } else {
-                                    branch.__nextQuestions = followingQuestions;
-                                }
-                            });
-                            annotateAndFlatten(followingQuestions);
-                            currentQuestion.__nextQuestions = followingQuestions;
-                            that.__annotatedFlatInterview__.push(currentQuestion);
-                        }
-                    };
-                    annotateAndFlatten(jsonInterviewDef.interview);
-                    renderQuestion(that.__annotatedFlatInterview__);
-                });
+                alert("No json interview definition loaded.");
             }
         },
         setPageContext: function(context){
@@ -349,6 +325,51 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 if(!started){
                     alert("Routes may be improperly set up.");
                 }
+                
+                //Load the json interview def:
+                //TODO: Add failure notification?
+                $.getJSON(sfsf.joinPaths(that.pathPrefix, that.currentInterviewPath, 'interview.json'),
+                function(loadedInterviewDef){
+                    //Here we create a flat array with all the questions, where each 
+                    //question object has annotations indicating the next questions and branches.
+                    var annotatedFlatInterview = [];
+                    var annotateAndFlatten = function(nextQuestions){
+                        var currentQuestion, followingQuestions;
+                        if(nextQuestions.length > 0) {
+                            currentQuestion = nextQuestions[0];
+                            if("__nextQuestions" in currentQuestion){
+                                //We've already handled this question
+                                return;
+                            }
+                            currentQuestion.__tags = _.where(loadedInterviewDef.tags, {
+                                group: ("tags" in currentQuestion) ? currentQuestion.tags : "default"
+                            });
+                            
+                            followingQuestions = nextQuestions.slice(1);
+                            currentQuestion.__branches = [];
+                            while(followingQuestions.length > 0 &&
+                                    "type" in followingQuestions[0] &&
+                                    followingQuestions[0].type === "branch"){
+                                currentQuestion.__branches.push(followingQuestions[0]);
+                                followingQuestions = followingQuestions.slice(1);
+                            }
+                            _.each(currentQuestion.__branches, function(branch){
+                                if("children" in branch && branch.children.length > 0) {
+                                    annotateAndFlatten(branch.children.concat(followingQuestions));
+                                    branch.__nextQuestions = branch.children.concat(followingQuestions);
+                                } else {
+                                    branch.__nextQuestions = followingQuestions;
+                                }
+                            });
+                            annotateAndFlatten(followingQuestions);
+                            currentQuestion.__nextQuestions = followingQuestions;
+                            annotatedFlatInterview.push(currentQuestion);
+                        }
+                    };
+                    annotateAndFlatten(loadedInterviewDef.interview);
+                    loadedInterviewDef.annotatedFlatInterview = annotatedFlatInterview;
+                    jsonInterviewDef = loadedInterviewDef;
+                });
             });
 		},
 		routes: {
@@ -407,7 +428,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             function( player,         playerContainerTemplate){
                 if(qp && qp.id) {
                     mySessions.fetchFromFS({
-                        id: qp.id, //TODO: Make it so this limits us to fetching the mession with the given id.
+                        id: qp.id, 
                         dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
                         success: function(){
                             var sessionToPlay = mySessions.get(qp.id);
@@ -443,8 +464,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     this.currentInterview),
                 session.get("id"));
             
-            console.log(session.recorder);
-            
             this.mySessionView = new SessionView({
                 el: $('body').get(0),
                 router: this,
@@ -468,15 +487,25 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 session = null;
             };
             
-            session.recorder.pauseRecord();
+            if(session.Log.length < 1){
+                //The interview hasn't started yet, just cancel it.
+                cleanupSession();
+                that.navigate('', {trigger: true, replace: true});
+                return;
+            }
             
+            session.recorder.pauseRecord();
             session.set("endTime", new Date());
-            var lastLogItem = session.Log.at(session.Log.length - 1);
-            lastLogItem.set({
-                '_duration': (new Date()) - lastLogItem.get('_timestamp'),
-                'nextPage': null
+            session.Log.trigger("end");
+            
+            _.defer(function(){
+                var totalDuration = session.Log.reduceRight(function(memo, logItem){
+                    return memo + (logItem.get('_endTimestamp') - logItem.get('_timestamp'));
+                }, 0);
+                console.log("durations: ", totalDuration, session.recorder.getDuration());
             });
             
+            //TODO: Make a view for this.
             $('body').html(compiledInterviewEndTemplate());
             $('#save').click(function(){
                 session.set({

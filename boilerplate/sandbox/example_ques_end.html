@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Player</title>
+    <!--<script type="text/javascript" charset="utf-8" src="../cordova-2.2.0.js"></script>-->
+    <link href="../libs/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../libs/bootstrap/css/font-awesome.css" rel="stylesheet">
+    <link href="../libs/bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+    <!--<link href="player/player.css" rel="stylesheet">-->
+    <link href="interview_style.css" rel="stylesheet">
+    <script type="text/javascript">
+        function hasClass(ele,cls) {
+            return ele.className.match(new RegExp('(\\s|^)'+cls+'(\\s|$)'));
+        }
+        function addClass(ele,cls) {
+            if (!this.hasClass(ele,cls)) ele.className += " "+cls;
+        }
+        function removeClass(ele,cls) {
+            if (hasClass(ele,cls)) {
+                var reg = new RegExp('(\\s|^)'+cls+'(\\s|$)');
+                ele.className=ele.className.replace(reg,'');
+            }
+        }
+        function tag_menu(){
+            var menu_tag=document.getElementById("tag_btn");
+            if(hasClass(menu_tag,"open"))
+                removeClass(menu_tag,"open");
+            else
+                addClass(menu_tag,"open");
+        }
+        function start_pause_interview(){
+            var btn=document.getElementById("start_stop_btn");
+            var status=document.getElementById("time_status");
+            if(btn.src=="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png"){
+                btn.src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_play.png";
+                status.innerHTML="Paused";
+            }
+            else{
+                btn.src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png"
+                status.innerHTML="Recording.....";
+            }
+        }
+    </script>
+    
+</head>
+<body>
+<div class="navbar navbar-static-top">
+    <div>
+        <span class="nav_header_title">Health Survey</span>
+        <span class="nav_header">
+            <a href="../../index.html#sandbox">
+                <img class="nav_header_quit" src="http://cdn1.iconfinder.com/data/icons/super-mono-reflection/blue/button-cross_blue.png">
+            </a>
+        </span>
+    </div>
+    <div class="navbar-inner">
+        <ul class="nav" style="width:100%;">
+            <div class="nav_record_status">
+                <img onclick="start_pause_interview();" ontouch="alert('touch');" id="start_stop_btn" class="nav_button_button" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png">
+                <span id="timer1" class="nav_record_timer">00:01</span>
+                <span id="time_status">Recording.....</span>    
+            </div>
+        </ul>
+    </div>
+</div>
+<div id="curr_ques">
+    <br><br>
+    <br><br>
+    <p style="font-variant:small-caps;text-align:center; font-size:26px">introduction</p>
+    
+    
+</div>
+<div id="footer">
+    <div class="">
+        <!--<i class="icon-star icon-2x bookmark_tags_icon" style="color:orange;"></i>
+        <i class="icon-exclamation-sign bookmark_tags_icon" style="color:orangered; font-size:28px;"></i>
+        <i class="icon-info-sign icon-2x bookmark_tags_icon" style="color:lightblue;"></i>
+        <i class="icon-question-sign icon-2x bookmark_tags_icon" style="color:blue;"></i>
+        <i class="icon-ok-sign icon-2x bookmark_tags_icon" style="color:green;"></i>
+        <!--<img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/icojoy/noshadow/standart/png/24x24/001_15.png">
+        <img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/icojoy/noshadow/standart/gif/24x24/001_30.gif">
+        <img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/august/PNG/Get%20Info.png">
+        <img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/function_icon_set/accepted_48.png">
+        <img class="bookmark_tags" src="http://cdn1.iconfinder.com/data/icons/musthave/24/Help.png">--.>
+        <div class="btn-group float_object_right" id="tag_btn">
+            <a class="btn btn-info dropdown-toggle" data-toggle="dropdown" href="#" onclick="tag_menu();">
+                <i class="icon-tags icon-white"></i> More Tags
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu pull-right">
+                <li><a href="#"><i class="icon-thumbs-up icon-large" style="color:darkblue"></i> Interesting Info</a></li>
+                <li><a href="#"><i class="icon-thumbs-down icon-large" style="color:darkblue"></i> Unless Info</a></li>
+            </ul>-->
+        <img style="display: block;margin-left:auto;margin-right:auto;" src="http://cdn1.iconfinder.com/data/icons/Jewelry/128/Partnership.png">
+    </div>
+    <br>
+    
+    
+    
+
+    <div class="margin_15">
+        <div class="progress_bar">
+            <div class="progress">
+                <div id="ques_progress" class="bar" style="width:1%;"></div>
+            </div>
+            <script> var temp=0.1/7*100; document.getElementById("ques_progress").style.width=temp+"%";</script>
+            <!--<div class="progress_curr">1</div>
+            <div class="progress_img"><img src="http://cdn1.iconfinder.com/data/icons/bwpx/icons/symbol_forward_slash.gif"></div>
+            <div class="progress_total">7</div>-->
+        </div>
+    
+        <div class="next_button"><i class="icon-circle-arrow-right icon-3x" style="color:green"></i><!--<img class="next_button_img" src="http://cdn1.iconfinder.com/data/icons/musthave/48/Next.png">--></div>
+    </div>
+</div>
+<script type="text/javascript" language="JavaScript">
+<!--
+var winW = 630, winH = 460;
+if (document.body && document.body.offsetWidth) {
+ winW = document.body.offsetWidth;
+ winH = document.body.offsetHeight;
+}
+if (document.compatMode=='CSS1Compat' &&
+    document.documentElement &&
+    document.documentElement.offsetWidth ) {
+ winW = document.documentElement.offsetWidth;
+ winH = document.documentElement.offsetHeight;
+}
+if (window.innerWidth && window.innerHeight) {
+ winW = window.innerWidth;
+ winH = window.innerHeight;
+}
+var ht=winH-84-187;
+document.getElementById("curr_ques").style.height=ht+"px";
+
+//-->
+</script>
+</html>

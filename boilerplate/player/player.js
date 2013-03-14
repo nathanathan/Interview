@@ -116,7 +116,7 @@ function(config,   Backbone,   _,            playerLayout,                    lo
         var clipLoaded = _.after(clips.length, function(){
             var tickInterval = 200;
             var currentClip = clips[0];
-            var clipSequencePlayer = _.extend(Backbone.Events, {
+            var clipSequencePlayer = _.extend({
                 cachedState : {
                     offsetMillis: 0,
                     progressPercent: 0,
@@ -177,7 +177,10 @@ function(config,   Backbone,   _,            playerLayout,                    lo
                     var timestampDuration = _.reduce(clips, function(memo, clip){ 
                          return memo + (clip.end - clip.start); 
                     }, 0);
+                    
                     console.log("Duration delta: ", timestampDuration - audioDuration);
+                    console.log(audioDuration, timestampDuration);
+                    
                     return timestampDuration;
                 },
                 getActualDuration: function(){
@@ -245,7 +248,7 @@ function(config,   Backbone,   _,            playerLayout,                    lo
                         }
                     }
                 }
-            });
+            }, Backbone.Events);
             
             var lastOffset = 0;
             clipSequencePlayer.on('tick', function(){
@@ -363,6 +366,198 @@ function(config,   Backbone,   _,            playerLayout,                    lo
         }
     });
     
+    var FS_Timeline = function(options) {
+        this.options = $.extend(this.defaults,options);
+        if(this.options.media) this.options.duration = this.options.media.getDuration();
+        console.log(this.options);
+        this.create();
+        
+        this.interval_timer = null;
+        $(this.options.media).on('play',{that:this},FS_Timeline.track);
+        $(this.options.media).on('pause',{that:this},FS_Timeline.untrack);
+        
+        var that = this;
+        // setup dragable timeline
+        this.$timeline.on('mousedown touchstart', function (event) {
+            if(event.type=="touchstart") {
+            	event.preventDefault();
+            	event = event.originalEvent.touches[0];
+            }
+            var orgX = event.pageX;
+            var orgMS = that.getOffset().ms;
+            var px_to_ms = that.options.grid.sm_tic_ms/(parseInt(that.$timeline.css('font-size'))*that.options.grid.em);
+            $(window).on('mousemove touchmove', function (event) {
+                if(event.type=="touchmove") {
+                	event.preventDefault();
+                	event = event.originalEvent.touches[0];
+                }
+                var delta_px = orgX-event.pageX;
+                that.seekTo(delta_px*px_to_ms+orgMS);
+                // console.log(delta_px,orgMS);
+            });
+            $(window).on('mouseup touchend', function (event) {
+                if(event.type=="touchend") {
+                	event.preventDefault();
+                	console.log(event);
+                	event = event.originalEvent.changedTouches[0];
+                }
+                var delta_px = orgX-event.pageX;
+                //console.log(delta_px,px_to_ms,delta_px*px_to_ms+orgMS);
+                that.options.media.seekTo(delta_px*px_to_ms+orgMS); 
+                $(window).off('mousemove mouseup touchmove touchend');
+            });
+        });
+        
+        this.$active.parent().on('click touchstart', function (event) {
+            if(event.type=="touchstart") {
+                event.preventDefault();
+                var touch = event.originalEvent.touches[0];
+                event.offsetX = touch.pageX-parseInt($(touch.target).offset().left);
+                console.log('touch',touch.pageX,$(touch.target).offset());
+            }
+            var px_to_ms = that.options.duration/parseInt(that.$active.parent().css('width'));
+            var offset = event.offsetX;
+            //console.log(offset,event.srcElement);
+            if(!$(event.srcElement).hasClass('timeline-overview')){
+                console.log(event.offsetX,$(that).children('.timeline-active').css('left'));
+                
+                offset = event.offsetX + parseInt(that.$active.css('left')) - parseInt(that.$active.css('width'))/2;
+            }			
+            console.log(that.$active.parent().css('width'),px_to_ms,that.options.duration,offset,offset*px_to_ms/1000);
+            that.seekTo(offset*px_to_ms);
+            that.options.media.seekTo(offset*px_to_ms);
+        });
+        
+        this.options.media.on('tick', function() {
+            that.seekTo(that.options.media.cachedState.offsetMillis);
+        });
+    }
+
+    FS_Timeline.prototype = {
+        defaults: {
+        el:null,
+        session:null,
+        duration:60000, // in ms
+        grid: {
+            sm_tic_px: 50,
+            sm_tic_ms: 5000,
+            lg_tic_ms: 20000,
+            em:5
+        },
+        delta_t:200, //ms
+        },
+    
+        create : function() {
+            this.$el = (this.options.el)?(this.options.el):$('<div class="timeline-holder">');
+            this.$el.append($('<div class="timeline-overview"><div class="timeline-active"><div></div></div></div>\
+        <div class="timeline-window"><div class="timeline"><div class="time-marks"></div></div><div class="current-time-maker"></div></div>\
+        </div>'));
+            this.$view_box = this.$el.find('.timeline-window');
+            this.$active = this.$el.find('.timeline-active');
+            this.$timeline = this.$el.find('.timeline');
+            
+            this.$timeline.children('.time-marks').append(this.createTimeMarks());
+            this.$timeline.css('font-size',this.options.grid.sm_tic_px/this.options.grid.em+"px");
+            this.$timeline.css('width',this.options.duration/this.options.grid.sm_tic_ms*this.options.grid.em+"em");
+            this.$timeline.append(this.createLogMarks());
+            //add elements into view box
+            this.setActiveWidth();
+        },
+        
+        createTimeMarks : function() {
+            var n_marks = this.options.duration/this.options.grid.sm_tic_ms;
+            //console.log(n_marks);
+            var grids = [], times = [];
+            for(var i=0; i<n_marks; i++) {
+                grids.push($('<div class="grid" style="left:'+this.options.grid.em*i+'em"></div>'));
+                times.push($('<div class="time-mark" style="left:'+(this.options.grid.em*i+.5)+'em">'+(this.options.grid.em*i)%60+'</div>'));
+            }
+            return $('<div></div>').append(grids,times);
+        },
+        
+        createLogMarks : function() {
+             if(!this.options.session) return;
+             var logMarks = [];
+             var that = this;
+             var ms_to_em = this.options.grid.em/this.options.grid.sm_tic_ms;
+             this.options.session.Log.each(function(item) {
+                 var log_ms = that.options.media.timestampToOffset(item.get('_timestamp'));
+                 logMarks.push($('<div class="log-mark" style="left:'+log_ms*ms_to_em+'em"><div class="top"></div><div class="bottom"></div></div>'));
+             });
+             return logMarks;
+        },
+        
+        setActiveWidth : function() {
+            var px_per_tic = parseInt(this.$timeline.css('font-size'))*this.options.grid.em;
+            var view_ms = parseInt(this.$view_box.css('width'))*this.options.grid.sm_tic_ms/px_per_tic;
+            this.$active.css('font-size',view_ms*parseInt(this.$view_box.css('width'))/this.options.duration+'px')
+            console.log(this.options.duration,this.$view_box.css('width'),this.$active.css('font-size'));
+        },
+        
+        
+        /*
+         * 
+         */
+        seekDelta : function(delta_x,units) {
+            var cur_ms = this.getOffset().ms;
+            delta_x = FS_Timeline.toMS(delta_x,units);
+            var px_to_ms = (units=='px')?this.options.grid.sm_tic_ms/(parseInt(this.$timeline.css('font-size'))*this.options.grid.em):1;
+            this.seekTo(cur_ms+px_to_ms*delta_x);
+        },
+        
+        seekTo : function(delta_t,conversion_str) {
+    
+            var ms_2_em = this.options.grid.em/this.options.grid.sm_tic_ms;
+            var ms_2_px = parseInt(this.$active.parent().css('width'))/this.options.duration;
+            if (typeof delta_t == 'string') { //assume precentage if string
+                delta_t = parseInt(delta_t,10);
+                if (delta_t < 0) delta_t=0;
+                if (delta_t > 100) delta_t=100;
+                this.$timeline.css('left',ms_2_em*this.options.duration*-delta_t/100+'em');
+                this.$active.css('left',ms_2_px*this.options.duration*delta_t/100);
+            }
+            else { // assume ms
+                delta_t = FS_Timeline.toMS(delta_t,conversion_str);
+                if(delta_t < 0) delta_t=0;
+                if(delta_t > this.options.duration) delta_t=this.options.duration;
+                this.$timeline.css('left',ms_2_em*-delta_t+'em');
+                this.$active.css('left',ms_2_px*delta_t);
+            }
+        },
+        
+        getOffset : function() {
+            var left_px = parseFloat(this.$timeline.css('left'));
+            var px_to_ms = this.options.grid.sm_tic_ms/(parseInt(this.$timeline.css('font-size'))*this.options.grid.em);
+            var ms = -left_px*px_to_ms;
+            var percent = ms/this.options.duration;
+            return {ms:ms,perecent:percent}
+        }
+    }
+
+    /*
+     *  Returns tm converted to milliseconds
+     *    units in ['min','sec','hr']
+     */
+        FS_Timeline.toMS = function(tm,unit) {
+        if (typeof unit != "number") {
+            unit = ({sec:1000,min:60000,hr:3600000,s:1000,m:60000,h:3600000})[unit]
+        }
+        unit = (unit)?unit:1; // default to ms
+        return tm*unit;
+    }
+    
+    FS_Timeline.track = function (event) {
+        var that = event.data.that;
+        that.interval_timer = window.setInterval(function(){
+            that.seekTo(that.options.media.currentTime,'sec');
+            // console.log(that.options.media.currentTime);
+        },that.options.delta_t);
+    }
+    
+    FS_Timeline.untrack = function (event) {
+        window.clearInterval(event.data.that.interval_timer);
+    }
+        
     var create = function(context){
         //TODO: Add parameter for creating a small player for the explorer.
         var startOffset = context.start || 0;
@@ -392,7 +587,8 @@ function(config,   Backbone,   _,            playerLayout,                    lo
             $(context.el).html(playerLayout);
             
             var $timeline = $('#timeline');
-            var $progress = $('<div class="progress">');
+           /*
+           var $progress = $('<div class="progress">');
             var $bar = $('<div class="bar">');
             $progress.append($bar);
             $timeline.append($progress);
@@ -405,11 +601,12 @@ function(config,   Backbone,   _,            playerLayout,                    lo
                 media.seekTo(progressPercentage * media.getDuration());
                 return this;
             });
+             
             var updateTimeline = function(){
                 var progressPercent = media.cachedState.progressPercent;
                 $bar.css('width', Math.floor(Math.min(progressPercent * 100, 100)) + "%");
             };
-            
+           */
             var selectedLogItem = null;
             var updateMarkers = function(){
                 console.log("updateMarkers");
@@ -449,12 +646,14 @@ function(config,   Backbone,   _,            playerLayout,                    lo
                 el: $('#controls').get(0)
             });
             
-            updateMarkers();
+            var timeline = new FS_Timeline({el:$('#timeline'),media:media,session:session})
+            
+            //updateMarkers();
 
             var wasPlaying;
 
             media.on('tick' ,function(){
-                updateTimeline();
+               //updateTimeline();
                 if(media.cachedState.playing !== wasPlaying){
                     controls.render();
                 }
@@ -464,11 +663,11 @@ function(config,   Backbone,   _,            playerLayout,                    lo
             
             //It might be a good idea to lazy load the tag layers.
             session.fetchTagLayers({
-                dirPath: config.appDir,
                 success: function() {
                     console.log("Tag Layers:", session.tagLayers);
                 }
             });
+            window.session = session;
             
         });
 

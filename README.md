@@ -3,8 +3,6 @@ Interview
 
 This is an app for conducting and recording interviews.
 
-Interviews are structured using [FLP websites](https://github.com/nathanathan/FeelsLikePHP).
-
 All the page transitions are logged making it possible to tell where in the recording a particular question is being answered.
 
 The second half of this project will be a website that annotates the audio timeline with the page the interviewer is on,
@@ -51,16 +49,11 @@ If encryption turns out to be necessairy we can encrypt audio in JS prior to sav
 TODO:
 -----
 
-1. Fix sort in explorer
-2. Make page links open a menu in explorer, with options to view the original question or filter by it?
-3. Add recording notice, and don't record during start form.
-4. Older adroid device does not seem to be seeking correctly.
-5. Playback and recording in traditional browsers?
+1. Make page links open a menu in explorer, with options to view the original question or filter by it?
+2. Add recording notice, and don't record during start form.
+3. Older adroid device does not seem to be seeking correctly.
+4. Playback and recording in traditional browsers?
 
-Notes on organization:
-----------------------
-
-Currently the app is designed to be built with a single interview definition.
 
 Other tools
 ------------

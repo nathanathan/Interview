@@ -1,7 +1,7 @@
 <div class="navbar navbar-static-top">
     <div>
         <span class="nav_header">
-            <a href="../../index.html#sandbox">
+            <a id="stop">
                 <img class="nav_header_quit" src="http://cdn1.iconfinder.com/data/icons/super-mono-reflection/blue/button-cross_blue.png">
             </a>
         </span>
@@ -32,18 +32,19 @@
                 </form>
             </li>
             -->
-            
-            <div class="nav_record_status">
-                <% if(recorder.paused){ %>
-                    <img class="nav_button_button resumeRecording" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_play.png">
-                    <span id="time" class="nav_record_timer"><%- _.formatTime(recorder.getDuration()) %></span>
-                    <span id="time_status">Paused.....</span>
-                <% } else { %>
-                    <img class="nav_button_button pauseRecording" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png">
-                    <span id="time" class="nav_record_timer"><%- _.formatTime(recorder.getDuration()) %></span>
-                    <span id="time_status">Recording.....</span>
-                <% } %>
-            </div>
+            <% if(recorder.hasStarted()){ %>
+                <div class="nav_record_status">
+                    <% if(recorder.paused){ %>
+                        <img class="nav_button_button resumeRecording" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_play.png">
+                        <span id="time" class="nav_record_timer"><%- _.formatTime(recorder.getDuration()) %></span>
+                        <span id="time_status">Paused.....</span>
+                    <% } else { %>
+                        <img class="nav_button_button pauseRecording" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png">
+                        <span id="time" class="nav_record_timer"><%- _.formatTime(recorder.getDuration()) %></span>
+                        <span id="time_status">Recording.....</span>
+                    <% } %>
+                </div>
+            <% } %>
         </ul>
     </div>
 </div>
@@ -64,7 +65,7 @@
 <% } %>
 </div>
 <% if(recorder.paused){ %>
-    Session paused
+    <h3>Session paused</h3>
 <% } else { %>
     <div id="pagecontainer"></div>
 <% } %>
