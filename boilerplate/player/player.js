@@ -117,7 +117,7 @@ function(config,   Backbone,   _,FS_Timeline,          playerLayout,            
         var clipLoaded = _.after(clips.length, function(){
             var tickInterval = 200;
             var currentClip = clips[0];
-            var clipSequencePlayer = _.extend(Backbone.Events, {
+            var clipSequencePlayer = _.extend({
                 cachedState : {
                     offsetMillis: 0,
                     progressPercent: 0,
@@ -178,7 +178,10 @@ function(config,   Backbone,   _,FS_Timeline,          playerLayout,            
                     var timestampDuration = _.reduce(clips, function(memo, clip){ 
                          return memo + (clip.end - clip.start); 
                     }, 0);
+                    
                     console.log("Duration delta: ", timestampDuration - audioDuration);
+                    console.log(audioDuration, timestampDuration);
+                    
                     return timestampDuration;
                 },
                 getActualDuration: function(){
@@ -246,7 +249,7 @@ function(config,   Backbone,   _,FS_Timeline,          playerLayout,            
                         }
                     }
                 }
-            });
+            }, Backbone.Events);
             
             var lastOffset = 0;
             clipSequencePlayer.on('tick', function(){
@@ -411,11 +414,11 @@ function(config,   Backbone,   _,FS_Timeline,          playerLayout,            
             
             //It might be a good idea to lazy load the tag layers.
             session.fetchTagLayers({
-                dirPath: config.appDir,
                 success: function() {
                     console.log("Tag Layers:", session.tagLayers);
                 }
             });
+            window.session = session;
             
             timeline = new FS_Timeline({el:$('#timeline'),media:media,session:session})
             

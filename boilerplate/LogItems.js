@@ -42,6 +42,9 @@ function($,        Backbone,   _) {
             if(attrs._recordingStart) {
                 attrs._recordingStart = new Date(attrs._recordingStart);
             }
+            if(attrs._endTimestamp) {
+                attrs._endTimestamp = new Date(attrs._endTimestamp);
+            }
             return attrs;
         }
 

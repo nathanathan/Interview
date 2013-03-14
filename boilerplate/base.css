@@ -73,28 +73,41 @@ Animation for tags
     background-color: white !important;
 }
 
-/*
-Animation for undo button
+.btn {
+    /*
+    This is to disable accidental highlighting of button text.
+    */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
 
-@-webkit-keyframes fadeOut {
-  from {
-    opacity: 1.0;
-    top: 0;
-  }
-  80% {
-    opacity: 1.0;
-    top: 0; 
-  }
-  to {
-    opacity: 0;
-    top: -30px;
-  }
-}
-.fade-out {
-    position: relative;
-    top: -30px;
-    -webkit-animation-duration: 3s;
-    -webkit-animation-iteration-count: 1;
-    -webkit-animation-name: fadeOut;
-}
+/*
+This is a replacement for the bootstrap navbar-fixed-top
+without the responsive stuff that unfixes  it on small screens
 */
+.navbar-always-fixed {
+    top: 0;
+    position: fixed;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+    margin-bottom: 0;
+}
+.navbar-always-fixed .navbar-inner {
+    -webkit-box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
+    padding-right: 0;
+    padding-left: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    border-radius: 0;
+    border-width: 0 0 1px;
+}
+.nav-spacer {
+    height: 60px;
+}

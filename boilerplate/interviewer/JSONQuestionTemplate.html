@@ -4,6 +4,7 @@
             <p class="lead">
                 <%-  currentQuestion.label %>
             </p>
+            
             <ul class="nav nav-pills">
             <% _.forEach(_.filter(currentQuestion.__tags, function(tag){ return ("icon" in tag) }), function(tag) { %>
                 <li>
@@ -28,37 +29,37 @@
             <% }); %>
             </ul>
             
-            
-        <div class="btn-group dropup float_object_right" id="tag_btn">
-            <a class="btn btn-info dropdown-toggle" data-toggle="dropdown"
-                onclick="$('#tag_btn').toggleClass('open');">
-            <i class="icon-tags icon-white"></i> More Tags
-            <span class="caret"></span>
-            </a>
-            <ul class="dropdown-menu pull-right">
-            <% _.forEach(_.filter(currentQuestion.__tags, function(tag){ return !("icon" in tag) }), function(tag) { %>
-                <li>
-                    <a class="add-tag" data-tag="<%- tag.name %>">
-                        <% if("imagePath" in tag) { %>
-                            <img src="<%- formDir %><%- tag.imagePath %>"></img>
-                        <% } %>
-                        <% if("label" in tag) { %>
-                            <%- tag.label %>
-                        <% } %>
-                        <% if("icon" in tag) { %>
-                            <i class="<%- tag.icon %>"
-                                <% if("iconColor" in tag) { %>
-                                    style="color:<%- tag.iconColor %>;"
-                                <% } %>
-                            >
-                            </i>
-                        <% } %>
-                        
-                    </a>
-                </li>
-            <% }); %>
-            </ul>
-        </div>
+            <div class="btn-group dropup float_object_right" id="tag_btn">
+                <a class="btn btn-info dropdown-toggle" data-toggle="dropdown"
+                    onclick="$('#tag_btn').toggleClass('open');">
+                <i class="icon-tags icon-white"></i> More Tags
+                <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu pull-right">
+                <% _.forEach(_.filter(currentQuestion.__tags, function(tag){ return !("icon" in tag) }), function(tag) { %>
+                    <li>
+                        <a class="add-tag" data-tag="<%- tag.name %>">
+                            <% if("imagePath" in tag) { %>
+                                <img src="<%- formDir %><%- tag.imagePath %>"></img>
+                            <% } %>
+                            <% if("label" in tag) { %>
+                                <%- tag.label %>
+                            <% } %>
+                            <% if("icon" in tag) { %>
+                                <i class="<%- tag.icon %>"
+                                    <% if("iconColor" in tag) { %>
+                                        style="color:<%- tag.iconColor %>;"
+                                    <% } %>
+                                >
+                                </i>
+                            <% } %>
+                            
+                        </a>
+                    </li>
+                <% }); %>
+                </ul>
+            </div>
+            <div style="clear:both;"></div>
         </div>
 
         <div class="span6">

@@ -3,7 +3,7 @@ Simple File System Functions:
 Notes:
 Everything uses errbacks.
 */
-define(['underscore'], function(_){
+var init = function(_){
     var sfsf = {
     /**
      * Takes any number of file path strings as arguments and joins them into one.
@@ -179,4 +179,9 @@ define(['underscore'], function(_){
     }
     };
     return sfsf;
-});
+};
+if("define" in window){
+    define(['underscore'], init);
+} else {
+    window.sfsf = init(_);
+}

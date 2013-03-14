@@ -10,18 +10,37 @@
 <% } %>
 <div style="clear:both;"></div>
 
+<% if(status.error){ %>
+    <div class="alert alert-error">
+        <h4>Error!</h4>
+        <%- status.error %>
+    </div>
+<% } %>
+
+<% if(status.installing){ %>
+    <div class="alert alert-info">
+        <p>Installing example interview...</p>
+    </div>
+<% } %>
+
+<% if(status.fetching){ %>
+    <div class="alert alert-info">
+        <p>Fetching interviews...</p>
+    </div>
+<% } %>
+
 <ul class="navlist">
 <%
 _.each(interviews, function(interview){ 
 %>
     <li>
-    <a href="boilerplate/interview.html?interview=<%- interview.name %>/">
-        <h2><%- interview.name %></h2>
-        <p>
-            <strong>Last Modified:</strong><br />
-            <%- interview.metadata.modificationTime %>
-        </p>
-    </a>
+        <a href="boilerplate/interview.html?interview=<%- interview.name %>/">
+            <h2><%- interview.name %></h2>
+            <p>
+                <strong>Last Modified:</strong><br />
+                <%- interview.metadata.modificationTime %>
+            </p>
+        </a>
     </li>
 <%
 });

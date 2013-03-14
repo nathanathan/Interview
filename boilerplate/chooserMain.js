@@ -31,14 +31,15 @@ function(config, _, Backbone, dirListView, sfsf){
     var InterviewListView = Backbone.View.extend({
         template: _.template(dirListView),
         orderVar: 1,
-        render: function() {
+        render: _.debounce(function() {
             console.log('render');
             console.log(this.collection.toJSON());
             this.$el.html(this.template({
+                status : this.options.status.toJSON(),
                 interviews : this.collection.toJSON()
             }));
             return this;
-        },
+        }, 200),
         events: {
             'click .sort-name' : 'sortName',
             'click .sort-date' : 'sortDate',
@@ -79,7 +80,35 @@ function(config, _, Backbone, dirListView, sfsf){
         refresh: function(e) {
             console.log('refresh');
             console.log(e);
-            this.collection.fetchFromFS();
+            var that = this;
+            var status = this.options.status;
+            status.set("fetching", true);
+            this.collection.fetchFromFS({
+                success: function(myInterviewDefs){
+                    status.set("fetching", false);
+                    console.log("Success!");
+                    if(myInterviewDefs.length === 0){
+                        if(confirm("No interviews found. Install the example interview?")){
+                            status.set("installing", true);
+                            installDefaultInterview(function(err){
+                                status.set("installing", false);
+                                if(err) {
+                                    status.set("error", String(err));
+                                    console.error(err);
+                                }
+                                that.refresh();
+                            });
+                        }
+                    }
+                },
+                fail: function(err){
+                    status.set({
+                        fetching: false,
+                        error: String(err)
+                    });
+                    console.error(err);
+                }
+            });
             return this;
         }
     });
@@ -156,28 +185,21 @@ function(config, _, Backbone, dirListView, sfsf){
             }, false);
             
             var myInterviewDefs = new InterviewDefs();
+            var status = new Backbone.Model({
+                fetching: false,
+                error: null,
+                installing: false
+            });
             var myInterviewList = new InterviewListView({
                 collection: myInterviewDefs,
-                el: $(".container").get(0)
+                el: $(".container").get(0),
+                status: status
             });
+            myInterviewList.render();
+
             myInterviewDefs.on('all', myInterviewList.render, myInterviewList);
-            myInterviewDefs.fetchFromFS({
-                success: function(){
-                    console.log("Success!");
-                    if(myInterviewDefs.length === 0){
-                        console.log("No interviews found, installing default.");
-                        installDefaultInterview(function(err){
-                            if(err) {
-                                console.error(err);
-                            }
-                            myInterviewDefs.refresh();
-                        });
-                    }
-                },
-                fail: function(err){
-                    console.error(err);
-                }
-            });
+            status.on('change', myInterviewList.render, myInterviewList);
+            myInterviewList.refresh();
         });
     };
     if ('cordova' in window) {

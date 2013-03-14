@@ -2,7 +2,7 @@
 <widget xmlns = "http://www.w3.org/ns/widgets"
     xmlns:gap = "http://phonegap.com/ns/1.0"
     id        = "com.phonegap.interview"
-    version   = "0.7.1">
+    version   = "0.7.8">
 
     <name>Interview</name>
 
@@ -18,5 +18,6 @@
     
     <!-- <gap:splash src="splash.png" width="310" height="300" /> -->
     
+    <!-- Child browser is used for dropbox authentication -->
     <gap:plugin name="ChildBrowser" />
 </widget>
