@@ -99,7 +99,8 @@ var init = function(_){
         }
         options = _.extend({
             //Treat as file by default if last segment contains a dot
-            isFile: path.split('/').pop().match('\\.')
+            isFile: path.split('/').pop().match('\\.'),
+            type: 'text/plain'
         }, options);
         sfsf.politelyRequestFileSystem({}, function(error, fileSystem) {
             if(error){
@@ -121,20 +122,30 @@ var init = function(_){
                         
                         fileWriter.onerror = callback;
                         
-                        if('chrome' in window){
+                        if('cordova' in window){
+                            fileWriter.write(options.data);
+                        } else {
                             // Blob() takes ArrayBufferView, not ArrayBuffer.
                             if (options.data.__proto__ == ArrayBuffer.prototype) {
                                 options.data = new Uint8Array(options.data);
                             }
-                            fileWriter.write(new Blob([options.data], {type: options.type || 'text/plain'}));
-                        } else {
-                            fileWriter.write(options.data);
+                            fileWriter.write(new Blob([options.data], {type: options.type }));
                         }
                     }, callback);
                 
                 }, callback);
             }
-            console.log("FileSystemName:", fileSystem.name);
+
+            //Monkey patch for fullPath not being relative to the root.
+            if(path.search(fileSystem.root.fullPath) === 0) {
+                path = path.substring(fileSystem.root.fullPath.length);
+            }
+            
+            //Prevent the leading slash from being used when splitting.
+            if(path[0] === "/") {
+                path = path.substring(1);
+            }
+            
             var dirArray = path.split('/');
             var curPath = '';
             var getDirectoryHelper = function(dirEntry) {
@@ -169,7 +180,8 @@ var init = function(_){
                     getDirectoryHelper,
                     callback);
                 } else if(dirArray.length !== 0) {
-                    callback("Error creating path: " + path);
+                    callback("Error cretrieving path: " + path);
+                    console.log(dirArray);
                 } else {
                     callback(null, dirEntry);
                 }

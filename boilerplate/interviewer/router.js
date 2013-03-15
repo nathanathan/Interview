@@ -58,9 +58,9 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                     var createMedaStart = new Date();
                     console.log("Media path: " + currentClip.path);
                     currentMedia = new Media(currentClip.path);
-                    console.log("Media init delay", new Date() - createMedaStart);
+                    console.log("Media init delay: " + (new Date() - createMedaStart));
                     currentMedia.startRecord();
-                    console.log("Total recording delay", new Date() - createMedaStart);
+                    console.log("Total recording delay: " + (new Date() - createMedaStart));
                 } else {
                     currentMedia = {
                         stopRecord: function(){
@@ -174,7 +174,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             
             session.recorder.startRecord();
             
-            thisRouter.navigate('json/start?' + this.$('form').serialize(), {
+            thisRouter.navigate('json/' + window.jsonInterviewDef.annotatedFlatInterview[0].name + '?' + this.$('form').serialize(), {
                 trigger: true
             });
         },
@@ -240,7 +240,6 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
         renderJSONPage: function(questionName, params){
             var that = this;
             var myRouter = this.options.router;
-            var session = this.options.session;
             var renderQuestion = function(annotatedFlatInterview){
                 var renderedHtml;
                 
@@ -285,6 +284,49 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
     window.session = null;
     //var session = null;
 
+    var processInterviewDef = function(loadedInterviewDef){
+        //Here we create a flat array with all the questions, where each 
+        //question object has annotations indicating the next questions and branches.
+        var annotatedFlatInterview = [];
+        var annotateAndFlatten = function(nextQuestions){
+            var currentQuestion, followingQuestions;
+            if(nextQuestions.length > 0) {
+                currentQuestion = nextQuestions[0];
+                if("__nextQuestions" in currentQuestion){
+                    //We've already handled this question
+                    return;
+                }
+                currentQuestion.__tags = _.where(loadedInterviewDef.tags, {
+                    group: ("tags" in currentQuestion) ? currentQuestion.tags : "default"
+                });
+                
+                followingQuestions = nextQuestions.slice(1);
+                currentQuestion.__branches = [];
+                while(followingQuestions.length > 0 &&
+                        "type" in followingQuestions[0] &&
+                        followingQuestions[0].type === "branch"){
+                    currentQuestion.__branches.push(followingQuestions[0]);
+                    followingQuestions = followingQuestions.slice(1);
+                }
+                _.each(currentQuestion.__branches, function(branch){
+                    if("children" in branch && branch.children.length > 0) {
+                        annotateAndFlatten(branch.children.concat(followingQuestions));
+                        branch.__nextQuestions = branch.children.concat(followingQuestions);
+                    } else {
+                        branch.__nextQuestions = followingQuestions;
+                    }
+                });
+                annotateAndFlatten(followingQuestions);
+                currentQuestion.__nextQuestions = followingQuestions;
+                annotatedFlatInterview.unshift(currentQuestion);
+            }
+        };
+        annotateAndFlatten(loadedInterviewDef.interview);
+        return _.extend({
+            annotatedFlatInterview: annotatedFlatInterview
+        }, loadedInterviewDef);
+    };
+
 	var Router = Backbone.Router.extend({
 
         initialize: function(){
@@ -304,71 +346,40 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                 this.currentInterview = this.currentInterview.slice(0, -1);
             }
             this.currentInterviewPath = sfsf.joinPaths(config.appDir, 'interviews', this.currentInterview);
-            
-            sfsf.cretrieve(this.currentInterviewPath, {}, function(error, entry){
+            sfsf.politelyRequestFileSystem({}, function(error, fileSystem){
                 if(error){
                     console.log(error);
-                    alert("Could not get sdcard.");
+                    alert("Could not get filesystem.");
                     return;
                 }
-                console.log("got directory");
+                var root = fileSystem.root;
+                that.pathPrefix = ("toURL" in root) ? root.toURL() : root.fullPath;
                 
-                if("chrome" in window) console.log(entry);
-                
-                var entryURL = ("toURL" in entry) ? entry.toURL() : entry.fullPath;
-                
-                that.pathPrefix = entryURL.slice(0, - (that.currentInterviewPath.length));
-                
-                $('body').html('<div id="pagecontainer">');
-                
-                var started = Backbone.history.start();
-                if(!started){
-                    alert("Routes may be improperly set up.");
-                }
-                
-                //Load the json interview def:
-                //TODO: Add failure notification?
-                $.getJSON(sfsf.joinPaths(that.pathPrefix, that.currentInterviewPath, 'interview.json'),
-                function(loadedInterviewDef){
-                    //Here we create a flat array with all the questions, where each 
-                    //question object has annotations indicating the next questions and branches.
-                    var annotatedFlatInterview = [];
-                    var annotateAndFlatten = function(nextQuestions){
-                        var currentQuestion, followingQuestions;
-                        if(nextQuestions.length > 0) {
-                            currentQuestion = nextQuestions[0];
-                            if("__nextQuestions" in currentQuestion){
-                                //We've already handled this question
-                                return;
-                            }
-                            currentQuestion.__tags = _.where(loadedInterviewDef.tags, {
-                                group: ("tags" in currentQuestion) ? currentQuestion.tags : "default"
-                            });
-                            
-                            followingQuestions = nextQuestions.slice(1);
-                            currentQuestion.__branches = [];
-                            while(followingQuestions.length > 0 &&
-                                    "type" in followingQuestions[0] &&
-                                    followingQuestions[0].type === "branch"){
-                                currentQuestion.__branches.push(followingQuestions[0]);
-                                followingQuestions = followingQuestions.slice(1);
-                            }
-                            _.each(currentQuestion.__branches, function(branch){
-                                if("children" in branch && branch.children.length > 0) {
-                                    annotateAndFlatten(branch.children.concat(followingQuestions));
-                                    branch.__nextQuestions = branch.children.concat(followingQuestions);
-                                } else {
-                                    branch.__nextQuestions = followingQuestions;
-                                }
-                            });
-                            annotateAndFlatten(followingQuestions);
-                            currentQuestion.__nextQuestions = followingQuestions;
-                            annotatedFlatInterview.push(currentQuestion);
-                        }
-                    };
-                    annotateAndFlatten(loadedInterviewDef.interview);
-                    loadedInterviewDef.annotatedFlatInterview = annotatedFlatInterview;
-                    jsonInterviewDef = loadedInterviewDef;
+                sfsf.cretrieve(that.currentInterviewPath, function(error, entry){
+                    if(error){
+                        console.log(error);
+                        alert("Could not get interview directory.");
+                        return;
+                    }
+                    console.log("got interview directory");
+                    
+                    var entryURL = ("toURL" in entry) ? entry.toURL() : entry.fullPath;
+                    
+                    $('body').html('<div id="pagecontainer">');
+                    
+                    var started = Backbone.history.start();
+                    if(!started){
+                        alert("Routes may be improperly set up.");
+                    }
+                    
+                    //Load the json interview def:
+                    var interviewDefURL = sfsf.joinPaths(that.pathPrefix, that.currentInterviewPath, 'interview.json');
+                    $.getJSON(interviewDefURL, function(loadedInterviewDef) {
+                        window.jsonInterviewDef = processInterviewDef(loadedInterviewDef);
+                    }).error(function(err) {
+                        console.log(err);
+                        alert("Could not get JSON interview def: " + interviewDefURL);
+                    });
                 });
             });
 		},
@@ -437,7 +448,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                             }
                             $('body').html(_.template(playerContainerTemplate));
                             player.create({
-                                el:  document.getElementById("player-container"),
+                                el:  $(".player"),
                                 session: sessionToPlay
                             });
                         },
