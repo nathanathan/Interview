@@ -12,14 +12,20 @@ function(config,   Backbone,  _, playerLayout){
         options: {
             session:null,
             duration:60000, //in ms
+            dirty:false,
         },
-     
+        
+        events: {
+            'click #save-tags':'saveTags',            
+        },
                
         initialize: function() {
             this.$el.html(playerLayout); // insert template
              
             if(this.options.media) this.options.duration = this.options.media.getDuration();
             console.log(this.options);
+            
+            _.extend(this,Backbone.Events);//make triggerable;
             
             // add controls
             this.controls = new FS_ControlsView({el:this.$el.find('#controls')});
@@ -48,8 +54,12 @@ function(config,   Backbone,  _, playerLayout){
             var log = this.getLog();
             this.overview = new FS_OverviewView({el:this.$el.find('.timeline-overview'),duration:this.options.duration,log:log});
             this.timeline = new FS_TimelineView({el:this.$el.find('.timeline-window'),duration:this.options.duration,log:log});
-            //this.timeline.addTagLayer(this.getTagLayer());
-            this.setQuestion(log[0].page)
+            _.each(_.keys(this.options.session.tagLayers),function(layer){
+                this.timeline.addTagLayer(this.getTagLayer(layer));
+            },this);
+            
+            this.setQuestion(log[0].page);
+            this.setTagButtons(log[0].page);
             
             // set callbacks
             this.timeline.on('dragStart',function(event){console.log('Remove');this.options.media.off('tick',null,this)},this); //remove seek on tick during drag
@@ -62,6 +72,7 @@ function(config,   Backbone,  _, playerLayout){
             },this);
             this.timeline.on('log-change',function(event){
                 this.setQuestion(event.log.page);
+                this.setTagButtons(event.log.page);
             },this);
             
             this.overview.on('seekTo', function(event){
@@ -80,9 +91,11 @@ function(config,   Backbone,  _, playerLayout){
             },this);
             
             // put seek on tick
-            this.options.media.on('tick', function _mediaSeek() {
+            this.options.media.on('tick', function() {
                 this.seekTo(this.options.media.cachedState.offsetMillis);
             },this);
+            
+            this.on('dirty',this.makeDirty,this);
         },
         
         getLog: function() {
@@ -105,8 +118,8 @@ function(config,   Backbone,  _, playerLayout){
         getTagLayer: function(layer) {
             var that=this;
             layer = (layer)?layer:'base';
+            console.log(layer);
             var tags = this.options.session.tagLayers[layer].toJSON();
-            console.log(tags);
             _.each(tags,function(tag){
                tag.offset = that.options.media.timestampToOffset(tag._timestamp); 
             });
@@ -151,6 +164,58 @@ function(config,   Backbone,  _, playerLayout){
            var curQuestion = _.find(jsonInterviewDef.annotatedFlatInterview,function(question){return question.name == page})
            this.$el.find('.log-item').html(curQuestion.label);  
        },
+       
+       setTagButtons: function(page)  {
+            var tags = _.find(jsonInterviewDef.annotatedFlatInterview,function(question){return question.name == page}).__tags;
+            var $tagHolder =  this.$el.find('.add-tag');
+            $tagHolder.find('.tag').remove();
+            _.each(tags,function(tag) {
+               $tagHolder.append(this.newTag(tag));
+            },this);
+       },
+       
+       newTag: function(tag) {
+           var $tag = $('<div class="tag btn">').append($('<i class="icon-'+tag.icon+'" style="color:'+tag.iconColor+'"><span>'+tag.label+'</span>'));
+           var that = this;
+           $tag.on('click', function(event) {
+               that.addTag(tag);
+           });
+           return $tag;
+       } ,
+       
+       addTag: function(tag){
+           if(!this.options.dirty) {
+                this.trigger('dirty');
+                console.log("make dirty");
+           }
+           var offset = this.timeline.getOffset().ms;
+           var newTag = _.extend(tag,{
+               _timestamp:this.options.media.offsetToTimestamp(offset),
+               _page:this.timeline.options.currentLog.page,
+                });
+           this.options.session.addTag('edit',newTag);
+           newTag.offset = offset;
+           this.timeline.addTag(newTag,'edit');
+       },
+       
+       saveTags: function() {
+            var that = this;           
+            var prehashParams = window.decodeURIComponent(window.location.search);
+           var parsedPrehashParams = Backbone.history.getQueryParameters(prehashParams);
+           this.options.session.tagLayers.edit.saveToFS({dirPath:config.appDir+'/interview_data/'+parsedPrehashParams.interview,
+                success: function() {
+                    that.options.dirty = false;
+                    that.$el.find('#save-tags').hide();
+                },
+                error: function() {alert('error saving')}
+            });  
+           console.log(config.appDir+'/interview_data/'+parsedPrehashParams.interview);
+       },
+       
+       makeDirty: function() {
+           this.options.dirty = true;
+           this.$el.find('#save-tags').show();
+       }
         
     });
     
@@ -169,7 +234,7 @@ function(config,   Backbone,  _, playerLayout){
         
         events: {
             'click *': function(event) {this.trigger('seekTo',event)},  
-            'touchstart *': function(event) {this.trigger('seekTo',event)},  
+            'to uchstart *': function(event) {this.trigger('seekTo',event)},  
         },
         
         initialize: function() {
@@ -276,13 +341,26 @@ function(config,   Backbone,  _, playerLayout){
             var $layer = $('<div id="'+tagLayer.layer+'"></div>');
             var that = this;
             _.each(tagLayer.tags,function(tag){
-                var $tag = $('<i></i>');
-                $tag.addClass('icon-'+tag.icon);
-                $tag.css('color',tag.iconColor);
-                $layer.append( $('<div class="tag"></div>').css('left',tag.offset/that.options.sm_tic_ms+'em').append($tag));
+                $layer.append(that.addTag(tag));
             });
             this.$timeline.find('.tags').append($layer);
             return this;
+        },
+        
+        addTag: function(tag,layer){
+            var $tag = $('<i></i>');
+            $tag.addClass('icon-'+tag.icon);
+            $tag.css('color',tag.iconColor);
+            $tagHolder = $('<div class="tag"></div>').css('left',tag.offset/this.options.sm_tic_ms+'em').append($tag);
+            if(!layer) {
+                return $tagHolder;
+            }
+            var $layer = this.$timeline.find('.tags #'+layer);
+            if($layer.length===0) {
+                $layer =  $('<div id="'+layer+'"></div>');
+                this.$timeline.find('.tags').append($layer);
+            }
+            $layer.append($tagHolder);
         },
         
         // seek timeline to ms (no error detection)

@@ -1,5 +1,4 @@
-.nav_header {width:100%}
-.nav_header_quit {height:30px; float:right;}
+.nav_header_quit {position:absolute;right:5px;bottom:5px;}
 .nav_header_title {text-align:center; width:100%; font-weight:bold; margin-bottom:5px; position:absolute; top:5px;}
 .nav_record_status {margin-bottom:5px;}
 .nav_record_button {height:30px;}
