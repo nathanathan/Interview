@@ -71,9 +71,8 @@
             <% } %>
             <p class="list_ele_btn_pnl">
                 <% if(!interview.converting && !interview.error){ %>
-                    <a href="boilerplate/interview.html?interview=<%- interview.name %>/#beginSession" class="btn list_ele_btn">Start</a>
-                    <a href="boilerplate/interview.html?interview=<%- interview.name %>/#explorer" class="btn list_ele_btn">Question Data</a>
-                    <a href="boilerplate/interview.html?interview=<%- interview.name %>/#sessions" class="btn list_ele_btn">Saved Interviews</a>
+                    <a href="boilerplate/interview.html?interview=<%- interview.name %>/#beginSession" class="btn list_ele_btn btn-success">Start</a>
+                    <a href="boilerplate/interview.html?interview=<%- interview.name %>/#" class="btn list_ele_btn">Interview Details</a>
                 <% } %>
             </p>
         </td></tr>
