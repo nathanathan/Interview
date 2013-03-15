@@ -135,12 +135,15 @@ var init = function(_){
                 
                 }, callback);
             }
-            console.log("FileSystemName:", fileSystem.name);
-            var dirArray = path.split('/');
-            if(dirArray && dirArray[0] === ''){
-                //Ignore the leading slash
-                dirArray.shift();
+            if(path[0] !== "/"){
+                path = "/" + path;
             }
+            //This line has two purposes:
+            //1. Monkey patch for fullPath not being relative to the root.
+            //2. Ignore the leading slash when splitting the path.
+            path = path.replace(fileSystem.root.fullPath, "");
+            
+            var dirArray = path.split('/');
             var curPath = '';
             var getDirectoryHelper = function(dirEntry) {
                 var pathSegment = dirArray.shift();

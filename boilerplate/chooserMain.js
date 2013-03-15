@@ -120,7 +120,7 @@ function(config, _, Backbone, dirListView, sfsf){
             });
         }
     });
-    var generateJSON = function(xlsxPath, outPath, callback){
+    var generateJSON = function(xlsxPath, outPath, callback) {
         require(["jszip", "jsxlsx", "XLSInterview"], function(){
             console.log("xlsxPath", xlsxPath);
             console.log("outPath", outPath);
@@ -203,8 +203,8 @@ function(config, _, Backbone, dirListView, sfsf){
                                     if(xlsxModTime > jsonModTime) {
                                         entryModel.set("converting", true);
                                         generateJSON(xlsxEntry.fullPath, sfsf.joinPaths(entry.fullPath, "interview.json"),
-                                        function(err){
-                                            if(err){
+                                        function(err) {
+                                            if(err) {
                                                 entryModel.set("error", String(err));
                                                 console.log(err);
                                             }
