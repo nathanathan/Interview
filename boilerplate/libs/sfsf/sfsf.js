@@ -99,7 +99,8 @@ var init = function(_){
         }
         options = _.extend({
             //Treat as file by default if last segment contains a dot
-            isFile: path.split('/').pop().match('\\.')
+            isFile: path.split('/').pop().match('\\.'),
+            type: 'text/plain'
         }, options);
         sfsf.politelyRequestFileSystem({}, function(error, fileSystem) {
             if(error){
@@ -128,18 +129,24 @@ var init = function(_){
                             if (options.data.__proto__ == ArrayBuffer.prototype) {
                                 options.data = new Uint8Array(options.data);
                             }
-                            fileWriter.write(new Blob([options.data], {type: options.type || 'text/plain'}));
+                            fileWriter.write(new Blob([options.data], {type: options.type }));
                         }
                     }, callback);
                 
                 }, callback);
             }
-            console.log("FileSystemName:", fileSystem.name);
-            var dirArray = path.split('/');
-            if(dirArray && dirArray[0] === ''){
-                //Ignore the leading slash
-                dirArray.shift();
+
+            //Monkey patch for fullPath not being relative to the root.
+            if(path.search(fileSystem.root.fullPath) === 0) {
+                path = path.substring(fileSystem.root.fullPath.length);
             }
+            
+            //Prevent the leading slash from being used when splitting.
+            if(path[0] === "/") {
+                path = path.substring(1);
+            }
+            
+            var dirArray = path.split('/');
             var curPath = '';
             var getDirectoryHelper = function(dirEntry) {
                 var pathSegment = dirArray.shift();

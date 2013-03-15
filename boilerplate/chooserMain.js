@@ -120,8 +120,10 @@ function(config, _, Backbone, dirListView, sfsf){
             });
         }
     });
-    var generateJSON = function(xlsxPath, outPath, callback){
+    var generateJSON = function(xlsxPath, outPath, callback) {
         require(["jszip", "jsxlsx", "XLSInterview"], function(){
+            console.log("xlsxPath", xlsxPath);
+            console.log("outPath", outPath);
             sfsf.cretrieve(xlsxPath, function(err, entry){
                 if(err){
                     callback(err);
@@ -131,8 +133,11 @@ function(config, _, Backbone, dirListView, sfsf){
                 var reader = new FileReader();
                 entry.file(function(file){
                     reader.onload = function(e) {
-                        var data = e.target.result;
-                        var xlsx = XLSX.read(data, {type: 'binary'});
+                        var dataURL = e.target.result;
+                        var data = dataURL.substring(dataURL.search("base64,") + 7);
+                        console.log(data);
+                        console.log("Reading XLSX data...");
+                        var xlsx = XLSX.read(data, {type: 'base64'});
                         var workbookToJSON = function(workbook) {
                             var result = {};
                             workbook.SheetNames.forEach(function(sheetName) {
@@ -143,6 +148,7 @@ function(config, _, Backbone, dirListView, sfsf){
                             });
                             return result;
                         }
+                        console.log("Writing JSON def...");
                         try {
                             sfsf.cretrieve(outPath, {
                                 data: JSON.stringify(XLSInterview.processWorkbook(workbookToJSON(xlsx)), 2, 2)
@@ -152,8 +158,8 @@ function(config, _, Backbone, dirListView, sfsf){
                             callback(e);
                         }
                     };
-                    reader.readAsBinaryString(file);
-                        
+                    console.log("Reading XLSX file...");
+                    reader.readAsDataURL(file);
                 });
             });
         });
@@ -199,8 +205,8 @@ function(config, _, Backbone, dirListView, sfsf){
                                     if(xlsxModTime > jsonModTime) {
                                         entryModel.set("converting", true);
                                         generateJSON(xlsxEntry.fullPath, sfsf.joinPaths(entry.fullPath, "interview.json"),
-                                        function(err){
-                                            if(err){
+                                        function(err) {
+                                            if(err) {
                                                 entryModel.set("error", String(err));
                                                 console.log(err);
                                             }
