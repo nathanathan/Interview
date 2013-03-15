@@ -19,9 +19,12 @@ function(config,   Backbone,  _, playerLayout){
             this.$el.html(playerLayout); // insert template
              
             if(this.options.media) this.options.duration = this.options.media.getDuration();
+            console.log(this.options);
             
-            // add controls and events
+            // add controls
             this.controls = new FS_ControlsView({el:this.$el.find('#controls')});
+            
+            //add control event listeners
             this.controls.on('play', this.play,this);
             this.controls.on('pause', this.pause,this);
             this.controls.on('seek-offset', function(event) {
@@ -45,7 +48,7 @@ function(config,   Backbone,  _, playerLayout){
             var log = this.getLog();
             this.overview = new FS_OverviewView({el:this.$el.find('.timeline-overview'),duration:this.options.duration,log:log});
             this.timeline = new FS_TimelineView({el:this.$el.find('.timeline-window'),duration:this.options.duration,log:log});
-            this.timeline.addTagLayer(this.getTagLayer());
+            //this.timeline.addTagLayer(this.getTagLayer());
             this.setQuestion(log[0].page)
             
             // set callbacks
