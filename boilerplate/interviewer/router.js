@@ -394,7 +394,37 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
             'html/*page': 'setPage'
 		},
         opening: function(params){
-            $('body').html(compiledOpeningTemplate({title: this.currentInterview}));
+            var that = this;
+            var renderOpening = function(){
+                var totalTime = mySessions.reduce(function(memo, session){
+                    return (session.get("endTime") - session.get("startTime"));
+                }, 0);
+                $('body').html(compiledOpeningTemplate({
+                    title: that.currentInterview,
+                    stats: {
+                        averageDuration: totalTime / mySessions.length,
+                        totalTime: totalTime,
+                        lastDate: mySessions.at(mySessions.length - 1).get("startTime").toISOString().replace('T',' at ').slice(0,-8),
+                        numInterviews: mySessions.length
+                    }
+                }));
+            };
+            if(mySessions.length === 0){
+                //i.e. if the sessions haven't been loaded yet.
+                $('body').html(compiledOpeningTemplate({
+                    title: that.currentInterview,
+                    stats: null
+                }));
+                mySessions.fetchFromFS({
+                    dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
+                    success: renderOpening,
+                    error: function(){
+                        alert("Error loading sessions");
+                    }
+                });
+            } else {
+                renderOpening();
+            }
         },
         showSessions: function(){
             var that = this;

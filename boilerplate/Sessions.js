@@ -235,6 +235,10 @@ function(config,   $,        Backbone,   _,            LogItems,   sfsf,   TagCo
         
         model: Session,
         
+        comparator: function(session) {
+            return -Number(session.get("startTime"));
+        },
+        
         fetchFromFS: function(options){
             var that = this;
             this.reset();

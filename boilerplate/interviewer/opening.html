@@ -2,7 +2,7 @@
     <div class="navbar-inner">
         <ul class="nav">
             <li>
-                <a href="../index.html">Choose Interview</a>
+                <a href="../index.html"><i class="icon-angle-left icon-large" style="font:26px;"></i>Choose Interview</a>
             </li>
         </ul>
     </div>
@@ -10,7 +10,26 @@
 <div class="container">
 <div style="float:left; height:50%"></div>
 <div class="hero-unit" style="cleat:both;">
-    <h2><%- title %></h2>
+
+    <p class="lead" style="font-variant:small-caps;text-align:center;font-weight:bold;font-size:27px;"><%- title %></p>
+    <% if(stats) { %>
+        <dl class="dl-horizontal">
+            <dt>Conducted:</dt>
+            <dd>
+                <%- stats.numInterviews %>
+            </dd>
+            <dt>Average Duration:</dt>
+            <dd>
+                <%- _.formatTime( stats.averageDuration ) %>
+            </dd>
+            <dt>Last Interview:</dt>
+            <dd>
+                <%- stats.lastDate %>
+            </dd>
+        </dl>
+    <% } else { %>
+        <p>Stats loading...</p>
+    <% } %>
     <p>
         <a class="btn btn-success btn-large btn-block" href="#beginSession">
             Start New Interview
@@ -26,17 +45,23 @@
             Explore Data
         </a>
     </p>
-    <% if("chrome" in window){ %>
+    <!--
+    <% if(!("cordova" in window)){ %>
+        <p>
+            <a class="btn btn-primary btn-large btn-block" href="#explorer">
+                Explore Data
+            </a>
+        </p>
         <p>
             <a class="btn btn-primary btn-large btn-block" href="synchronize.html">
                 Synchronize with Dropbox
             </a>
         </p>
-    <% } %>
-      <p>
-        <a class="btn btn-primary btn-large btn-block" href="#sandbox">
-            Sandbox
-        </a>
-    </p>
+        <p>
+            <a class="btn btn-primary btn-large btn-block" href="#sandbox">
+                Sandbox
+            </a>
+        </p>
+    <% } %>-->
 </div>
 </div>

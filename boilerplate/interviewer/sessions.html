@@ -1,40 +1,68 @@
 <div class="navbar navbar-always-fixed">
     <div class="navbar-inner">
         <ul class="nav">
-          <li>
-            <a href="#">Home</a>
-          </li>
+            <li class="path">
+                <a href="#" style="float:left;"><span class="path_link">Home</span></a> 
+                <span class="path_divider">/</span> 
+                <span class="path_active">Previous Interviews</span>
+            </li>
         </ul>
     </div>
 </div>
+<!--<div class="navbar navbar-always-fixed">
+    <div class="navbar-inner">
+        <ul class="nav">
+            <ul class="breadcrumb" style="font-size:17px;">
+                <li><a href="#">Home</a> <span class="divider">/</span></li>
+                <li class="active">Interviews</li>
+              <!--<li>
+                <a href="#">Home</a>
+              </li>--.>
+            </ul>
+        </ul>
+    </div>
+</div>-->
 <div class="nav-spacer"></div>
 <div class="container" style="margin-top: 1em;">
-        <table class="table table-bordered table-hover">
+    <!--<p class="list_sort_text">Sort By: </p>
+    <div class="btn-group" style="float:left;">
+        <button class="btn btn-small">Name</button>
+        <button class="btn btn-small">Date</button>
+    </div>-->
+        <table class="table table-bordered table-striped">
             <tbody id="result-list">
 <% _.forEach(sessions, function(session) { %>
-    <tr>
-    <td>
-        <div style="float:right;"><a class="btn" href="#playSession?id=<%= session.id %>">Open</a></div>
-        <dl class="dl-horizontal">
-            <dt>id:</dt>
-            <dd>
-                <%= session.id %>
-            </dd>
-            <dt>start time:</dt>
-            <dd>
-                <%= session.startTime %>
-            </dd>
-            <dt>duration:</dt>
-            <dd>
-            <% if("_duration" in session) { %>
-                <%= _.formatTime( session._duration ) %>
-            <% } else { %>
-                ?
-            <% } %>
-            </dd>
-        </dl>
-    </td>
-    </tr>
+    
+        <tr onclick="document.location = '#playSession?id=<%= session.id %>';">
+            <!--<a href="#playSession?id=<%= session.id %>">-->
+            <td style="display:block;">
+                
+                <dl class="dl-horizontal">
+                    <% _.forEach(["health_center_name", "health_center_name"], function(attribute) { %>
+                        <% if(attribute in session) { %>
+                            <dt><%= attribute %>:</dt>
+                            <dd>
+                                <%= session[attribute] %>&nbsp;
+                            </dd>
+                        <% } %>
+                    <% }); %>
+                    <dt>Start Time:</dt>
+                    <dd>
+                        <%= session.startTime %>
+                    </dd>
+                    <dt>Duration:</dt>
+                    <dd>
+                    <% if("endTime" in session) { %>
+                        <%= _.formatTime( session.endTime - session.startTime ) %>
+                    <% } else { %>
+                        ?
+                    <% } %>
+                    </dd>
+                </dl>
+            </td>
+            <!--</a>-->
+        </tr>
+    </a>
 <% }); %>
             </tbody>
         </table>

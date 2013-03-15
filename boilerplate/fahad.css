@@ -1,3 +1,4 @@
+.nav_header {width:100%}
 .nav_header_quit {position:absolute;right:5px;bottom:5px;}
 .nav_header_title {text-align:center; width:100%; font-weight:bold; margin-bottom:5px; position:absolute; top:5px;}
 .nav_record_status {margin-bottom:5px;}
@@ -28,3 +29,19 @@
       margin-right: -20px;
     }
 }
+.recording_float{float:left;}
+.recording_status_pad{margin-top:10px;}
+.interview_pause_btn{width:95px; margin-bottom:10px;}
+.list_ele_heading{text-align:center;}
+.list_ele_btn_pnl{margin-top:20px;}
+.list_ele_btn{font-variant:small-caps;}
+.list_detail_ele{clear:both;}
+.list_detail_title{width:100px;float:left;text-align:right;font-weight:bold;}
+.list_detail_value{float:left; margin-left:5px}
+.list_body{margin-top:10px;}
+.list_sort_text{float:left; margin-top:3px; margin-right:10px;}
+.list_header_btn{font-variant:small-caps; margin-right:10px;}
+.path_divider{float:left;color:#ccc;padding: 10px 0px 10px;}
+.path_active{float:left;padding: 10px 15px 10px;}
+.path_link{color:#0088cc;}
+.path a{float:left;}

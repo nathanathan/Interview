@@ -111,8 +111,8 @@ function parseSheet(data) { //TODO: use a real xml parser
 		var cells = x.substr(x.indexOf('>')+1).split(/<c/);
 		cells.forEach(function(c, idx) { if(c === "") return;
 			c = "<c" + c;
-			if(refguess.s.c > idx) refguess.s.c = idx; 
-			if(refguess.e.c < idx) refguess.e.c = idx;
+			if(refguess.s.c > idx - 1) refguess.s.c = idx - 1; 
+			if(refguess.e.c < idx - 1) refguess.e.c = idx - 1;
 			var cell = parsexmltag((c.match(/<c[^>]*>/)||[c])[0]); delete cell[0];
 			var d = c.substr(c.indexOf('>')+1);
 			var p = {};
@@ -191,7 +191,7 @@ function parseProps(data) {
 			switch(v[i].v) {
 				case "Worksheets": widx = j; p["Worksheets"] = +v[++i]; break;
 				case "Named Ranges": ++i; break; // TODO: Handle Named Ranges
-				default: throw "Unrecognized key in Heading Pairs: " + v[i].v;
+				default: console.error("Unrecognized key in Heading Pairs: " + v[i++].v);
 			}
 		}
 		var parts = parseVector(q["TitlesOfParts"]);
@@ -338,7 +338,6 @@ if(typeof require !== "undefined") {
 	fs = require('fs');
 }
 */
-
 function readSync(data, options) {
 	var zip, d = data;
 	var o = options||{};
@@ -389,8 +388,9 @@ function sheet_to_row_object_array(sheet){
 				r: range.s.r
 			})];
 			if(val){
-				if(val.t === "s"){
-					columnHeaders[C] = val.v;
+				switch(val.t) {
+					case "s": case "str": columnHeaders[C] = val.v; break;
+					case "n": columnHeaders[C] = val.v; break;
 				}
 			}
 		}
