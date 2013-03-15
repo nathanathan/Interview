@@ -2,7 +2,7 @@
     <div class="navbar-inner">
         <ul class="nav">
             <li>
-                <a href="../index.html">Choose Interview</a>
+                <a href="../index.html"><i class="icon-angle-left icon-large" style="font:26px;"></i>Choose Interview</a>
             </li>
         </ul>
     </div>
@@ -10,7 +10,22 @@
 <div class="container">
 <div style="float:left; height:50%"></div>
 <div class="hero-unit" style="cleat:both;">
+
     <h2><%- title %></h2>
+    <dl class="dl-horizontal">
+        <dt>Name:</dt>
+        <dd>
+            Fahad Pervaiz
+        </dd>
+        <dt>Location:</dt>
+        <dd>
+            University of Washington
+        </dd>
+        <dt>Duration:</dt>
+        <dd>
+            4 hours
+        </dd>
+    </dl>
     <p>
         <a class="btn btn-success btn-large btn-block" href="#beginSession">
             Start New Interview
@@ -21,22 +36,23 @@
             Previous Interviews
         </a>
     </p>
-    <p>
-        <a class="btn btn-primary btn-large btn-block" href="#explorer">
-            Explore Data
-        </a>
-    </p>
-    <% if("chrome" in window){ %>
+    <!--
+    <% if(!("cordova" in window)){ %>
+        <p>
+            <a class="btn btn-primary btn-large btn-block" href="#explorer">
+                Explore Data
+            </a>
+        </p>
         <p>
             <a class="btn btn-primary btn-large btn-block" href="synchronize.html">
                 Synchronize with Dropbox
             </a>
         </p>
-    <% } %>
-      <p>
-        <a class="btn btn-primary btn-large btn-block" href="#sandbox">
-            Sandbox
-        </a>
-    </p>
+        <p>
+            <a class="btn btn-primary btn-large btn-block" href="#sandbox">
+                Sandbox
+            </a>
+        </p>
+    <% } %>-->
 </div>
 </div>
