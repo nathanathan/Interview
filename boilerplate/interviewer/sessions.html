@@ -36,28 +36,24 @@
         <tr onclick="document.location = '#playSession?id=<%= session.id %>';">
             <!--<a href="#playSession?id=<%= session.id %>">-->
             <td style="display:block;">
-                <!--<div style="float:right;"><a class="btn" href="#playSession?id=<%= session.id %>">Open</a></div>-->
+                
                 <dl class="dl-horizontal">
-                    <dt>Professional Name:</dt>
-                    <dd>
-                        <%= session.id %>
-                    </dd>
-                    <dt>Health Profession:</dt>
-                    <dd>
-                        <%= session.id %>
-                    </dd>
-                    <dt>Health Center Name:</dt>
-                    <dd>
-                        <%= session.id %>
-                    </dd>
+                    <% _.forEach(["health_center_name", "health_center_name"], function(attribute) { %>
+                        <% if(attribute in session) { %>
+                            <dt><%= attribute %>:</dt>
+                            <dd>
+                                <%= session[attribute] %>&nbsp;
+                            </dd>
+                        <% } %>
+                    <% }); %>
                     <dt>Start Time:</dt>
                     <dd>
                         <%= session.startTime %>
                     </dd>
                     <dt>Duration:</dt>
                     <dd>
-                    <% if("_duration" in session) { %>
-                        <%= _.formatTime( session._duration ) %>
+                    <% if("endTime" in session) { %>
+                        <%= _.formatTime( session.endTime - session.startTime ) %>
                     <% } else { %>
                         ?
                     <% } %>

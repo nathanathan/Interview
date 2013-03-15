@@ -396,18 +396,24 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
         opening: function(params){
             var that = this;
             var renderOpening = function(){
+                var totalTime = mySessions.reduce(function(memo, session){
+                    return (session.get("endTime") - session.get("startTime"));
+                }, 0);
                 $('body').html(compiledOpeningTemplate({
-                    title: this.currentInterview,
-                    averageDuration: _.reduceRight(mySessions, function(memo, session){
-                        return (session.endTime - session.startTime);
-                    }, 0) / mySessions.length,
-                    numInterviews: mySessions.length
+                    title: that.currentInterview,
+                    stats: {
+                        averageDuration: totalTime / mySessions.length,
+                        totalTime: totalTime,
+                        lastDate: mySessions.at(mySessions.length - 1).get("startTime").toLocaleString(),
+                        numInterviews: mySessions.length
+                    }
                 }));
             };
             if(mySessions.length === 0){
                 //i.e. if the sessions haven't been loaded yet.
                 $('body').html(compiledOpeningTemplate({
-                    title: this.currentInterview
+                    title: that.currentInterview,
+                    stats: null
                 }));
                 mySessions.fetchFromFS({
                     dirPath: sfsf.joinPaths(config.appDir, 'interview_data', that.currentInterview),
