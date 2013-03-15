@@ -12,9 +12,7 @@
     <div>
         <span class="nav_header_title">Free Speech Interviews</span>
         <span class="nav_header">
-            <a href="../../index.html#sandbox">
-                <img class="nav_header_quit" src="http://cdn1.iconfinder.com/data/icons/super-mono-reflection/blue/button-cross_blue.png">
-            </a>
+            <button type="button" class="btn btn-small list_header_btn nav_header_quit">Add Interview</button>
         </span>
         
     </div>
@@ -24,7 +22,17 @@
         </ul>
     </div>
 </div>
-<div  class="list_ele_btn_pnl">
+<div  class="list_body">
+    <div class="alert alert-error">
+        <strong>Error: </strong>Unable to read the JSON file.
+    </div>
+    <p class="list_sort_text">Sort By: </p>
+    <div class="btn-group" style="float:left;">
+        <button class="btn btn-small">Name</button>
+        <button class="btn btn-small">Date</button>
+    </div>
+    <div style="clear:both;"></div>
+    
     <table class="table table-bordered table-striped">
         <tr><td >
             <p class="lead list_ele_heading">Health Survey</p>
@@ -37,6 +45,8 @@
                     <div class="list_detail_value">12-12-12</div>
                 </div>
                 <div class="list_detail_ele"></div>
+            </div>
+            
             <p class="list_ele_btn_pnl">
                 <button type="button" class="btn list_ele_btn">Start</button>
                 <button type="button" class="btn list_ele_btn">Question Data</button>

@@ -258,8 +258,12 @@ CSS for timeline
 .timeline .tag {
     position:absolute;
     display:inline-block;
-    top:20px;
-    font-size:2em;
+    top:10px;
+    line-height:0px;
+}
+
+.timeline .tag i {
+    font-size:15px;
 }
 
 #timeline .log-item {

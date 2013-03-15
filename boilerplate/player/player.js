@@ -248,6 +248,7 @@ function(config,   Backbone,   _,FS_PlayerView,          playerLayout,          
                             return offset + (Number(timestamp) - Number(clip.start));
                         }
                     }
+                    return offset; // return the total length of clips if timestamp out of range
                 }
             }, Backbone.Events);
             
@@ -326,10 +327,11 @@ function(config,   Backbone,   _,FS_PlayerView,          playerLayout,          
                 dirPath: config.appDir,
                 success: function() {
                     console.log("Tag Layers:", session.tagLayers);
+                    timeline = new FS_PlayerView({el:$('.player'),media:media,session:session})
                 }
             });
             
-            timeline = new FS_PlayerView({el:$('.player'),media:media,session:session})
+           
             
         });
 

@@ -45,6 +45,7 @@ function(config,   Backbone,  _, playerLayout){
             var log = this.getLog();
             this.overview = new FS_OverviewView({el:this.$el.find('.timeline-overview'),duration:this.options.duration,log:log});
             this.timeline = new FS_TimelineView({el:this.$el.find('.timeline-window'),duration:this.options.duration,log:log});
+            this.timeline.addTagLayer(this.getTagLayer());
             this.setQuestion(log[0].page)
             
             // set callbacks
@@ -85,16 +86,28 @@ function(config,   Backbone,  _, playerLayout){
             var log = [];
             var that = this, count=0;
              this.options.session.Log.each( function(item) {
+                    var offset = that.options.media.timestampToOffset(item.get('_timestamp')); 
                     log.push({
                         page:item.get('page'),
-                        duration:item.get('_duration'),
-                        offset:that.options.media.timestampToOffset(item.get('_timestamp')),
+                        offset:offset,
+                        duration:that.options.media.timestampToOffset(item.get('_endTimestamp'))-offset,
                         index:count,
                     }); 
                     count+=1;
               });
               log[0].offset = 0;
             return log;
+        },
+        
+        getTagLayer: function(layer) {
+            var that=this;
+            layer = (layer)?layer:'base';
+            var tags = this.options.session.tagLayers[layer].toJSON();
+            console.log(tags);
+            _.each(tags,function(tag){
+               tag.offset = that.options.media.timestampToOffset(tag._timestamp); 
+            });
+            return {layer:layer,tags:tags};
         },
         
         seekDelta: function(delta_ms,media,conversion_str) {
@@ -254,6 +267,19 @@ function(config,   Backbone,  _, playerLayout){
                 logMarks.push($('<div class="log-mark '+style +'" style="left:'+log.offset/this.options.sm_tic_ms+'em;width:'+log.duration/this.options.sm_tic_ms+'em"><span>'+log.page+'</span></div>'));
              }
              return logMarks;
+        },
+        
+        addTagLayer: function(tagLayer) {
+            var $layer = $('<div id="'+tagLayer.layer+'"></div>');
+            var that = this;
+            _.each(tagLayer.tags,function(tag){
+                var $tag = $('<i></i>');
+                $tag.addClass('icon-'+tag.icon);
+                $tag.css('color',tag.iconColor);
+                $layer.append( $('<div class="tag"></div>').css('left',tag.offset/that.options.sm_tic_ms+'em').append($tag));
+            });
+            this.$timeline.find('.tags').append($layer);
+            return this;
         },
         
         // seek timeline to ms (no error detection)

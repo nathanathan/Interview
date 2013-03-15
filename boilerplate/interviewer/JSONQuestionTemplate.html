@@ -16,7 +16,7 @@
                             <%- tag.label %>
                         <% } %>
                         <% if("icon" in tag) { %>
-                            <i class="<%- tag.icon %>"
+                            <i class="icon-<%- tag.icon %>"
                                 <% if("iconColor" in tag) { %>
                                     style="color:<%- tag.iconColor %>;"
                                 <% } %>
@@ -29,6 +29,7 @@
             <% }); %>
             </ul>
             
+            <% if(_.filter(currentQuestion.__tags, function(tag){ return !("icon" in tag) }).length > 0 ) { %>
             <div class="btn-group dropup float_object_right" id="tag_btn">
                 <a class="btn btn-info dropdown-toggle" data-toggle="dropdown"
                     onclick="$('#tag_btn').toggleClass('open');">
@@ -46,7 +47,7 @@
                                 <%- tag.label %>
                             <% } %>
                             <% if("icon" in tag) { %>
-                                <i class="<%- tag.icon %>"
+                                <i class="icon-<%- tag.icon %>"
                                     <% if("iconColor" in tag) { %>
                                         style="color:<%- tag.iconColor %>;"
                                     <% } %>
@@ -59,6 +60,7 @@
                 <% }); %>
                 </ul>
             </div>
+            <% } %>
             <div style="clear:both;"></div>
         </div>
 

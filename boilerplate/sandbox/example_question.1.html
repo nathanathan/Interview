@@ -63,9 +63,10 @@
     <div class="navbar-inner">
         <ul class="nav" style="width:100%;">
             <div class="nav_record_status">
-                <img onclick="start_pause_interview();" ontouch="alert('touch');" id="start_stop_btn" class="nav_button_button" src="http://cdn1.iconfinder.com/data/icons/Primo_Icons/PNG/48x48/button_blue_pause.png">
-                <span id="timer1" class="nav_record_timer">00:01</span>
-                <span id="time_status">Recording.....</span>    
+                <button type="button" class="btn btn-info interview_pause_btn recording_float"><i class="icon-pause"></i> Pause </button>
+                <!--<button type="button" class="btn btn-info interview_pause_btn recording_float"><i class="icon-play"></i> Resume</button>-->
+                <div id="timer1" class="nav_record_timer recording_status_pad recording_float">00:01</div>
+                <div id="time_status" class="recording_status_pad recording_float">Recording.....</div>    
             </div>
         </ul>
     </div>
