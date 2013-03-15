@@ -135,13 +135,16 @@ var init = function(_){
                 
                 }, callback);
             }
-            if(path[0] !== "/"){
-                path = "/" + path;
+
+            //Monkey patch for fullPath not being relative to the root.
+            if(path.search(fileSystem.root.fullPath) === 0) {
+                path = path.substring(fileSystem.root.fullPath.length);
             }
-            //This line has two purposes:
-            //1. Monkey patch for fullPath not being relative to the root.
-            //2. Ignore the leading slash when splitting the path.
-            path = path.replace(fileSystem.root.fullPath, "");
+            
+            //Prevent the leading slash from being used when splitting.
+            if(path[0] === "/") {
+                path = path.substring(1);
+            }
             
             var dirArray = path.split('/');
             var curPath = '';
