@@ -133,9 +133,11 @@ function(config, _, Backbone, dirListView, sfsf){
                 var reader = new FileReader();
                 entry.file(function(file){
                     reader.onload = function(e) {
-                        var data = e.target.result;
+                        var dataURL = e.target.result;
+                        var data = dataURL.substring(dataURL.search("base64,") + 7);
+                        console.log(data);
                         console.log("Reading XLSX data...");
-                        var xlsx = XLSX.read(data, {type: 'binary'});
+                        var xlsx = XLSX.read(data, {type: 'base64'});
                         var workbookToJSON = function(workbook) {
                             var result = {};
                             workbook.SheetNames.forEach(function(sheetName) {
@@ -157,7 +159,7 @@ function(config, _, Backbone, dirListView, sfsf){
                         }
                     };
                     console.log("Reading XLSX file...");
-                    reader.readAsBinaryString(file);
+                    reader.readAsDataURL(file);
                 });
             });
         });
