@@ -1,66 +1,85 @@
-<h1>Choose an interview:</h1>
-
-<a class="menu-item sort-name">Sort | Name</a>
-<a class="menu-item sort-date">Sort | Date</a>
-<a class="menu-item refresh">Refresh</a>
-<% if(!("cordova" in window)){ %>
-    <a class="menu-item " href="boilerplate/libs/filerjs/demos/filer.html">
-        Add Interivews
-    </a>
-<% } %>
-<div style="clear:both;"></div>
-
-<% if(status.error){ %>
-    <div class="alert alert-error">
-        <h4>Error!</h4>
-        <%- status.error %>
-    </div>
-<% } %>
-
-<% if(status.installing){ %>
-    <div class="alert alert-info">
-        <p>Installing example interview...</p>
-    </div>
-<% } %>
-
-<% if(status.interviewsToFetch > 0){ %>
-    <div class="alert alert-info">
-        <p>Fetching interviews... (<%- status.interviewsToFetch %> remaining)</p>
-    </div>
-<% } %>
-
-<% if(interviews.length === 0){ %>
-    <p>No entries found</p>
-    <a class="install-example btn">Install example interview</a>
-<% } %>
-
-<ul class="navlist">
-<%
-_.each(interviews, function(interview){ 
-%>
-    <li>
-        <h2><%- interview.name %></h2>
-        <% if(!interview.converting && !interview.error){ %>
-            <a href="boilerplate/interview.html?interview=<%- interview.name %>/" class="btn open">
-                Open
+<div class="navbar navbar-static-top">
+    <div>
+        <span class="nav_header_title">Free Speech Interviews</span>
+        <span class="nav_header">
+            <% if(!("cordova" in window)){ %>
+            <a href="boilerplate/libs/filerjs/demos/filer.html">
+                <button type="button" class="btn btn-small list_header_btn nav_header_quit">Add Interview</button>
             </a>
-        <% } %>
-        <p>
-            <strong>Last Modified:</strong><br />
-            <%- interview.modificationTime %>
-        </p>
-        <% if(interview.converting){ %>
-            <div class="alert alert-info">
-                <p>Converting xlsx...</p>
+            <% } %>
+        </span>
+        
+    </div>
+    <div class="navbar-inner">
+        <ul class="nav" style="width:100%;">
+            
+        </ul>
+    </div>
+</div>
+
+<div  class="list_body">
+    <% if(status.error){ %>
+    <div class="alert alert-error">
+        <strong>Error: </strong><%- status.error %>
+    </div>
+    <% } %>
+    <% if(status.installing){ %>
+        <div class="alert alert-info">
+            <p>Installing example interview...</p>
+        </div>
+    <% } %>
+    <% if(status.interviewsToFetch > 0){ %>
+        <div class="alert alert-info">
+            <p>Fetching interviews... (<%- status.interviewsToFetch %> remaining)</p>
+        </div>
+    <% } %>
+    
+    
+
+    <p class="list_sort_text">Sort By: </p>
+    <div class="btn-group" style="float:left;">
+        <button class="btn btn-small sort-name">Name</button>
+        <button class="btn btn-small sort-date">Date</button>
+    </div>
+    <button class="btn btn-small refresh" style="float:right;">Refresh</button>
+    <div style="clear:both;"></div>
+    <% if(interviews.length === 0){ %>
+        <p>No entries found</p>
+        <a class="install-example btn">Install example interview</a>
+    <% } %>
+    <table class="table table-bordered table-striped">
+        <%
+        _.each(interviews, function(interview){ 
+        %>
+        <tr><td >
+            <p class="lead list_ele_heading"><%- interview.name %></p>
+            <div class="list_detail_ele">
+                    <div class="list_detail_title">Last Modified:</div>
+                    <div class="list_detail_value"><%- interview.modificationTime %></div>
+                </div>
+                <div class="list_detail_ele"></div>
             </div>
-        <% } %>
-        <% if(interview.error){ %>
-            <div class="alert alert-error">
-                <p><%- interview.error %></p>
-            </div>
-        <% } %>
-    </li>
-<%
-});
-%>
-</ul>
+            <% if(interview.converting){ %>
+                <div class="alert alert-info">
+                    <p>Converting xlsx...</p>
+                </div>
+            <% } %>
+            <% if(interview.error){ %>
+                <div class="alert alert-error">
+                    <p><%- interview.error %></p>
+                </div>
+            <% } %>
+            <p class="list_ele_btn_pnl">
+                <% if(!interview.converting && !interview.error){ %>
+                    <a href="boilerplate/interview.html?interview=<%- interview.name %>/#beginSession" class="btn list_ele_btn">Start</a>
+                    <a href="boilerplate/interview.html?interview=<%- interview.name %>/#explorer" class="btn list_ele_btn">Question Data</a>
+                    <a href="boilerplate/interview.html?interview=<%- interview.name %>/#sessions" class="btn list_ele_btn">Saved Interviews</a>
+                <% } %>
+            </p>
+        </td></tr>
+        <%
+        });
+        %>
+    </table>
+    
+</div>
