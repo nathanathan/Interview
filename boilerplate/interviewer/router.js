@@ -477,7 +477,7 @@ function(config, $, Backbone, _, LogItems, Sessions, sfsf,
                                 alert("Could not get session: " + qp.id);
                             }
                             $('body').html(_.template(playerContainerTemplate));
-                            player.create({
+                            var myPlayer = player.create({
                                 el:  $(".player"),
                                 session: sessionToPlay
                             });

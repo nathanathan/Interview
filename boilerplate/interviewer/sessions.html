@@ -38,7 +38,7 @@
             <td style="display:block;">
                 
                 <dl class="dl-horizontal">
-                    <% _.forEach(["health_center_name", "health_center_name"], function(attribute) { %>
+                    <% _.forEach(["health_center_name", "health_professional"], function(attribute) { %>
                         <% if(attribute in session) { %>
                             <dt><%= attribute %>:</dt>
                             <dd>
@@ -62,7 +62,7 @@
             </td>
             <!--</a>-->
         </tr>
-    </a>
+
 <% }); %>
             </tbody>
         </table>

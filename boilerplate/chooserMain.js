@@ -179,49 +179,52 @@ function(config, _, Backbone, dirListView, sfsf){
                         that.trigger("error", error);
                         return;
                     }
+                    entries = _.filter(entries, function(entry){
+                        return entry.isDirectory;
+                    });
                     var remainingEntries = entries.length;
                     that['reset']();
                     _.each(entries, function(entry){
-                        if(entry.isDirectory){
-                            sfsf.readEntriesWithMetadata(entry, function (error, entries){
-                                that.trigger("error", "No json or xlsx interview");
-                                //The map function is used to convert the EntryList object into a normal array.
-                                var jsonEntry = _.find(entries, function(entry) {
-                                    return entry.name === "interview.json";
-                                });
-                                var xlsxEntry = _.find(entries, function(entry) {
-                                    return entry.name === "interview.xlsx";
-                                });
-                                var entryModel = new Backbone.Model({
-                                    name: entry.name,
-                                    modificationTime: entry.metadata.modificationTime
-                                });
-                                if(!jsonEntry && !xlsxEntry){
-                                    entryModel.set("error", "No json or xlsx files for interview");
-                                }
-                                if(xlsxEntry) {
-                                    var xlsxModTime = xlsxEntry.metadata.modificationTime;
-                                    var jsonModTime = jsonEntry ? jsonEntry.metadata.modificationTime : new Date(0);
-                                    if(xlsxModTime > jsonModTime) {
-                                        entryModel.set("converting", true);
-                                        generateJSON(xlsxEntry.fullPath, sfsf.joinPaths(entry.fullPath, "interview.json"),
-                                        function(err) {
-                                            if(err) {
-                                                entryModel.set("error", String(err));
-                                                console.log(err);
-                                            }
-                                            entryModel.set("converting", false);
-                                        });
-                                    }
-                                }
-                                entryModel.on("change", function(){
-                                    that.trigger("change");
-                                });
-                                that.add(entryModel);
-                                remainingEntries--;
-                                that.trigger("fetchUpdate", remainingEntries);
+
+                        sfsf.readEntriesWithMetadata(entry, function (error, entries){
+                            that.trigger("error", "No json or xlsx interview");
+                            //The map function is used to convert the EntryList object into a normal array.
+                            var jsonEntry = _.find(entries, function(entry) {
+                                return entry.name === "interview.json";
                             });
-                        }
+                            var xlsxEntry = _.find(entries, function(entry) {
+                                return entry.name === "interview.xlsx";
+                            });
+                            var entryModel = new Backbone.Model({
+                                name: entry.name,
+                                modificationTime: entry.metadata.modificationTime
+                            });
+                            if(!jsonEntry && !xlsxEntry){
+                                entryModel.set("error", "No json or xlsx files for interview");
+                            }
+                            if(xlsxEntry) {
+                                var xlsxModTime = xlsxEntry.metadata.modificationTime;
+                                var jsonModTime = jsonEntry ? jsonEntry.metadata.modificationTime : new Date(0);
+                                if(xlsxModTime > jsonModTime) {
+                                    entryModel.set("converting", true);
+                                    generateJSON(xlsxEntry.fullPath, sfsf.joinPaths(entry.fullPath, "interview.json"),
+                                    function(err) {
+                                        if(err) {
+                                            entryModel.set("error", String(err));
+                                            console.log(err);
+                                        }
+                                        entryModel.set("converting", false);
+                                    });
+                                }
+                            }
+                            entryModel.on("change", function(){
+                                that.trigger("change");
+                            });
+                            that.add(entryModel);
+                            remainingEntries--;
+                            that.trigger("fetchUpdate", remainingEntries);
+                        });
+
                     });                    
                 });
             });

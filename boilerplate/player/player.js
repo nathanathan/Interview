@@ -82,6 +82,9 @@ function(config,   Backbone,   _,FS_PlayerView,          playerLayout,          
                     //myAudio.currentTime = timeSeconds;
                     myAudio.currentTime(millis/1000);
                     //myAudio.currentTime = Math.floor(millis / 1000);
+                },
+                release: function(){
+                    //Do nothing?
                 }
             };
             //TODO: Extend with backbone events instead, eg:
@@ -97,7 +100,8 @@ function(config,   Backbone,   _,FS_PlayerView,          playerLayout,          
     };
     
     var getMedia = function(path, callback) {
-        //TODO: Download media into temporairy fs if not present? Maybe it is better to just sync everything up front for now.
+        //TODO: Download media into temporairy fs if not present?
+        //Maybe it is better to just sync everything up front for now.
         //TODO: Figure out how to play audio from chrome.
         if('Media' in window){
             getMediaPhonegap(path, callback);
@@ -109,7 +113,7 @@ function(config,   Backbone,   _,FS_PlayerView,          playerLayout,          
     /**
      * create a special media object for playing a sequence of clips
      * the clips are specified in an array like this
-     * [{start: timestamp, end: timestamp, path: pathToClipMediaFile }]
+     * [{start: timestamp, end: timestamp, path: pathToClipMediaFile}]
      **/
     var createClipPlayer = function(clips, callback) {
         //Clips must be sorted
@@ -202,7 +206,8 @@ function(config,   Backbone,   _,FS_PlayerView,          playerLayout,          
                             remainingOffset -= clipDuration; 
                         } else {
                             if(currentClip !== clip){
-                                currentClip.media.pause();
+                                currentClip.media.onStop = function(){};
+                                currentClip.media.stop();
                                 console.log("starting clip:", clip);
                                 currentClip = clip;
                                 clip.media.seekTo(remainingOffset);
@@ -249,6 +254,18 @@ function(config,   Backbone,   _,FS_PlayerView,          playerLayout,          
                         }
                     }
                     return offset; // return the total length of clips if timestamp out of range
+                },
+                release: function(){
+                    console.log("releasing...");
+                    clearInterval(this.ticker);
+                    var clipIdx = 0;
+                    while(clipIdx < clips.length){
+                        clips[clipIdx].media.onStop = function(){};
+                        clips[clipIdx].media.stop();
+                        clips[clipIdx].media.release();
+                        clipIdx++;
+                    }
+                    console.log("released");
                 }
             }, Backbone.Events);
             
@@ -310,31 +327,35 @@ function(config,   Backbone,   _,FS_PlayerView,          playerLayout,          
             });
         }
         var logItems = session.Log;
-        
-        createClipPlayer(session.get('_clips'), function(media){
-            if(!(media.getDuration() > 0)){
+        var clipSequencePlayer;
+        createClipPlayer(session.get('_clips'), function(newClipSequencePlayer){
+            clipSequencePlayer = newClipSequencePlayer;
+            if(!(clipSequencePlayer.getDuration() > 0)){
                 alert("Could not get media duration, be sure it is loaded before passing it to player.create()");
             }
-            if(media.getDuration() === Infinity) {
+            if(clipSequencePlayer.getDuration() === Infinity) {
                 alert("Media is infinately long?");
             }
             
             console.log("Start time: " + startOffset);
-            media.seekTo(startOffset);
+            clipSequencePlayer.seekTo(startOffset);
             
             //It might be a good idea to lazy load the tag layers.
             session.fetchTagLayers({
                 dirPath: config.appDir,
                 success: function() {
                     console.log("Tag Layers:", session.tagLayers);
-                    timeline = new FS_PlayerView({el:$('.player'),media:media,session:session})
+                    timeline = new FS_PlayerView({el:$('.player'),media:clipSequencePlayer,session:session})
                 }
             });
             
-           
-            
         });
-
+        
+        Backbone.history.once("route", function(){
+            //TODO: Undelegate events on views
+            clipSequencePlayer.release();
+        });
+        
         return this;
     };
     
