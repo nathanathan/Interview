@@ -4,14 +4,14 @@
     id        = "com.phonegap.interview"
     version   = "0.8.4">
 
-    <name>Interview</name>
+    <name>FreeSpeech</name>
 
     <description>
-        App for guiding and recording interviews.
+        App for guiding, recording and annotating interviews.
     </description>
 
     <author>
-        Nathan Breit
+        Nathan Breit, Trevor Perrier, Fahad Pervaiz
     </author>
 
     <icon src="boilerplate/cassette.png" />
