@@ -4,6 +4,7 @@
     id        = "org.opendatakit.freespeech"
     version   = "0.8.4">
 
+
     <name>FreeSpeech</name>
 
     <description>
