@@ -270,7 +270,10 @@ function(config, _, Backbone, dirListView, sfsf){
             myInterviewList.refresh();
         });
     };
-    if ('cordova' in window) {
+    //This works for android but it might not work everywhere:
+    var isCordovaApp = document.URL.indexOf( 'http://' ) === -1 && document.URL.indexOf( 'https://' ) === -1;
+    
+    if (isCordovaApp) {
         //No need to worry about timing. From cordova docs:
         //This event behaves differently from others in that any event handler
         //registered after the event has been fired will have its callback

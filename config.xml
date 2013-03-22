@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <widget xmlns = "http://www.w3.org/ns/widgets"
     xmlns:gap = "http://phonegap.com/ns/1.0"
-    id        = "com.phonegap.interview"
+    id        = "org.opendatakit.freespeech"
     version   = "0.8.4">
 
-    <name>Interview</name>
+
+    <name>FreeSpeech</name>
 
     <description>
-        App for guiding and recording interviews.
+        App for guiding, recording and annotating interviews.
     </description>
 
     <author>
-        Nathan Breit
+        Nathan Breit, Trevor Perrier, Fahad Pervaiz
     </author>
 
     <icon src="boilerplate/cassette.png" />
