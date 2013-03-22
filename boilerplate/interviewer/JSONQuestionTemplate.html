@@ -30,7 +30,7 @@
             </ul>
             
             <% if(_.filter(currentQuestion.__tags, function(tag){ return !("icon" in tag) }).length > 0 ) { %>
-            <div class="btn-group dropup float_object_right" id="tag_btn">
+            <div class="btn-group dropup" id="tag_btn">
                 <a class="btn btn-info dropdown-toggle" data-toggle="dropdown"
                     onclick="$('#tag_btn').toggleClass('open');">
                 <i class="icon-tags icon-white"></i> More Tags
@@ -89,7 +89,6 @@
             <% } else  { %>
                 <a class="btn btn-block btn-danger btn-large" href="#interviewEnd">
                      End Interview <i class="icon-caret-right"></i>
-                   
                 </a>
             <% } %>
             </ul>

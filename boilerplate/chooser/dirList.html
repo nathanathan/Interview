@@ -1,23 +1,10 @@
-<div class="navbar navbar-static-top">
-    <div>
-        <span class="nav_header_title">Free Speech Interviews</span>
-        <span class="nav_header">
-            <% if(!("cordova" in window)){ %>
-            <a href="boilerplate/libs/filerjs/demos/filer.html">
-                <button type="button" class="btn btn-small list_header_btn nav_header_quit">Add Interview</button>
-            </a>
-            <% } %>
-        </span>
-        
-    </div>
+<div class="navbar navbar-always-fixed">
     <div class="navbar-inner">
-        <ul class="nav" style="width:100%;">
-            
-        </ul>
+        <a class="brand"  style="margin-left:auto;">Free Speech Interviews</a>
     </div>
 </div>
-
-<div  class="list_body">
+<div class="nav-spacer"></div>
+<div class="container">
     <% if(status.error){ %>
     <div class="alert alert-error">
         <strong>Error: </strong><%- status.error %>
@@ -80,5 +67,11 @@
         });
         %>
     </table>
-    
+    <% if(!("cordova" in window)){ %>
+    <center>
+    <a href="boilerplate/libs/filerjs/demos/filer.html" class="btn">
+        Add Interview
+    </a>
+    </center>
+    <% } %>
 </div>

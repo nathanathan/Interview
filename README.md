@@ -58,6 +58,10 @@ TODO:
 Other tools
 ------------
 
+[TagPad](https://github.com/barbro66/tagpad)
+
+ * A similar tool for the iPad
+
 [Atlas.TI](http://www.atlasti.com/)
 
  * [Does everything](http://www.atlasti.com/features.html)
