@@ -1,0 +1,109 @@
+<style>
+body {
+    background-color: rgb(247, 235, 223);
+    font-size: 15pt;
+    font-family: "Times New Roman"; 
+}
+#drop{
+    background-color: white;
+    border:2px dashed #bbb;
+    -moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+	padding:25px;
+	text-align:center;
+	font:20pt bold;
+    color:#bbb
+}
+#out{
+    clear: both;
+    height: 500px;
+    width: 100%;
+}
+#save {
+    float: right;
+    font-size: 15pt;
+    margin-top: 15px;
+    font-family: "Times New Roman"; 
+}
+#error {
+    color: red;
+}
+</style>
+<div id="drop">Drop an XLSX file here to convert to JSON.</div>
+<button onclick="handleSave();" id="save">Save</button>
+<p>Output:</p>
+<div id="error"></div>
+<textarea id="out"></textarea>
+<br />
+<script src="js-xlsx/jszip.js"></script>
+<script src="js-xlsx/xlsx.js"></script>
+<script src="underscore.js"></script>
+<script src="XLSInterview.js"></script>
+<script>
+function get_radio_value( radioName ) {
+    var radios = document.getElementsByName( radioName );
+    for( var i = 0; i < radios.length; i++ ) {
+        if( radios[i].checked ) {
+            return radios[i].value;
+        }
+    }
+}
+
+//Row object array form:
+//Each row is an object with column headers as keys
+function to_json(workbook) {
+    var result = {};
+    workbook.SheetNames.forEach(function(sheetName) {
+        var rObjArr = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[sheetName]);
+        if(rObjArr.length > 0){
+            result[sheetName] = rObjArr;
+        }
+    });
+    return result;
+}
+
+function handleSave(e) {
+    var uriContent = "data:application/octet-stream," + encodeURIComponent(document.getElementById("out").value);
+    var downloader = document.createElement("iframe");
+    downloader.style.display = "none";
+    downloader.src = uriContent;
+    document.body.appendChild(downloader);
+}
+
+var drop = document.getElementById('drop');
+function handleDrop(e) {
+	e.stopPropagation();
+	e.preventDefault();
+    try {
+        document.getElementById('error').innerText = "";
+        document.getElementById('out').innerText = "";
+        var files = e.dataTransfer.files;
+        var file = files[0];
+        var reader = new FileReader();
+        var name = file.name;
+        reader.onload = function(e) {
+        	var data = e.target.result;
+            try {
+            	var xlsx = XLSX.read(data, {type: 'binary'});
+                out.innerText = JSON.stringify(XLSXInterview.processWorkbook(to_json(xlsx)), 2, 2);
+            } catch(e) {
+                document.getElementById('error').innerText = String(e);
+                throw e;
+            }
+        };
+        reader.readAsBinaryString(file);
+    } catch(e) {
+        document.getElementById('error').innerText = String(e);
+        throw e;
+    }
+}
+
+function handleDragover(e) {
+	e.stopPropagation();
+	e.preventDefault();
+	e.dataTransfer.dropEffect = 'copy';
+}
+drop.addEventListener('dragover', handleDragover, false);
+drop.addEventListener('drop', handleDrop, false);
+</script>
