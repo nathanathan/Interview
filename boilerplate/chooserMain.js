@@ -5,9 +5,9 @@ require.config({
         "backboneqp": "libs/backbone.queryparams",
         "backbonels": "libs/backbone-localstorage",
         "sfsf": "libs/sfsf/sfsf",
-        "jszip" : "libs/XLSInterview/js-xlsx/jszip",
-        "jsxlsx" : "libs/XLSInterview/js-xlsx/xlsx",
-        "XLSInterview" : "libs/XLSInterview/XLSInterview"
+        "jszip" : "libs/XLSXInterview/js-xlsx/jszip",
+        "jsxlsx" : "libs/XLSXInterview/js-xlsx/xlsx",
+        "XLSXInterview" : "libs/XLSXInterview/XLSXInterview"
 	},
 	'shim': 
 	{
@@ -121,7 +121,7 @@ function(config, _, Backbone, dirListView, sfsf){
         }
     });
     var generateJSON = function(xlsxPath, outPath, callback) {
-        require(["jszip", "jsxlsx", "XLSInterview"], function(){
+        require(["jszip", "jsxlsx", "XLSXInterview"], function(){
             console.log("xlsxPath", xlsxPath);
             console.log("outPath", outPath);
             sfsf.cretrieve(xlsxPath, function(err, entry){
@@ -151,7 +151,7 @@ function(config, _, Backbone, dirListView, sfsf){
                         console.log("Writing JSON def...");
                         try {
                             sfsf.cretrieve(outPath, {
-                                data: JSON.stringify(XLSInterview.processWorkbook(workbookToJSON(xlsx)), 2, 2)
+                                data: JSON.stringify(XLSXInterview.processWorkbook(workbookToJSON(xlsx)), 2, 2)
                             }, callback);
                         } catch(e){
                             console.log("Error processing XLSX File.");

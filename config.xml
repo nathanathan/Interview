@@ -2,7 +2,7 @@
 <widget xmlns = "http://www.w3.org/ns/widgets"
     xmlns:gap = "http://phonegap.com/ns/1.0"
     id        = "org.opendatakit.freespeech"
-    version   = "0.8.4">
+    version   = "0.8.5">
 
 
     <name>FreeSpeech</name>
